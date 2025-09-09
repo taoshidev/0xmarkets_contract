@@ -13,8 +13,7 @@ import "./PositionEventUtils.sol";
 import "./PositionUtils.sol";
 import "../order/BaseOrderUtils.sol";
 import "../order/OrderEventUtils.sol";
-
-import "./DecreasePositionSwapUtils.sol";
+import "../fee/FeeUtils.sol";
 
 // @title DecreasePositionCollateralUtils
 // @dev Library for functions to help with the calculations when decreasing a position
@@ -36,8 +35,6 @@ library DecreasePositionCollateralUtils {
 
     struct ProcessCollateralCache {
         bool isInsolventCloseAllowed;
-        bool wasSwapped;
-        uint256 swapOutputAmount;
         PayForCostResult result;
     }
 
@@ -172,20 +169,10 @@ library DecreasePositionCollateralUtils {
             }
         }
 
-        // swap profit to the collateral token
-        // if the decreasePositionSwapType was set to NoSwap or if the swap fails due
-        // to insufficient liquidity or other reasons then it is possible that
-        // the profit remains in a different token from the collateral token
-        (collateralCache.wasSwapped, collateralCache.swapOutputAmount) = DecreasePositionSwapUtils.swapProfitToCollateralToken(
-            params,
-            cache.pnlToken,
-            values.output.secondaryOutputAmount
-        );
-
-        // if the swap was successful the profit should have been swapped
-        // to the collateral token
-        if (collateralCache.wasSwapped) {
-            values.output.outputAmount += collateralCache.swapOutputAmount;
+        // For USDC-only system, profit is already in USDC (collateral token)
+        // No swapping needed - just consolidate all output to primary output
+        if (values.output.secondaryOutputAmount > 0) {
+            values.output.outputAmount += values.output.secondaryOutputAmount;
             values.output.secondaryOutputAmount = 0;
         }
 
@@ -213,7 +200,6 @@ library DecreasePositionCollateralUtils {
             }
 
             // send the funding fee amount to the holding address
-            // this funding fee amount should be swapped to the required token
             // and the resulting tokens should be deposited back into the pool
             MarketUtils.incrementClaimableCollateralAmount(
                 params.contracts.dataStore,
@@ -307,7 +293,6 @@ library DecreasePositionCollateralUtils {
             // there may be a large amount of borrowing fees that could have been accumulated
             // these fees could cause the pool to become unbalanced, price impact is not paid for causing
             // this imbalance
-            // the swap impact pool should be built up so that it can be used to pay for positive price impact
             // for re-balancing to help handle this case
             MarketUtils.applyDeltaToPoolAmount(
                 params.contracts.dataStore,

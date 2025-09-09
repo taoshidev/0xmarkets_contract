@@ -4,13 +4,11 @@ pragma solidity ^0.8.0;
 
 import "../exchange/IDepositHandler.sol";
 import "../exchange/IWithdrawalHandler.sol";
-import "../exchange/IShiftHandler.sol";
 import "../exchange/IOrderHandler.sol";
-import "../external/IExternalHandler.sol";
-import "../shift/ShiftUtils.sol";
-import "../shift/ShiftStoreUtils.sol";
-import "../referral/ReferralUtils.sol";
 
+import "../referral/ReferralUtils.sol";
+import "../market/MarketUtils.sol";
+import "../fee/FeeUtils.sol";
 import "../order/OrderStoreUtils.sol";
 
 import "../feature/FeatureUtils.sol";
@@ -60,13 +58,10 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
     using Deposit for Deposit.Props;
     using Withdrawal for Withdrawal.Props;
     using Order for Order.Props;
-    using Shift for Shift.Props;
 
     IDepositHandler public immutable depositHandler;
     IWithdrawalHandler public immutable withdrawalHandler;
-    IShiftHandler public immutable shiftHandler;
     IOrderHandler public immutable orderHandler;
-    IExternalHandler public immutable externalHandler;
 
     // @dev Constructor that initializes the contract with the provided Router, RoleStore, DataStore,
     // EventEmitter, IDepositHandler, IWithdrawalHandler, IOrderHandler, and OrderStore instances
@@ -77,41 +72,11 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
         EventEmitter _eventEmitter,
         IDepositHandler _depositHandler,
         IWithdrawalHandler _withdrawalHandler,
-        IShiftHandler _shiftHandler,
-        IOrderHandler _orderHandler,
-        IExternalHandler _externalHandler
+        IOrderHandler _orderHandler
     ) BaseRouter(_router, _roleStore, _dataStore, _eventEmitter) {
         depositHandler = _depositHandler;
         withdrawalHandler = _withdrawalHandler;
-        shiftHandler = _shiftHandler;
         orderHandler = _orderHandler;
-        externalHandler = _externalHandler;
-    }
-
-    // makeExternalCalls can be used to perform an external swap before
-    // an action
-    // example:
-    // - ExchangeRouter.sendTokens(token: WETH, receiver: externalHandler, amount: 1e18)
-    // - ExchangeRouter.makeExternalCalls(
-    //     WETH.approve(spender: aggregator, amount: 1e18),
-    //     aggregator.swap(amount: 1, from: WETH, to: USDC, receiver: orderHandler)
-    // )
-    // - ExchangeRouter.createOrder
-    // the msg.sender for makeExternalCalls would be externalHandler
-    // refundTokens can be used to retrieve any excess tokens that may
-    // be left in the externalHandler
-    function makeExternalCalls(
-        address[] memory externalCallTargets,
-        bytes[] memory externalCallDataList,
-        address[] memory refundTokens,
-        address[] memory refundReceivers
-    ) external payable nonReentrant {
-        externalHandler.makeExternalCalls(
-            externalCallTargets,
-            externalCallDataList,
-            refundTokens,
-            refundReceivers
-        );
     }
 
     /**
@@ -196,52 +161,16 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
 
     function simulateExecuteWithdrawal(
         bytes32 key,
-        OracleUtils.SimulatePricesParams memory simulatedOracleParams,
-        ISwapPricingUtils.SwapPricingType swapPricingType
+        OracleUtils.SimulatePricesParams memory simulatedOracleParams
     ) external payable nonReentrant {
-        withdrawalHandler.simulateExecuteWithdrawal(key, simulatedOracleParams, swapPricingType);
+        withdrawalHandler.simulateExecuteWithdrawal(key, simulatedOracleParams);
     }
 
     function simulateExecuteLatestWithdrawal(
-        OracleUtils.SimulatePricesParams memory simulatedOracleParams,
-        ISwapPricingUtils.SwapPricingType swapPricingType
-    ) external payable nonReentrant {
-        bytes32 key = NonceUtils.getCurrentKey(dataStore);
-        withdrawalHandler.simulateExecuteWithdrawal(key, simulatedOracleParams, swapPricingType);
-    }
-
-    function createShift(
-        ShiftUtils.CreateShiftParams calldata params
-    ) external override payable nonReentrant returns (bytes32) {
-        address account = msg.sender;
-
-        return shiftHandler.createShift(
-            account,
-            params
-        );
-    }
-
-    function cancelShift(bytes32 key) external override payable nonReentrant {
-        Shift.Props memory shift = ShiftStoreUtils.get(dataStore, key);
-        if (shift.account() != msg.sender) {
-            revert Errors.Unauthorized(msg.sender, "account for cancelShift");
-        }
-
-        shiftHandler.cancelShift(key);
-    }
-
-    function simulateExecuteShift(
-        bytes32 key,
-        OracleUtils.SimulatePricesParams memory simulatedOracleParams
-    ) external payable nonReentrant {
-        shiftHandler.simulateExecuteShift(key, simulatedOracleParams);
-    }
-
-    function simulateExecuteLatestShift(
         OracleUtils.SimulatePricesParams memory simulatedOracleParams
     ) external payable nonReentrant {
         bytes32 key = NonceUtils.getCurrentKey(dataStore);
-        shiftHandler.simulateExecuteShift(key, simulatedOracleParams);
+        withdrawalHandler.simulateExecuteWithdrawal(key, simulatedOracleParams);
     }
 
     /**

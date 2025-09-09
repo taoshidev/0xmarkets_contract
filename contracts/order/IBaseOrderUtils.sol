@@ -11,7 +11,6 @@ interface IBaseOrderUtils {
     // @param addresses address values
     // @param numbers number values
     // @param orderType for order.orderType
-    // @param decreasePositionSwapType for order.decreasePositionSwapType
     // @param isLong for order.isLong
     // @param shouldUnwrapNativeToken for order.shouldUnwrapNativeToken
     // @note all params except should be part of the corresponding struct hash in all relay contracts
@@ -19,7 +18,6 @@ interface IBaseOrderUtils {
         CreateOrderParamsAddresses addresses;
         CreateOrderParamsNumbers numbers;
         Order.OrderType orderType;
-        Order.DecreasePositionSwapType decreasePositionSwapType;
         bool isLong;
         bool shouldUnwrapNativeToken;
         bool autoCancel;
@@ -34,7 +32,6 @@ interface IBaseOrderUtils {
         address uiFeeReceiver;
         address market;
         address initialCollateralToken;
-        address[] swapPath;
     }
 
     // @param sizeDeltaUsd for order.sizeDeltaUsd

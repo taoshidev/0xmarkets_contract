@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import {GelatoRelayContext} from "@gelatonetwork/relay-context/contracts/GelatoRelayContext.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 import "../../data/DataStore.sol";
 import "../../event/EventEmitter.sol";
@@ -17,7 +18,6 @@ import "../../order/IBaseOrderUtils.sol";
 import "../../order/OrderStoreUtils.sol";
 import "../../order/OrderVault.sol";
 import "../../router/Router.sol";
-import "../../swap/SwapUtils.sol";
 import "../../token/TokenUtils.sol";
 
 abstract contract BaseGelatoRelayRouter is GelatoRelayContext, ReentrancyGuard, OracleModule {
@@ -44,7 +44,6 @@ abstract contract BaseGelatoRelayRouter is GelatoRelayContext, ReentrancyGuard, 
     struct FeeParams {
         address feeToken;
         uint256 feeAmount;
-        address[] feeSwapPath;
     }
 
     struct RelayParams {
@@ -133,8 +132,6 @@ abstract contract BaseGelatoRelayRouter is GelatoRelayContext, ReentrancyGuard, 
         params.numbers.executionFee = _handleRelay(contracts, relayParams, account, address(contracts.orderVault), isSubaccount);
 
         if (
-            params.orderType == Order.OrderType.MarketSwap ||
-            params.orderType == Order.OrderType.LimitSwap ||
             params.orderType == Order.OrderType.MarketIncrease ||
             params.orderType == Order.OrderType.LimitIncrease ||
             params.orderType == Order.OrderType.StopIncrease
@@ -215,43 +212,6 @@ abstract contract BaseGelatoRelayRouter is GelatoRelayContext, ReentrancyGuard, 
         orderHandler.cancelOrder(key);
     }
 
-    function _swapFeeTokens(
-        Contracts memory contracts,
-        address wnt,
-        FeeParams calldata fee
-    ) internal returns (uint256) {
-        Oracle _oracle = oracle;
-        _oracle.validateSequencerUp();
-
-        // swap fee tokens to WNT
-        MarketUtils.validateSwapPath(contracts.dataStore, fee.feeSwapPath);
-        Market.Props[] memory swapPathMarkets = MarketUtils.getSwapPathMarkets(contracts.dataStore, fee.feeSwapPath);
-
-        (address outputToken, uint256 outputAmount) = SwapUtils.swap(
-            SwapUtils.SwapParams({
-                dataStore: contracts.dataStore,
-                eventEmitter: contracts.eventEmitter,
-                oracle: _oracle,
-                bank: contracts.orderVault,
-                key: bytes32(0),
-                tokenIn: fee.feeToken,
-                amountIn: fee.feeAmount,
-                swapPathMarkets: swapPathMarkets,
-                minOutputAmount: 0,
-                receiver: address(this),
-                uiFeeReceiver: address(0),
-                shouldUnwrapNativeToken: false,
-                swapPricingType: ISwapPricingUtils.SwapPricingType.AtomicSwap
-            })
-        );
-
-        if (outputToken != wnt) {
-            revert Errors.UnexpectedRelayFeeTokenAfterSwap(outputToken, wnt);
-        }
-
-        return outputAmount;
-    }
-
     function _handleRelay(
         Contracts memory contracts,
         RelayParams calldata relayParams,
@@ -259,9 +219,6 @@ abstract contract BaseGelatoRelayRouter is GelatoRelayContext, ReentrancyGuard, 
         address residualFeeReceiver,
         bool isSubaccount
     ) internal returns (uint256) {
-        if (relayParams.externalCalls.externalCallTargets.length != 0 && relayParams.fee.feeSwapPath.length != 0) {
-            revert Errors.InvalidRelayParams();
-        }
 
         if (relayParams.externalCalls.externalCallTargets.length != 0 && isSubaccount) {
             // malicious subaccount could steal main account funds through external calls
@@ -325,9 +282,6 @@ abstract contract BaseGelatoRelayRouter is GelatoRelayContext, ReentrancyGuard, 
                 relayParams.externalCalls.refundReceivers
             );
             outputAmount = ERC20(_getFeeToken()).balanceOf(address(this));
-        } else if (relayParams.fee.feeSwapPath.length != 0) {
-            _sendTokens(account, relayParams.fee.feeToken, address(contracts.orderVault), relayParams.fee.feeAmount);
-            outputAmount = _swapFeeTokens(contracts, wnt, relayParams.fee);
         } else if (relayParams.fee.feeToken == wnt) {
             _sendTokens(account, relayParams.fee.feeToken, address(this), relayParams.fee.feeAmount);
             outputAmount = relayParams.fee.feeAmount;

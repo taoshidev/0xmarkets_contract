@@ -6,9 +6,7 @@ pragma solidity ^0.8.0;
 // @dev Struct for deposits
 library Deposit {
     enum DepositType {
-        Normal,
-        Shift,
-        Glv
+        Normal
     }
 
     // @dev there is a limit on the number of fields a struct can have when being passed
@@ -36,8 +34,6 @@ library Deposit {
         address market;
         address initialLongToken;
         address initialShortToken;
-        address[] longTokenSwapPath;
-        address[] shortTokenSwapPath;
     }
 
     // @param initialLongTokenAmount the amount of long tokens to deposit
@@ -114,22 +110,6 @@ library Deposit {
 
     function setInitialShortToken(Props memory props, address value) internal pure {
         props.addresses.initialShortToken = value;
-    }
-
-    function longTokenSwapPath(Props memory props) internal pure returns (address[] memory) {
-        return props.addresses.longTokenSwapPath;
-    }
-
-    function setLongTokenSwapPath(Props memory props, address[] memory value) internal pure {
-        props.addresses.longTokenSwapPath = value;
-    }
-
-    function shortTokenSwapPath(Props memory props) internal pure returns (address[] memory) {
-        return props.addresses.shortTokenSwapPath;
-    }
-
-    function setShortTokenSwapPath(Props memory props, address[] memory value) internal pure {
-        props.addresses.shortTokenSwapPath = value;
     }
 
     function initialLongTokenAmount(Props memory props) internal pure returns (uint256) {

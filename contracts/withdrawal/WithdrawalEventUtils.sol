@@ -7,7 +7,6 @@ import "../event/EventUtils.sol";
 import "../utils/Cast.sol";
 
 import "./Withdrawal.sol";
-import "../pricing/ISwapPricingUtils.sol";
 
 library WithdrawalEventUtils {
     using Withdrawal for Withdrawal.Props;
@@ -33,10 +32,6 @@ library WithdrawalEventUtils {
         eventData.addressItems.setItem(1, "receiver", withdrawal.receiver());
         eventData.addressItems.setItem(2, "callbackContract", withdrawal.callbackContract());
         eventData.addressItems.setItem(3, "market", withdrawal.market());
-
-        eventData.addressItems.initArrayItems(2);
-        eventData.addressItems.setItem(0, "longTokenSwapPath", withdrawal.longTokenSwapPath());
-        eventData.addressItems.setItem(1, "shortTokenSwapPath", withdrawal.shortTokenSwapPath());
 
         eventData.uintItems.initItems(7);
         eventData.uintItems.setItem(0, "marketTokenAmount", withdrawal.marketTokenAmount());
@@ -64,8 +59,7 @@ library WithdrawalEventUtils {
     function emitWithdrawalExecuted(
         EventEmitter eventEmitter,
         bytes32 key,
-        address account,
-        ISwapPricingUtils.SwapPricingType swapPricingType
+        address account
     ) external {
         EventUtils.EventLogData memory eventData;
 
@@ -74,9 +68,6 @@ library WithdrawalEventUtils {
 
         eventData.addressItems.initItems(1);
         eventData.addressItems.setItem(0, "account", account);
-
-        eventData.uintItems.initItems(1);
-        eventData.uintItems.setItem(0, "swapPricingType", uint256(swapPricingType));
 
         eventEmitter.emitEventLog2(
             "WithdrawalExecuted",

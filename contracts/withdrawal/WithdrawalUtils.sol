@@ -14,6 +14,7 @@ import "../oracle/Oracle.sol";
 import "../gas/GasUtils.sol";
 import "../callback/CallbackUtils.sol";
 
+import "../market/MarketUtils.sol";
 import "../utils/Array.sol";
 import "../utils/AccountUtils.sol";
 
@@ -51,8 +52,6 @@ library WithdrawalUtils {
         address callbackContract;
         address uiFeeReceiver;
         address market;
-        address[] longTokenSwapPath;
-        address[] shortTokenSwapPath;
         uint256 minLongTokenAmount;
         uint256 minShortTokenAmount;
         bool shouldUnwrapNativeToken;
@@ -96,8 +95,6 @@ library WithdrawalUtils {
         params.executionFee = wntAmount;
 
         MarketUtils.validateEnabledMarket(dataStore, params.market);
-        MarketUtils.validateSwapPath(dataStore, params.longTokenSwapPath);
-        MarketUtils.validateSwapPath(dataStore, params.shortTokenSwapPath);
 
         Withdrawal.Props memory withdrawal = Withdrawal.Props(
             Withdrawal.Addresses(
@@ -105,9 +102,7 @@ library WithdrawalUtils {
                 params.receiver,
                 params.callbackContract,
                 params.uiFeeReceiver,
-                params.market,
-                params.longTokenSwapPath,
-                params.shortTokenSwapPath
+                params.market
             ),
             Withdrawal.Numbers(
                 marketTokenAmount,
@@ -125,7 +120,7 @@ library WithdrawalUtils {
         CallbackUtils.validateCallbackGasLimit(dataStore, withdrawal.callbackGasLimit());
 
         uint256 estimatedGasLimit = GasUtils.estimateExecuteWithdrawalGasLimit(dataStore, withdrawal);
-        uint256 oraclePriceCount = GasUtils.estimateWithdrawalOraclePriceCount(withdrawal.longTokenSwapPath().length + withdrawal.shortTokenSwapPath().length);
+        uint256 oraclePriceCount = GasUtils.estimateWithdrawalOraclePriceCount(0);
         GasUtils.validateExecutionFee(dataStore, estimatedGasLimit, params.executionFee, oraclePriceCount);
 
         bytes32 key = NonceUtils.getNextKey(dataStore);
@@ -197,7 +192,7 @@ library WithdrawalUtils {
             withdrawal.callbackContract(),
             withdrawal.executionFee(),
             startingGas,
-            GasUtils.estimateWithdrawalOraclePriceCount(withdrawal.longTokenSwapPath().length + withdrawal.shortTokenSwapPath().length),
+            GasUtils.estimateWithdrawalOraclePriceCount(0),
             keeper,
             withdrawal.receiver()
         );

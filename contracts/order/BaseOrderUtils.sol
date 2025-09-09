@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import "./Order.sol";
 import "../market/Market.sol";
-
+import "../position/Position.sol";
 import "../data/DataStore.sol";
 import "../event/EventEmitter.sol";
 import "../referral/IReferralStorage.sol";
@@ -12,11 +12,10 @@ import "../referral/IReferralStorage.sol";
 import "../order/OrderVault.sol";
 
 import "../oracle/Oracle.sol";
-import "../swap/SwapHandler.sol";
 
 // @title Order
 // @dev Library for common order functions used in OrderUtils, IncreaseOrderUtils
-// DecreaseOrderUtils, SwapOrderUtils
+// DecreaseOrderUtils
 library BaseOrderUtils {
     using SafeCast for int256;
     using SafeCast for uint256;
@@ -30,7 +29,6 @@ library BaseOrderUtils {
     // @param contracts ExecuteOrderParamsContracts
     // @param key the key of the order to execute
     // @param order the order to execute
-    // @param swapPathMarkets the market values of the markets in the swapPath
     // @param minOracleTimestamp the min oracle timestamp
     // @param maxOracleTimestamp the max oracle timestamp
     // @param market market values of the trading market
@@ -41,7 +39,6 @@ library BaseOrderUtils {
         ExecuteOrderParamsContracts contracts;
         bytes32 key;
         Order.Props order;
-        Market.Props[] swapPathMarkets;
         uint256 minOracleTimestamp;
         uint256 maxOracleTimestamp;
         Market.Props market;
@@ -54,14 +51,12 @@ library BaseOrderUtils {
     // @param eventEmitter EventEmitter
     // @param orderVault OrderVault
     // @param oracle Oracle
-    // @param swapHandler SwapHandler
     // @param referralStorage IReferralStorage
     struct ExecuteOrderParamsContracts {
         DataStore dataStore;
         EventEmitter eventEmitter;
         OrderVault orderVault;
         Oracle oracle;
-        SwapHandler swapHandler;
         IReferralStorage referralStorage;
     }
 
@@ -72,8 +67,6 @@ library BaseOrderUtils {
     }
 
     function isSupportedOrder(Order.OrderType orderType) internal pure returns (bool) {
-        return orderType == Order.OrderType.MarketSwap ||
-               orderType == Order.OrderType.LimitSwap ||
                orderType == Order.OrderType.MarketIncrease ||
                orderType == Order.OrderType.MarketDecrease ||
                orderType == Order.OrderType.LimitIncrease ||
@@ -88,17 +81,8 @@ library BaseOrderUtils {
     // @return whether an orderType is a market order
     function isMarketOrder(Order.OrderType orderType) internal pure returns (bool) {
         // a liquidation order is not considered as a market order
-        return orderType == Order.OrderType.MarketSwap ||
                orderType == Order.OrderType.MarketIncrease ||
                orderType == Order.OrderType.MarketDecrease;
-    }
-
-    // @dev check if an orderType is a swap order
-    // @param orderType the order type
-    // @return whether an orderType is a swap order
-    function isSwapOrder(Order.OrderType orderType) internal pure returns (bool) {
-        return orderType == Order.OrderType.MarketSwap ||
-               orderType == Order.OrderType.LimitSwap;
     }
 
     // @dev check if an orderType is a position order
@@ -143,11 +127,9 @@ library BaseOrderUtils {
     // however, this may lead to gaming issues, an example:
     // - the current price is $2020
     // - a user has a long position and creates a stop-loss decrease order for < $2010
-    // - if the order has a swap from ETH to USDC and the user is able to cause the order
     // to be frozen / unexecutable by manipulating state or otherwise
     // - then if price decreases to $2000, and the user is able to manipulate state such that
     // the order becomes executable with $2010 being used as the price instead
-    // - then the user would be able to perform the swap at a higher price than should possible
     //
     // additionally, using the exact order's triggerPrice could lead to gaming issues during times
     // of volatility due to users setting tight stop-losses to minimize loss while betting on a
@@ -173,7 +155,6 @@ library BaseOrderUtils {
         bool isLong
     ) internal view {
         if (
-            isSwapOrder(orderType) ||
             isMarketOrder(orderType) ||
             isLiquidationOrder(orderType)
         ) {

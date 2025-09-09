@@ -14,6 +14,7 @@ import "../nonce/NonceUtils.sol";
 import "../gas/GasUtils.sol";
 import "../callback/CallbackUtils.sol";
 import "../utils/AccountUtils.sol";
+import "../market/MarketUtils.sol";
 
 // @title DepositUtils
 // @dev Library for deposit functions, to help with the depositing of liquidity
@@ -44,8 +45,6 @@ library DepositUtils {
         address market;
         address initialLongToken;
         address initialShortToken;
-        address[] longTokenSwapPath;
-        address[] shortTokenSwapPath;
         uint256 minMarketTokens;
         bool shouldUnwrapNativeToken;
         uint256 executionFee;
@@ -69,8 +68,6 @@ library DepositUtils {
         AccountUtils.validateAccount(account);
 
         Market.Props memory market = MarketUtils.getEnabledMarket(dataStore, params.market);
-        MarketUtils.validateSwapPath(dataStore, params.longTokenSwapPath);
-        MarketUtils.validateSwapPath(dataStore, params.shortTokenSwapPath);
 
         // if the initialLongToken and initialShortToken are the same, only the initialLongTokenAmount would
         // be non-zero, the initialShortTokenAmount would be zero
@@ -106,9 +103,7 @@ library DepositUtils {
                 params.uiFeeReceiver,
                 market.marketToken,
                 params.initialLongToken,
-                params.initialShortToken,
-                params.longTokenSwapPath,
-                params.shortTokenSwapPath
+                params.initialShortToken
             ),
             Deposit.Numbers(
                 initialLongTokenAmount,
@@ -126,9 +121,7 @@ library DepositUtils {
         CallbackUtils.validateCallbackGasLimit(dataStore, deposit.callbackGasLimit());
 
         uint256 estimatedGasLimit = GasUtils.estimateExecuteDepositGasLimit(dataStore, deposit);
-        uint256 oraclePriceCount = GasUtils.estimateDepositOraclePriceCount(
-            deposit.longTokenSwapPath().length + deposit.shortTokenSwapPath().length
-        );
+        uint256 oraclePriceCount = GasUtils.estimateDepositOraclePriceCount(0);
         GasUtils.validateExecutionFee(dataStore, estimatedGasLimit, params.executionFee, oraclePriceCount);
 
         bytes32 key = NonceUtils.getNextKey(dataStore);
@@ -212,7 +205,7 @@ library DepositUtils {
             deposit.callbackContract(),
             deposit.executionFee(),
             startingGas,
-            GasUtils.estimateDepositOraclePriceCount(deposit.longTokenSwapPath().length + deposit.shortTokenSwapPath().length),
+            GasUtils.estimateDepositOraclePriceCount(0),
             keeper,
             deposit.receiver()
         );

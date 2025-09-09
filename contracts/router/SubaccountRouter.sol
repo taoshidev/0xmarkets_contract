@@ -110,8 +110,6 @@ contract SubaccountRouter is BaseRouter {
         }
 
         if (
-            params.orderType == Order.OrderType.MarketSwap ||
-            params.orderType == Order.OrderType.LimitSwap ||
             params.orderType == Order.OrderType.MarketIncrease ||
             params.orderType == Order.OrderType.LimitIncrease ||
             params.orderType == Order.OrderType.StopIncrease

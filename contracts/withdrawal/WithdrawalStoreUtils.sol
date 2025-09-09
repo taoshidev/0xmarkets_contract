@@ -19,8 +19,6 @@ library WithdrawalStoreUtils {
     bytes32 public constant CALLBACK_CONTRACT = keccak256(abi.encode("CALLBACK_CONTRACT"));
     bytes32 public constant UI_FEE_RECEIVER = keccak256(abi.encode("UI_FEE_RECEIVER"));
     bytes32 public constant MARKET = keccak256(abi.encode("MARKET"));
-    bytes32 public constant LONG_TOKEN_SWAP_PATH = keccak256(abi.encode("LONG_TOKEN_SWAP_PATH"));
-    bytes32 public constant SHORT_TOKEN_SWAP_PATH = keccak256(abi.encode("SHORT_TOKEN_SWAP_PATH"));
 
     bytes32 public constant MARKET_TOKEN_AMOUNT = keccak256(abi.encode("MARKET_TOKEN_AMOUNT"));
     bytes32 public constant MIN_LONG_TOKEN_AMOUNT = keccak256(abi.encode("MIN_LONG_TOKEN_AMOUNT"));
@@ -55,14 +53,6 @@ library WithdrawalStoreUtils {
 
         withdrawal.setMarket(dataStore.getAddress(
             keccak256(abi.encode(key, MARKET))
-        ));
-
-        withdrawal.setLongTokenSwapPath(dataStore.getAddressArray(
-            keccak256(abi.encode(key, LONG_TOKEN_SWAP_PATH))
-        ));
-
-        withdrawal.setShortTokenSwapPath(dataStore.getAddressArray(
-            keccak256(abi.encode(key, SHORT_TOKEN_SWAP_PATH))
         ));
 
         withdrawal.setMarketTokenAmount(dataStore.getUint(
@@ -130,16 +120,6 @@ library WithdrawalStoreUtils {
         dataStore.setAddress(
             keccak256(abi.encode(key, MARKET)),
             withdrawal.market()
-        );
-
-        dataStore.setAddressArray(
-            keccak256(abi.encode(key, LONG_TOKEN_SWAP_PATH)),
-            withdrawal.longTokenSwapPath()
-        );
-
-        dataStore.setAddressArray(
-            keccak256(abi.encode(key, SHORT_TOKEN_SWAP_PATH)),
-            withdrawal.shortTokenSwapPath()
         );
 
         dataStore.setUint(
@@ -211,14 +191,6 @@ library WithdrawalStoreUtils {
 
         dataStore.removeAddress(
             keccak256(abi.encode(key, MARKET))
-        );
-
-        dataStore.removeAddressArray(
-            keccak256(abi.encode(key, LONG_TOKEN_SWAP_PATH))
-        );
-
-        dataStore.removeAddressArray(
-            keccak256(abi.encode(key, SHORT_TOKEN_SWAP_PATH))
         );
 
         dataStore.removeUint(

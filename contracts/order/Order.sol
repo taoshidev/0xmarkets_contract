@@ -10,11 +10,6 @@ library Order {
     using Order for Props;
 
     enum OrderType {
-        // @dev MarketSwap: swap token A to token B at the current market price
-        // the order will be cancelled if the minOutputAmount cannot be fulfilled
-        MarketSwap,
-        // @dev LimitSwap: swap token A to token B if the minOutputAmount can be fulfilled
-        LimitSwap,
         // @dev MarketIncrease: increase position at the current market price
         // the order will be cancelled if the position cannot be increased at the acceptablePrice
         MarketIncrease,
@@ -37,12 +32,6 @@ library Order {
     enum SecondaryOrderType {
         None,
         Adl
-    }
-
-    enum DecreasePositionSwapType {
-        NoSwap,
-        SwapPnlTokenToCollateralToken,
-        SwapCollateralTokenToPnlToken
     }
 
     // @dev there is a limit on the number of fields a struct can have when being passed
@@ -84,7 +73,6 @@ library Order {
         address uiFeeReceiver;
         address market;
         address initialCollateralToken;
-        address[] swapPath;
     }
 
     // @param sizeDeltaUsd the requested change in position size
@@ -104,7 +92,6 @@ library Order {
     // minOutputAmount value is treated as a USD value for validation in decrease orders
     struct Numbers {
         OrderType orderType;
-        DecreasePositionSwapType decreasePositionSwapType;
         uint256 sizeDeltaUsd;
         uint256 initialCollateralDeltaAmount;
         uint256 triggerPrice;
@@ -219,20 +206,6 @@ library Order {
         props.addresses.uiFeeReceiver = value;
     }
 
-    // @dev the order swapPath
-    // @param props Props
-    // @return the order swapPath
-    function swapPath(Props memory props) internal pure returns (address[] memory) {
-        return props.addresses.swapPath;
-    }
-
-    // @dev set the order swapPath
-    // @param props Props
-    // @param value the value to set to
-    function setSwapPath(Props memory props, address[] memory value) internal pure {
-        props.addresses.swapPath = value;
-    }
-
     // @dev the order type
     // @param props Props
     // @return the order type
@@ -245,14 +218,6 @@ library Order {
     // @param value the value to set to
     function setOrderType(Props memory props, OrderType value) internal pure {
         props.numbers.orderType = value;
-    }
-
-    function decreasePositionSwapType(Props memory props) internal pure returns (DecreasePositionSwapType) {
-        return props.numbers.decreasePositionSwapType;
-    }
-
-    function setDecreasePositionSwapType(Props memory props, DecreasePositionSwapType value) internal pure {
-        props.numbers.decreasePositionSwapType = value;
     }
 
     // @dev the order sizeDeltaUsd

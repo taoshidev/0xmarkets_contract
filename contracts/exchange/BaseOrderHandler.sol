@@ -3,12 +3,11 @@
 pragma solidity ^0.8.0;
 
 import "./BaseHandler.sol";
-
+import "../market/MarketUtils.sol";
 import "../market/Market.sol";
 import "../order/BaseOrderUtils.sol";
 import "../order/OrderVault.sol";
 import "../order/Order.sol";
-import "../swap/SwapHandler.sol";
 
 import "../referral/IReferralStorage.sol";
 
@@ -20,7 +19,6 @@ contract BaseOrderHandler is BaseHandler {
     using Array for uint256[];
 
     OrderVault public immutable orderVault;
-    SwapHandler public immutable swapHandler;
     IReferralStorage public immutable referralStorage;
 
     constructor(
@@ -29,11 +27,9 @@ contract BaseOrderHandler is BaseHandler {
         EventEmitter _eventEmitter,
         Oracle _oracle,
         OrderVault _orderVault,
-        SwapHandler _swapHandler,
         IReferralStorage _referralStorage
     ) BaseHandler(_roleStore, _dataStore, _eventEmitter, _oracle) {
         orderVault = _orderVault;
-        swapHandler = _swapHandler;
         referralStorage = _referralStorage;
     }
 
@@ -50,16 +46,11 @@ contract BaseOrderHandler is BaseHandler {
 
         params.key = key;
         params.order = order;
-        params.swapPathMarkets = MarketUtils.getSwapPathMarkets(
-            dataStore,
-            params.order.swapPath()
-        );
 
         params.contracts.dataStore = dataStore;
         params.contracts.eventEmitter = eventEmitter;
         params.contracts.orderVault = orderVault;
         params.contracts.oracle = oracle;
-        params.contracts.swapHandler = swapHandler;
         params.contracts.referralStorage = referralStorage;
 
         params.minOracleTimestamp = oracle.minTimestamp();

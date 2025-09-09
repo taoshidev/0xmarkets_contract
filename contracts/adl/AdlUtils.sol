@@ -145,8 +145,7 @@ library AdlUtils {
             CallbackUtils.getSavedCallbackContract(params.dataStore, params.account, params.market), // callbackContract
             address(0), // uiFeeReceiver
             params.market, // market
-            position.collateralToken(), // initialCollateralToken
-            new address[](0) // swapPath
+            position.collateralToken() // initialCollateralToken
         );
 
         // no slippage is set for this order, it may be preferrable for ADL orders
@@ -167,7 +166,6 @@ library AdlUtils {
         // using the realized profit
         Order.Numbers memory numbers = Order.Numbers(
             Order.OrderType.MarketDecrease, // orderType
-            Order.DecreasePositionSwapType.SwapPnlTokenToCollateralToken, // decreasePositionSwapType
             params.sizeDeltaUsd, // sizeDeltaUsd
             0, // initialCollateralDeltaAmount
             0, // triggerPrice

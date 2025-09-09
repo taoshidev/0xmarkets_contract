@@ -32,8 +32,6 @@ library ReaderUtils {
     using Order for Order.Props;
 
     struct VirtualInventory {
-        uint256 virtualPoolAmountForLongToken;
-        uint256 virtualPoolAmountForShortToken;
         int256 virtualInventoryForPositions;
     }
 
@@ -217,8 +215,7 @@ library ReaderUtils {
         DataStore dataStore,
         Market.Props memory market
     ) internal view returns (VirtualInventory memory) {
-        (, uint256 virtualPoolAmountForLongToken, uint256 virtualPoolAmountForShortToken) = MarketUtils
-            .getVirtualInventoryForSwaps(dataStore, market.marketToken);
+
         (, int256 virtualInventoryForPositions) = MarketUtils.getVirtualInventoryForPositions(
             dataStore,
             market.indexToken
@@ -226,8 +223,6 @@ library ReaderUtils {
 
         return
             VirtualInventory(
-                virtualPoolAmountForLongToken,
-                virtualPoolAmountForShortToken,
                 virtualInventoryForPositions
             );
     }

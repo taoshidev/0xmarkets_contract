@@ -386,7 +386,6 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
 
         allowedBaseKeys[Keys.IS_MARKET_DISABLED] = true;
 
-        allowedBaseKeys[Keys.MAX_SWAP_PATH_LENGTH] = true;
         allowedBaseKeys[Keys.MAX_CALLBACK_GAS_LIMIT] = true;
         allowedBaseKeys[Keys.REFUND_EXECUTION_FEE_GAS_LIMIT] = true;
 
@@ -449,7 +448,6 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
 
         allowedBaseKeys[Keys.POSITION_FEE_RECEIVER_FACTOR] = true;
         allowedBaseKeys[Keys.LIQUIDATION_FEE_RECEIVER_FACTOR] = true;
-        allowedBaseKeys[Keys.SWAP_FEE_RECEIVER_FACTOR] = true;
         allowedBaseKeys[Keys.BORROWING_FEE_RECEIVER_FACTOR] = true;
 
         allowedBaseKeys[Keys.ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1] = true;
@@ -469,10 +467,8 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         allowedBaseKeys[Keys.GLV_SHIFT_GAS_LIMIT] = true;
         allowedBaseKeys[Keys.GLV_PER_MARKET_GAS_LIMIT] = true;
         allowedBaseKeys[Keys.SHIFT_GAS_LIMIT] = true;
-        allowedBaseKeys[Keys.SINGLE_SWAP_GAS_LIMIT] = true;
         allowedBaseKeys[Keys.INCREASE_ORDER_GAS_LIMIT] = true;
         allowedBaseKeys[Keys.DECREASE_ORDER_GAS_LIMIT] = true;
-        allowedBaseKeys[Keys.SWAP_ORDER_GAS_LIMIT] = true;
         allowedBaseKeys[Keys.TOKEN_TRANSFER_GAS_LIMIT] = true;
         allowedBaseKeys[Keys.NATIVE_TOKEN_TRANSFER_GAS_LIMIT] = true;
 
@@ -483,7 +479,6 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
 
         allowedBaseKeys[Keys.VIRTUAL_TOKEN_ID] = true;
         allowedBaseKeys[Keys.VIRTUAL_MARKET_ID] = true;
-        allowedBaseKeys[Keys.VIRTUAL_INVENTORY_FOR_SWAPS] = true;
         allowedBaseKeys[Keys.VIRTUAL_INVENTORY_FOR_POSITIONS] = true;
 
         allowedBaseKeys[Keys.POSITION_IMPACT_FACTOR] = true;
@@ -494,12 +489,8 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         allowedBaseKeys[Keys.PRO_TRADER_TIER] = true;
         allowedBaseKeys[Keys.LIQUIDATION_FEE_FACTOR] = true;
 
-        allowedBaseKeys[Keys.SWAP_IMPACT_FACTOR] = true;
-        allowedBaseKeys[Keys.SWAP_IMPACT_EXPONENT_FACTOR] = true;
-        allowedBaseKeys[Keys.SWAP_FEE_FACTOR] = true;
         allowedBaseKeys[Keys.DEPOSIT_FEE_FACTOR] = true;
         allowedBaseKeys[Keys.WITHDRAWAL_FEE_FACTOR] = true;
-        allowedBaseKeys[Keys.ATOMIC_SWAP_FEE_FACTOR] = true;
         allowedBaseKeys[Keys.ATOMIC_WITHDRAWAL_FEE_FACTOR] = true;
 
         allowedBaseKeys[Keys.MAX_UI_FEE_FACTOR] = true;
@@ -682,8 +673,7 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         }
 
         if (
-            baseKey == Keys.POSITION_IMPACT_EXPONENT_FACTOR ||
-            baseKey == Keys.SWAP_IMPACT_EXPONENT_FACTOR
+            baseKey == Keys.POSITION_IMPACT_EXPONENT_FACTOR
         ) {
             // revert if value > 3
             if (value > 3 * Precision.FLOAT_PRECISION) {
@@ -705,12 +695,10 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         }
 
         if (
-            baseKey == Keys.SWAP_FEE_FACTOR ||
             baseKey == Keys.DEPOSIT_FEE_FACTOR ||
             baseKey == Keys.WITHDRAWAL_FEE_FACTOR ||
             baseKey == Keys.POSITION_FEE_FACTOR ||
             baseKey == Keys.MAX_UI_FEE_FACTOR ||
-            baseKey == Keys.ATOMIC_SWAP_FEE_FACTOR ||
             baseKey == Keys.ATOMIC_WITHDRAWAL_FEE_FACTOR ||
             baseKey == Keys.BUYBACK_MAX_PRICE_IMPACT_FACTOR
         ) {
@@ -736,7 +724,6 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
 
         if (
             baseKey == Keys.POSITION_FEE_RECEIVER_FACTOR ||
-            baseKey == Keys.SWAP_FEE_RECEIVER_FACTOR ||
             baseKey == Keys.BORROWING_FEE_RECEIVER_FACTOR ||
             baseKey == Keys.LIQUIDATION_FEE_RECEIVER_FACTOR ||
             baseKey == Keys.MAX_PNL_FACTOR ||

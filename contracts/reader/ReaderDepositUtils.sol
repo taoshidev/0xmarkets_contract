@@ -10,9 +10,6 @@ import "../position/Position.sol";
 import "../market/MarketUtils.sol";
 import "../market/Market.sol";
 
-import "../pricing/ISwapPricingUtils.sol";
-import "../pricing/SwapPricingUtils.sol";
-
 library ReaderDepositUtils {
     using SignedMath for int256;
     using SafeCast for uint256;
@@ -32,7 +29,6 @@ library ReaderDepositUtils {
         uint256 amount;
         int256 priceImpactUsd;
         address uiFeeReceiver;
-        ISwapPricingUtils.SwapPricingType swapPricingType;
     }
 
     function getDepositAmountOut(
@@ -41,25 +37,11 @@ library ReaderDepositUtils {
         MarketUtils.MarketPrices memory prices,
         uint256 longTokenAmount,
         uint256 shortTokenAmount,
-        address uiFeeReceiver,
-        ISwapPricingUtils.SwapPricingType swapPricingType,
-        bool includeVirtualInventoryImpact
+        address uiFeeReceiver
     ) external view returns (uint256) {
         uint256 longTokenUsd = longTokenAmount * prices.longTokenPrice.midPrice();
         uint256 shortTokenUsd = shortTokenAmount * prices.shortTokenPrice.midPrice();
-        int256 priceImpactUsd = SwapPricingUtils.getPriceImpactUsd(
-            SwapPricingUtils.GetPriceImpactUsdParams(
-                dataStore,
-                market,
-                market.longToken,
-                market.shortToken,
-                prices.longTokenPrice.midPrice(),
-                prices.shortTokenPrice.midPrice(),
-                longTokenUsd.toInt256(),
-                shortTokenUsd.toInt256(),
-                includeVirtualInventoryImpact
-            )
-        );
+        int256 priceImpactUsd = 0;
 
         uint256 mintAmount;
 
@@ -74,8 +56,7 @@ library ReaderDepositUtils {
                 prices.shortTokenPrice,
                 longTokenAmount,
                 Precision.mulDiv(priceImpactUsd, longTokenUsd, longTokenUsd + shortTokenUsd),
-                uiFeeReceiver,
-                swapPricingType
+                uiFeeReceiver
             )
         );
 
@@ -90,8 +71,7 @@ library ReaderDepositUtils {
                 prices.longTokenPrice,
                 shortTokenAmount,
                 Precision.mulDiv(priceImpactUsd, shortTokenUsd, longTokenUsd + shortTokenUsd),
-                uiFeeReceiver,
-                swapPricingType
+                uiFeeReceiver
             )
         );
 
@@ -101,17 +81,12 @@ library ReaderDepositUtils {
     function getDepositAmountOutForSingleToken(
         GetDepositAmountOutForSingleTokenParams memory params
     ) public view returns (uint256) {
-        SwapPricingUtils.SwapFees memory fees = SwapPricingUtils.getSwapFees(
-            params.dataStore,
-            params.market.marketToken,
-            params.amount,
-            params.priceImpactUsd > 0, // forPositiveImpact
-            params.uiFeeReceiver, // uiFeeReceiver
-            params.swapPricingType
-        );
+        uint256 depositFeeRate = params.dataStore.getUint(Keys.DEPOSIT_FEE_FACTOR);
+        uint256 feeAmount = (params.amount * depositFeeRate) / Precision.FLOAT_PRECISION;
+        uint256 amountAfterFees = params.amount - feeAmount;
 
         uint256 mintAmount;
-        uint256 amountIn = fees.amountAfterFees;
+        uint256 amountIn = amountAfterFees;
 
         MarketPoolValueInfo.Props memory poolValueInfo = MarketUtils.getPoolValueInfo(
             params.dataStore,
@@ -137,46 +112,6 @@ library ReaderDepositUtils {
 
         if (params.priceImpactUsd > 0 && marketTokensSupply == 0) {
             params.priceImpactUsd = 0;
-        }
-
-        if (params.priceImpactUsd > 0) {
-            (int256 positiveImpactAmount, uint256 cappedDiffUsd) = MarketUtils.getSwapImpactAmountWithCap(
-                params.dataStore,
-                params.market.marketToken,
-                params.tokenOut,
-                params.tokenOutPrice,
-                params.priceImpactUsd
-            );
-
-            mintAmount += MarketUtils.usdToMarketTokenAmount(
-                positiveImpactAmount.toUint256() * params.tokenOutPrice.max,
-                poolValue,
-                marketTokensSupply
-            );
-
-            if (cappedDiffUsd != 0) {
-                (int256 tokenInPriceImpactAmount, /* uint256 cappedDiffUsd */) = MarketUtils.getSwapImpactAmountWithCap(
-                    params.dataStore,
-                    params.market.marketToken,
-                    params.tokenIn,
-                    params.tokenInPrice,
-                    cappedDiffUsd.toInt256()
-                );
-
-                amountIn += tokenInPriceImpactAmount.toUint256();
-            }
-        }
-
-        if (params.priceImpactUsd < 0) {
-            (int256 negativeImpactAmount, /* uint256 cappedDiffUsd */) = MarketUtils.getSwapImpactAmountWithCap(
-                params.dataStore,
-                params.market.marketToken,
-                params.tokenIn,
-                params.tokenInPrice,
-                params.priceImpactUsd
-            );
-
-            amountIn -= (-negativeImpactAmount).toUint256();
         }
 
         mintAmount += MarketUtils.usdToMarketTokenAmount(

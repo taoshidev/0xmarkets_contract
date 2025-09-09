@@ -117,7 +117,6 @@ library MarketUtils {
 
     struct GetExpectedMinTokenBalanceCache {
         uint256 poolAmount;
-        uint256 swapImpactPoolAmount;
         uint256 claimableCollateralAmount;
         uint256 claimableFeeAmount;
         uint256 claimableUiFeeAmount;
@@ -186,19 +185,6 @@ library MarketUtils {
         }
 
         revert Errors.UnableToGetOppositeToken(inputToken, market.marketToken);
-    }
-
-    function validateSwapMarket(DataStore dataStore, address marketAddress) internal view {
-        Market.Props memory market = MarketStoreUtils.get(dataStore, marketAddress);
-        validateSwapMarket(dataStore, market);
-    }
-
-    function validateSwapMarket(DataStore dataStore, Market.Props memory market) internal view {
-        validateEnabledMarket(dataStore, market);
-
-        if (market.longToken == market.shortToken) {
-            revert Errors.InvalidSwapMarket(market.marketToken);
-        }
     }
 
     // @dev get the token price from the stored MarketPrices
@@ -741,36 +727,9 @@ library MarketUtils {
             "Invalid state, negative poolAmount"
         );
 
-        applyDeltaToVirtualInventoryForSwaps(
-            dataStore,
-            eventEmitter,
-            market,
-            token,
-            delta
-        );
-
         MarketEventUtils.emitPoolAmountUpdated(eventEmitter, market.marketToken, token, delta, nextValue);
 
         return nextValue;
-    }
-
-    function getAdjustedSwapImpactFactor(DataStore dataStore, address market, bool isPositive) internal view returns (uint256) {
-        (uint256 positiveImpactFactor, uint256 negativeImpactFactor) = getAdjustedSwapImpactFactors(dataStore, market);
-
-        return isPositive ? positiveImpactFactor : negativeImpactFactor;
-    }
-
-    function getAdjustedSwapImpactFactors(DataStore dataStore, address market) internal view returns (uint256, uint256) {
-        uint256 positiveImpactFactor = dataStore.getUint(Keys.swapImpactFactorKey(market, true));
-        uint256 negativeImpactFactor = dataStore.getUint(Keys.swapImpactFactorKey(market, false));
-
-        // if the positive impact factor is more than the negative impact factor, positions could be opened
-        // and closed immediately for a profit if the difference is sufficient to cover the position fees
-        if (positiveImpactFactor > negativeImpactFactor) {
-            positiveImpactFactor = negativeImpactFactor;
-        }
-
-        return (positiveImpactFactor, negativeImpactFactor);
     }
 
     function getAdjustedPositionImpactFactor(DataStore dataStore, address market, bool isPositive) internal view returns (uint256) {
@@ -835,38 +794,6 @@ library MarketUtils {
         return dataStore.getUint(Keys.positionImpactPoolAmountKey(market));
     }
 
-    // @dev get the swap impact pool amount
-    // @param dataStore DataStore
-    // @param market the market to check
-    // @param token the token to check
-    // @return the swap impact pool amount
-    function getSwapImpactPoolAmount(DataStore dataStore, address market, address token) internal view returns (uint256) {
-        return dataStore.getUint(Keys.swapImpactPoolAmountKey(market, token));
-    }
-
-    // @dev apply a delta to the swap impact pool
-    // @param dataStore DataStore
-    // @param eventEmitter EventEmitter
-    // @param market the market to apply to
-    // @param token the token to apply to
-    // @param delta the delta amount
-    function applyDeltaToSwapImpactPool(
-        DataStore dataStore,
-        EventEmitter eventEmitter,
-        address market,
-        address token,
-        int256 delta
-    ) internal returns (uint256) {
-        uint256 nextValue = dataStore.applyBoundedDeltaToUint(
-            Keys.swapImpactPoolAmountKey(market, token),
-            delta
-        );
-
-        MarketEventUtils.emitSwapImpactPoolAmountUpdated(eventEmitter, market, token, delta, nextValue);
-
-        return nextValue;
-    }
-
     // @dev apply a delta to the position impact pool
     // @param dataStore DataStore
     // @param eventEmitter EventEmitter
@@ -903,9 +830,6 @@ library MarketUtils {
         bool isLong,
         int256 delta
     ) internal returns (uint256) {
-        if (market.indexToken == address(0)) {
-            revert Errors.OpenInterestCannotBeUpdatedForSwapOnlyMarket(market.marketToken);
-        }
 
         uint256 nextValue = dataStore.applyDeltaToUint(
             Keys.openInterestKey(market.marketToken, collateralToken, isLong),
@@ -1599,72 +1523,6 @@ library MarketUtils {
         }
     }
 
-    // @dev update the swap impact pool amount, if it is a positive impact amount
-    // cap the impact amount to the amount available in the swap impact pool
-    // @param dataStore DataStore
-    // @param eventEmitter EventEmitter
-    // @param market the market to apply to
-    // @param token the token to apply to
-    // @param tokenPrice the price of the token
-    // @param priceImpactUsd the USD price impact
-    function applySwapImpactWithCap(
-        DataStore dataStore,
-        EventEmitter eventEmitter,
-        address market,
-        address token,
-        Price.Props memory tokenPrice,
-        int256 priceImpactUsd
-    ) internal returns (int256, uint256) {
-        (int256 impactAmount, uint256 cappedDiffUsd) = getSwapImpactAmountWithCap(
-            dataStore,
-            market,
-            token,
-            tokenPrice,
-            priceImpactUsd
-        );
-
-        // if there is a positive impact, the impact pool amount should be reduced
-        // if there is a negative impact, the impact pool amount should be increased
-        applyDeltaToSwapImpactPool(
-            dataStore,
-            eventEmitter,
-            market,
-            token,
-            -impactAmount
-        );
-
-        return (impactAmount, cappedDiffUsd);
-    }
-
-    function getSwapImpactAmountWithCap(
-        DataStore dataStore,
-        address market,
-        address token,
-        Price.Props memory tokenPrice,
-        int256 priceImpactUsd
-    ) internal view returns (int256, uint256) {
-        int256 impactAmount;
-        uint256 cappedDiffUsd;
-
-        if (priceImpactUsd > 0) {
-            // positive impact: minimize impactAmount, use tokenPrice.max
-            // round positive impactAmount down, this will be deducted from the swap impact pool for the user
-            impactAmount = priceImpactUsd / tokenPrice.max.toInt256();
-
-            int256 maxImpactAmount = getSwapImpactPoolAmount(dataStore, market, token).toInt256();
-            if (impactAmount > maxImpactAmount) {
-                cappedDiffUsd = (impactAmount - maxImpactAmount).toUint256() * tokenPrice.max;
-                impactAmount = maxImpactAmount;
-            }
-        } else {
-            // negative impact: maximize impactAmount, use tokenPrice.min
-            // round negative impactAmount up, this will be deducted from the user
-            impactAmount = Calc.roundUpMagnitudeDivision(priceImpactUsd, tokenPrice.min);
-        }
-
-        return (impactAmount, cappedDiffUsd);
-    }
-
     // @dev get the funding amount to be deducted or distributed
     //
     // @param latestFundingAmountPerSize the latest funding amount per size
@@ -1765,23 +1623,6 @@ library MarketUtils {
         return reservedUsd;
     }
 
-    // @dev get the virtual inventory for swaps
-    // @param dataStore DataStore
-    // @param market the market to check
-    // @return returns (has virtual inventory, virtual long token inventory, virtual short token inventory)
-    function getVirtualInventoryForSwaps(DataStore dataStore, address market) internal view returns (bool, uint256, uint256) {
-        bytes32 virtualMarketId = dataStore.getBytes32(Keys.virtualMarketIdKey(market));
-        if (virtualMarketId == bytes32(0)) {
-            return (false, 0, 0);
-        }
-
-        return (
-            true,
-            dataStore.getUint(Keys.virtualInventoryForSwapsKey(virtualMarketId, true)),
-            dataStore.getUint(Keys.virtualInventoryForSwapsKey(virtualMarketId, false))
-        );
-    }
-
     function getIsLongToken(Market.Props memory market, address token) internal pure returns (bool) {
         if (token != market.longToken && token != market.shortToken) {
             revert Errors.UnexpectedTokenForVirtualInventory(token, market.marketToken);
@@ -1800,35 +1641,6 @@ library MarketUtils {
         }
 
         return (true, dataStore.getInt(Keys.virtualInventoryForPositionsKey(virtualTokenId)));
-    }
-
-    // @dev update the virtual inventory for swaps
-    // @param dataStore DataStore
-    // @param marketAddress the market to update
-    // @param token the token to update
-    // @param delta the update amount
-    function applyDeltaToVirtualInventoryForSwaps(
-        DataStore dataStore,
-        EventEmitter eventEmitter,
-        Market.Props memory market,
-        address token,
-        int256 delta
-    ) internal returns (bool, uint256) {
-        bytes32 virtualMarketId = dataStore.getBytes32(Keys.virtualMarketIdKey(market.marketToken));
-        if (virtualMarketId == bytes32(0)) {
-            return (false, 0);
-        }
-
-        bool isLongToken = getIsLongToken(market, token);
-
-        uint256 nextValue = dataStore.applyBoundedDeltaToUint(
-            Keys.virtualInventoryForSwapsKey(virtualMarketId, isLongToken),
-            delta
-        );
-
-        MarketEventUtils.emitVirtualSwapInventoryUpdated(eventEmitter, market.marketToken, isLongToken, virtualMarketId, delta, nextValue);
-
-        return (true, nextValue);
     }
 
     // @dev update the virtual inventory for positions
@@ -2661,21 +2473,11 @@ library MarketUtils {
     // @param market the market to check
     function validatePositionMarket(DataStore dataStore, Market.Props memory market) internal view {
         validateEnabledMarket(dataStore, market);
-
-        if (isSwapOnlyMarket(market)) {
-            revert Errors.InvalidPositionMarket(market.marketToken);
-        }
     }
 
     function validatePositionMarket(DataStore dataStore, address marketAddress) internal view {
         Market.Props memory market = MarketStoreUtils.get(dataStore, marketAddress);
         validatePositionMarket(dataStore, market);
-    }
-
-    // @dev check if a market only supports swaps and not positions
-    // @param market the market to check
-    function isSwapOnlyMarket(Market.Props memory market) internal pure returns (bool) {
-        return market.indexToken == address(0);
     }
 
     // @dev check if the given token is a collateral token of the market
@@ -2701,37 +2503,6 @@ library MarketUtils {
         Market.Props memory market = MarketStoreUtils.get(dataStore, marketAddress);
         validateEnabledMarket(dataStore, market);
         return market;
-    }
-
-    function getSwapPathMarket(DataStore dataStore, address marketAddress) internal view returns (Market.Props memory) {
-        Market.Props memory market = MarketStoreUtils.get(dataStore, marketAddress);
-        validateSwapMarket(dataStore, market);
-        return market;
-    }
-
-    // @dev get a list of market values based on an input array of market addresses
-    // @param swapPath list of market addresses
-    function getSwapPathMarkets(DataStore dataStore, address[] memory swapPath) internal view returns (Market.Props[] memory) {
-        Market.Props[] memory markets = new Market.Props[](swapPath.length);
-
-        for (uint256 i; i < swapPath.length; i++) {
-            address marketAddress = swapPath[i];
-            markets[i] = getSwapPathMarket(dataStore, marketAddress);
-        }
-
-        return markets;
-    }
-
-    function validateSwapPath(DataStore dataStore, address[] memory swapPath) internal view {
-        uint256 maxSwapPathLength = dataStore.getUint(Keys.MAX_SWAP_PATH_LENGTH);
-        if (swapPath.length > maxSwapPathLength) {
-            revert Errors.MaxSwapPathLengthExceeded(swapPath.length, maxSwapPathLength);
-        }
-
-        for (uint256 i; i < swapPath.length; i++) {
-            address marketAddress = swapPath[i];
-            validateSwapMarket(dataStore, marketAddress);
-        }
     }
 
     // @dev validate that the pending pnl is below the allowed amount
@@ -2923,7 +2694,6 @@ library MarketUtils {
         // get the pool amount directly as MarketUtils.getPoolAmount will divide the amount by 2
         // for markets with the same long and short token
         cache.poolAmount = dataStore.getUint(Keys.poolAmountKey(market.marketToken, token));
-        cache.swapImpactPoolAmount = getSwapImpactPoolAmount(dataStore, market.marketToken, token);
         cache.claimableCollateralAmount = dataStore.getUint(Keys.claimableCollateralAmountKey(market.marketToken, token));
         cache.claimableFeeAmount = dataStore.getUint(Keys.claimableFeeAmountKey(market.marketToken, token));
         cache.claimableUiFeeAmount = dataStore.getUint(Keys.claimableUiFeeAmountKey(market.marketToken, token));
@@ -2935,7 +2705,6 @@ library MarketUtils {
         // those positions are updated
         return
             cache.poolAmount
-            + cache.swapImpactPoolAmount
             + cache.claimableCollateralAmount
             + cache.claimableFeeAmount
             + cache.claimableUiFeeAmount

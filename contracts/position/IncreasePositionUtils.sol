@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "../data/DataStore.sol";
 import "../event/EventEmitter.sol";
 
+import "../fee/FeeUtils.sol";
 import "../oracle/Oracle.sol";
 import "../pricing/PositionPricingUtils.sol";
 
