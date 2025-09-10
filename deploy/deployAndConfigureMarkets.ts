@@ -64,14 +64,14 @@ const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnviro
     // before virtual IDs are set
 
     // set virtual market id for swaps
-    const virtualMarketId = marketConfig.virtualMarketId;
-    if (virtualMarketId) {
-      await setBytes32IfDifferent(
-        keys.virtualMarketIdKey(marketToken),
-        virtualMarketId,
-        `virtual market id for market ${marketToken.toString()}`
-      );
-    }
+    // const virtualMarketId = marketConfig.virtualMarketId;
+    // if (virtualMarketId) {
+    //   await setBytes32IfDifferent(
+    //     keys.virtualMarketIdKey(marketToken),
+    //     virtualMarketId,
+    //     `virtual market id for market ${marketToken.toString()}`
+    //   );
+    // }
 
     // set virtual token id for perps
     const virtualTokenId = marketConfig.virtualTokenIdForIndexToken;

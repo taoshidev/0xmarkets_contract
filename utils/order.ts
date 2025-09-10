@@ -10,16 +10,15 @@ import { getCancellationReason, getErrorString } from "./error";
 import * as keys from "./keys";
 import { Contract } from "ethers";
 
+// Align with contracts/order/Order.sol enum
 export const OrderType = {
-  MarketSwap: 0,
-  LimitSwap: 1,
-  MarketIncrease: 2,
-  LimitIncrease: 3,
-  MarketDecrease: 4,
-  LimitDecrease: 5,
-  StopLossDecrease: 6,
-  Liquidation: 7,
-  StopIncrease: 8,
+  MarketIncrease: 0,
+  LimitIncrease: 1,
+  MarketDecrease: 2,
+  LimitDecrease: 3,
+  StopLossDecrease: 4,
+  Liquidation: 5,
+  StopIncrease: 6,
 };
 
 export const DecreasePositionSwapType = {
@@ -73,7 +72,7 @@ export async function createOrder(fixture, overrides) {
   const { orderVault, orderHandler, wnt } = fixture.contracts;
   const { wallet, user0 } = fixture.accounts;
 
-  const decreasePositionSwapType = overrides.decreasePositionSwapType || DecreasePositionSwapType.NoSwap;
+  // swaps are removed in MVP; ignore decreasePositionSwapType override
   const sender = overrides.sender || wallet;
   const account = overrides.account || user0;
   const receiver = overrides.receiver || account;
@@ -83,7 +82,7 @@ export async function createOrder(fixture, overrides) {
   const uiFeeReceiver = overrides.uiFeeReceiver || { address: ethers.constants.AddressZero };
   const sizeDeltaUsd = overrides.sizeDeltaUsd || "0";
   const initialCollateralDeltaAmount = overrides.initialCollateralDeltaAmount || "0";
-  const swapPath = overrides.swapPath || [];
+  // swaps are removed in MVP; ignore swapPath override
   const acceptablePrice = overrides.acceptablePrice || expandDecimals(5200, 12);
   const triggerPrice = overrides.triggerPrice || "0";
   const isLong = overrides.isLong === undefined ? true : overrides.isLong;
@@ -96,15 +95,7 @@ export async function createOrder(fixture, overrides) {
   const referralCode = overrides.referralCode || ethers.constants.HashZero;
   const validFromTime = overrides.validFromTime || 0;
 
-  if (
-    [
-      OrderType.MarketSwap,
-      OrderType.LimitSwap,
-      OrderType.MarketIncrease,
-      OrderType.LimitIncrease,
-      OrderType.StopIncrease,
-    ].includes(orderType)
-  ) {
+  if ([OrderType.MarketIncrease, OrderType.LimitIncrease, OrderType.StopIncrease].includes(orderType)) {
     await initialCollateralToken.mint(orderVault.address, initialCollateralDeltaAmount);
   }
 
@@ -118,7 +109,6 @@ export async function createOrder(fixture, overrides) {
       uiFeeReceiver: uiFeeReceiver.address,
       market: market.marketToken,
       initialCollateralToken: initialCollateralToken.address,
-      swapPath,
     },
     numbers: {
       sizeDeltaUsd,
@@ -131,7 +121,6 @@ export async function createOrder(fixture, overrides) {
       validFromTime,
     },
     orderType,
-    decreasePositionSwapType,
     isLong,
     shouldUnwrapNativeToken,
     autoCancel,

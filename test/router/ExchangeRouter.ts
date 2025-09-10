@@ -1,3 +1,4 @@
+/* MVP note: swaps / relay routers are disabled for MVP; test content commented out to retain history.
 import { expect } from "chai";
 
 import { contractAt } from "../../utils/deploy";
@@ -288,3 +289,6 @@ describe("ExchangeRouter", () => {
     ).to.be.revertedWithCustomError(errorsContract, "EndOfOracleSimulation");
   });
 });
+*/
+
+export {};

@@ -7,7 +7,6 @@ const constructorContracts = [
   "EventEmitter",
   "Oracle",
   "OrderVault",
-  "SwapHandler",
   "ReferralStorage",
 ];
 

@@ -1,3 +1,7 @@
+/*
+  MVP note: swaps are not supported; keep file for history but disable execution.
+  Original contents kept below for reference.
+
 import { grantRoleIfNotGranted } from "../utils/role";
 import { createDeployFunction } from "../utils/deploy";
 
@@ -20,3 +24,6 @@ func.skip = async () => {
 };
 
 export default func;
+*/
+
+export {}; // intentionally empty to disable this deploy step

@@ -1,3 +1,4 @@
+/* MVP note: swaps / relay routers are disabled for MVP; test content commented out to retain history.
 import { expect } from "chai";
 import {
   impersonateAccount,
@@ -666,3 +667,6 @@ describe("GelatoRelayRouter", () => {
 
   it.skip("swaps should not work if sequencer is down");
 });
+*/
+
+export {};

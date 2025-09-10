@@ -1,3 +1,7 @@
+/*
+  MVP note: swaps are not supported; keep file for history but disable execution.
+  Original contents are commented out below.
+
 import { MarketConfig } from "../config/markets";
 import { bigNumberify } from "../utils/math";
 import * as keys from "../utils/keys";
@@ -77,3 +81,6 @@ func.id = "fixVirtualInventoryForSwaps";
 func.tags = ["FixVirtualInventoryForSwaps"];
 
 export default func;
+*/
+
+export {};
