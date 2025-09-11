@@ -830,3 +830,41 @@ To print test coverage:
 ```sh
 npx hardhat coverage
 ```
+## Quick Start (5‑Minute)
+
+Run a minimal local happy path (deploy → mint USDC → deposit → withdraw):
+
+- Prerequisites: Node.js 18.x (recommended), Yarn or NPM
+- Install deps: `yarn`
+- Run: `yarn happy`
+
+What it does:
+
+- Deploys contracts and a mock USDC (6 decimals)
+- Mints USDC to a test wallet
+- Deposits USDC into the single‑token ETH/USDC/USDC market
+- Withdraws USDC and prints before/after balances
+
+Example output (abridged):
+
+```
+=== DEX-35 Happy Path (Local) ===
+Deployer: 0x...
+User0: 0x...
+USDC: 0x...
+DepositHandler: 0x...
+WithdrawalHandler: 0x...
+DepositVault: 0x...
+WithdrawalVault: 0x...
+SingleTokenMarket (ETH/USDC/USDC): 0x...
+USDC balance (user0) after mint: 10000000000
+Creating deposit...
+Executing deposit...
+MarketToken balance (user0) after deposit: 1000000000000000000000
+Creating withdrawal...
+Executing withdrawal...
+USDC balance (user0) after withdrawal: 10500000000
+=== Happy Path complete ===
+```
+
+Script location: `scripts/happyPath.ts`
