@@ -25,3 +25,5 @@ deployments.txt
 .cursorignore*
 
 .idea
+
+yarn.lock
