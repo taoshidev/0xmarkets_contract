@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>README.md</title>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+    
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+html,footer,header{
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Custom MD PDF CSS
+ */
+html,footer,header{
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+
+ }
+body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+<link rel="stylesheet" href="file:///Users/tonyle/Developer/GTV-Taoshi/0xmarkets_contract/R%3A%5C2.Travail%5C1.Enseignement%5CCours%5C_1.Outils%5C2.Developpement%5C1.SCSS%5Cmain.css" type="text/css"><link rel="stylesheet" href="file:///Users/tonyle/Developer/GTV-Taoshi/0xmarkets_contract/D%3A%5Crdaros%5CCours%5C_1.Outils%5C2.Developpement%5C1.SCSS%5Cmain.css" type="text/css">
+</head>
+
+<body>
+    <h1 id="gmx-synthetics">GMX Synthetics</h1>
+<p>Contracts for GMX Synthetics.</p>
+<h1 id="general-overview">General Overview</h1>
+<p>This section provides a general overview of how the system works.</p>
+<p>For a Technical Overview, please see the section further below.</p>
+<h2 id="markets">Markets</h2>
+<p>Markets support both spot and perp trading, they are created by specifying a long collateral token, short collateral token and index token.</p>
+<p>Examples:</p>
+<ul>
+<li>ETH/USD market with long collateral as ETH, short collateral as a stablecoin, index token as ETH</li>
+<li>BTC/USD market with long collateral as WBTC, short collateral as a stablecoin, index token as BTC</li>
+<li>SOL/USD market with long collateral as ETH, short collateral as a stablecoin, index token as SOL</li>
+</ul>
+<p>Liquidity providers can deposit either the long or short collateral token or both to mint liquidity tokens.</p>
+<p>The long collateral token is used to back long positions, while the short collateral token is used to back short positions.</p>
+<p>Liquidity providers take on the profits and losses of traders for the market that they provide liquidity for.</p>
+<p>Having separate markets allows for risk isolation, liquidity providers are only exposed to the markets that they deposit into, this potentially allow for permissionless listings.</p>
+<p>Traders can use either the long or short token as collateral for the market.</p>
+<h2 id="features">Features</h2>
+<p>The contracts support the following main features:</p>
+<ul>
+<li>Deposit and withdrawal of liquidity</li>
+<li>Spot Trading (Swaps)</li>
+<li>Leverage Trading (Perps, Long / Short)</li>
+<li>Market orders, limit orders, stop-loss, take-profit orders</li>
+</ul>
+<h2 id="oracle-system">Oracle System</h2>
+<p>To avoid front-running issues, most actions require two steps to execute:</p>
+<ul>
+<li>User sends transaction with request details, e.g. deposit / withdraw liquidity, swap, increase / decrease position</li>
+<li>Keepers listen for the transactions, include the prices for the request then send a transaction to execute the request</li>
+</ul>
+<p>Prices are provided by an off-chain oracle system, which continually signs prices based on the time the prices were queried.</p>
+<p>Both a minimum price and a maximum price is signed, this allows information about bid-ask spreads to be included.</p>
+<p>Prices stored within the Oracle contract represent the price of one unit of the token using a value with 30 decimals of precision.</p>
+<p>Representing the prices in this way allows for conversions between token amounts and fiat values to be simplified, e.g. to calculate the fiat value of a given number of tokens the calculation would just be: token amount * oracle price, to calculate the token amount for a fiat value it would be: fiat value / oracle price.</p>
+<h2 id="fees-and-pricing">Fees and Pricing</h2>
+<p>Funding fees and price impact keep longs / shorts balanced while reducing the risk of price manipulation.</p>
+<ul>
+<li>Funding fees: if there is an imbalance of longs / shorts, the larger side pays a funding fee to the smaller side</li>
+<li>Borrowing fees: to avoid a user opening equal longs / shorts and unnecessarily taking up capacity</li>
+<li>Price impact: this allows the contracts to simulate a price impact similar to if the trader were trading using an aggregator for the reference exchanges, there is a negative price impact if an action reduces balance, and a positive price impact if an action improves balance</li>
+</ul>
+<h2 id="keepers">Keepers</h2>
+<p>There are a few keepers and nodes in the system:</p>
+<ul>
+<li>Oracle keepers: pull prices from reference exchanges, sign the information and publish it to Archive nodes</li>
+<li>Archive nodes: receives oracle keeper signatures and allows querying of this information</li>
+<li>Order keepers: checks for deposit / withdraw liquidity requests, order requests, bundles the signed oracle prices with the requests and executes them</li>
+</ul>
+<h2 id="structure">Structure</h2>
+<p>There are a few main types of contracts:</p>
+<ul>
+<li>Bank contracts which hold funds</li>
+<li>Data storage which stores data</li>
+<li>*storeUtils utils to serialize, store and retrieve data for structs</li>
+<li>Logic contracts which do not hold funds and do not have internal state</li>
+<li>*eventUtils utils to emit events</li>
+</ul>
+<p>The contracts are separated into these types to allow for gradual upgradeability.</p>
+<p>Majority of data is stored using the DataStore contract.</p>
+<p>*storeUtils contracts store struct data using the DataStore, this allows new keys to be added to structs.</p>
+<p>EnumberableSets are used to allow order lists and position lists to be easily queried by interfaces or keepers, this is used over indexers as there may be a lag for indexers to sync the latest block. Having the lists stored directly in the contract also helps to ensure that accurate data can be retrieved and verified when needed.</p>
+<p>*eventUtils contracts emit events using the event emitter, the events are generalized to allow new key-values to be added to events without requiring an update of ABIs.</p>
+<h2 id="glv">GLV</h2>
+<p>Short for GMX Liquidity Vault: a wrapper of multiple markets with the same long and short tokens. Liquidity is automatically rebalanced between underlying markets based on markets utilisation.</p>
+<h1 id="technical-overview">Technical Overview</h1>
+<p>This section provides a technical description of the contracts.</p>
+<h2 id="exchange-contracts">Exchange Contracts</h2>
+<ul>
+<li>Router: approve token spending using this contract</li>
+<li>ExchangeRouter: create requests for deposits, withdrawals, orders, tokens are transferred using the Router</li>
+<li>/exchange contracts: execute user requests</li>
+</ul>
+<h2 id="markets">Markets</h2>
+<p>Markets are created using <code>MarketFactory.createMarket</code>, this creates a MarketToken and stores a Market.Props struct in the MarketStore.</p>
+<p>The MarketToken is used to keep track of liquidity providers share of the market pool and to store the tokens for each market.</p>
+<p>At any point in time, the price of a MarketToken is <code>(worth of market pool) / MarketToken.totalSupply()</code>, the function <code>MarketUtils.getMarketTokenPrice</code> can be used to retrieve this value.</p>
+<p>The worth of the market pool is the sum of</p>
+<ul>
+<li>worth of all tokens deposited into the pool</li>
+<li>total pending PnL of all open positions</li>
+<li>total pending borrow fees of all open positions</li>
+</ul>
+<h2 id="deposits">Deposits</h2>
+<p>Deposits add long / short tokens to the market's pool and mints MarketTokens to the depositor.</p>
+<p>Requests for deposits are created by calling ExchangeRouter.createDeposit, specifying:</p>
+<ul>
+<li>the market to deposit into</li>
+<li>amount of long tokens to deposit</li>
+<li>amount of short tokens to deposit</li>
+</ul>
+<p>Deposit requests are executed using DepositHandler.executeDeposit, if the deposit was created at timestamp <code>n</code>, it should be executed with the oracle prices after timestamp <code>n</code>.</p>
+<p>The amount of MarketTokens to be minted, before fees and price impact, is calculated as <code>(worth of tokens deposited) / (worth of market pool) * MarketToken.totalSupply()</code>.</p>
+<h2 id="withdrawals">Withdrawals</h2>
+<p>Withdrawals burn MarketTokens in exchange for the long / short tokens of a market's pool.</p>
+<p>Requests for withdrawals are created by calling ExchangeRouter.createWithdrawal, specifying:</p>
+<ul>
+<li>the market to withdraw from</li>
+<li>the number of market tokens to burn for long tokens</li>
+<li>the number of market tokens to burn for short tokens</li>
+</ul>
+<p>Withdrawal requests are executed using WithdrawalHandler.executeWithdrawal, if the withdrawal was created at timestamp <code>n</code>, it should be executed with the oracle prices after timestamp <code>n</code>.</p>
+<p>The amount of long or short tokens to be redeemed, before fees and price impact, is calculated as <code>(worth of market tokens) / (long / short token price)</code>.</p>
+<h2 id="market-increase">Market Increase</h2>
+<p>Open or increase a long / short perp position.</p>
+<p>Market increase order requests are created by calling ExchangeRouter.createOrder, specifying:</p>
+<ul>
+<li>the initial collateral token</li>
+<li>the array of markets to swap through to get the actual collateral token</li>
+<li>the amount to increase the position by</li>
+<li>whether it is a long or short position</li>
+</ul>
+<p>Market increase order requests are executed using OrderHandler.executeOrder, if the order was created at timestamp <code>n</code>, it should be executed with the oracle prices after timestamp <code>n</code>.</p>
+<h2 id="limit-increase">Limit Increase</h2>
+<p>Passive increase position orders that should be executed when the index token price matches the acceptable price specified by the user.</p>
+<p>Long position example: if the current index token price is $5000, a limit increase order can be created with acceptable price as $4990, the order can be executed when the index token price is &lt;= $4990.</p>
+<p>Short position example: if the current index token price is $5000, a limit increase order can be created with acceptable price as $5010, the order can be executed when the index token price is &gt;= $5010.</p>
+<p>Limit increase order requests are executed using OrderHandler.executeOrder, if the order was created at timestamp <code>n</code>, it should be executed with the oracle prices after timestamp <code>n</code>.</p>
+<h2 id="market-decrease">Market Decrease</h2>
+<p>Close or decrease a long / short perp position.</p>
+<p>Market decrease order requests are created by calling ExchangeRouter.createOrder, specifying:</p>
+<ul>
+<li>the initial collateral token</li>
+<li>the array of markets to swap through for the actual output token</li>
+<li>the amount to decrease the position by</li>
+</ul>
+<p>Market decrease order requests are executed using OrderHandler.executeOrder, if the order was created at timestamp <code>n</code>, it should be executed with the oracle prices after timestamp <code>n</code>.</p>
+<h2 id="limit-decrease">Limit Decrease</h2>
+<p>Passive decrease position orders that should be executed when the index token price matches the acceptable price specified by the user.</p>
+<p>Long position example: if the current index token price is $5000, a limit decrease order can be created with acceptable price as $5010, the order can be executed when the index token price is &gt;= $5010.</p>
+<p>Short position example: if the current index token price is $5000, a limit decrease order can be created with acceptable price as $4990, the order can be executed when the index token price is &lt;= $4990.</p>
+<p>Limit decrease order requests are executed using OrderHandler.executeOrder, if the order was created at timestamp <code>n</code>, it should be executed with the oracle prices after timestamp <code>n</code>.</p>
+<h2 id="stop-loss-decrease">Stop-Loss Decrease</h2>
+<p>Passive decrease position orders that should be executed when the index token price crosses the acceptable price specified by the user.</p>
+<p>Long position example: if the current index token price is $5000, a stop-loss decrease order can be created with acceptable price as $4990, the order can be executed when the index token price is &lt;= $4990.</p>
+<p>Short position example: if the current index token price is $5000, a stop-loss decrease order can be created with acceptable price as $5010, the order can be executed when the index token price is &gt;= $5010.</p>
+<p>Stop-loss decrease order requests are executed using OrderHandler.executeOrder, if the order was created at timestamp <code>n</code>, it should be executed with the oracle prices after timestamp <code>n</code>.</p>
+<h2 id="example-1">Example 1</h2>
+<p>The price of ETH is 5000, and ETH has 18 decimals.</p>
+<p>The price of one unit of ETH is <code>5000 / (10 ^ 18), 5 * (10 ^ -15)</code>.</p>
+<p>To handle the decimals, multiply the value by <code>(10 ^ 30)</code>.</p>
+<p>Price would be stored as <code>5000 / (10 ^ 18) * (10 ^ 30) =&gt; 5000 * (10 ^ 12)</code>.</p>
+<p>For gas optimization, these prices are sent to the oracle in the form of a uint8 decimal multiplier value and uint32 price value.</p>
+<p>If the decimal multiplier value is set to 8, the uint32 value would be <code>5000 * (10 ^ 12) / (10 ^ 8) =&gt; 5000 * (10 ^ 4)</code>.</p>
+<p>With this config, ETH prices can have a maximum value of <code>(2 ^ 32) / (10 ^ 4) =&gt; 4,294,967,296 / (10 ^ 4) =&gt; 429,496.7296</code> with 4 decimals of precision.</p>
+<h2 id="example-2">Example 2</h2>
+<p>The price of BTC is 60,000, and BTC has 8 decimals.</p>
+<p>The price of one unit of BTC is <code>60,000 / (10 ^ 8), 6 * (10 ^ -4)</code>.</p>
+<p>Price would be stored as <code>60,000 / (10 ^ 8) * (10 ^ 30) =&gt; 6 * (10 ^ 26) =&gt; 60,000 * (10 ^ 22)</code>.</p>
+<p>BTC prices maximum value: <code>(2 ^ 64) / (10 ^ 2) =&gt; 4,294,967,296 / (10 ^ 2) =&gt; 42,949,672.96</code>.</p>
+<p>Decimals of precision: 2.</p>
+<h2 id="example-3">Example 3</h2>
+<p>The price of USDC is 1, and USDC has 6 decimals.</p>
+<p>The price of one unit of USDC is <code>1 / (10 ^ 6), 1 * (10 ^ -6)</code>.</p>
+<p>Price would be stored as <code>1 / (10 ^ 6) * (10 ^ 30) =&gt; 1 * (10 ^ 24)</code>.</p>
+<p>USDC prices maximum value: <code>(2 ^ 64) / (10 ^ 6) =&gt; 4,294,967,296 / (10 ^ 6) =&gt; 4294.967296</code>.</p>
+<p>Decimals of precision: 6.</p>
+<h2 id="example-4">Example 4</h2>
+<p>The price of DG is 0.00000001, and DG has 18 decimals.</p>
+<p>The price of one unit of DG is <code>0.00000001 / (10 ^ 18), 1 * (10 ^ -26)</code>.</p>
+<p>Price would be stored as <code>1 * (10 ^ -26) * (10 ^ 30) =&gt; 1 * (10 ^ 3)</code>.</p>
+<p>DG prices maximum value: <code>(2 ^ 64) / (10 ^ 11) =&gt; 4,294,967,296 / (10 ^ 11) =&gt; 0.04294967296</code>.</p>
+<p>Decimals of precision: 11.</p>
+<h2 id="decimal-multiplier">Decimal Multiplier</h2>
+<p>The formula to calculate what the decimal multiplier value should be set to:</p>
+<p>Decimals: 30 - (token decimals) - (number of decimals desired for precision)</p>
+<ul>
+<li>ETH: 30 - 18 - 4 =&gt; 8</li>
+<li>BTC: 30 - 8 - 2 =&gt; 20</li>
+<li>USDC: 30 - 6 - 6 =&gt; 18</li>
+<li>DG: 30 - 18 - 11 =&gt; 1</li>
+</ul>
+<h2 id="for-data-stream-feeds">For Data Stream Feeds</h2>
+<p>Example calculation for WNT:</p>
+<ul>
+<li>The number of data stream decimals: 8</li>
+<li>The number of token decimals for WNT: 18</li>
+<li>dataStreamPrice: price * (10 ^ 8)</li>
+<li>The price per unit of token: <code>dataStreamPrice / (10 ^ 8) / (10 ^ 18) * (10 ^ 30)</code></li>
+<li>e.g. <code>(5000 * (10 ^ 8)) / (10 ^ 8) / (10 ^ 18) * (10 ^ 30) = 5000 * (10 ^ 12)</code></li>
+<li>The stored oracle price is: <code>dataStreamPrice * multiplier / (10 ^ 30)</code></li>
+<li>In this case the multiplier should be (10 ^ 34)</li>
+<li>e.g. <code>(5000 * (10 ^ 8)) * (10 ^ 34) / (10 ^ 30) = 5000 * (10 ^ 12)</code></li>
+</ul>
+<p>Example calculation for WBTC:</p>
+<ul>
+<li>The number of data stream decimals: 8</li>
+<li>The number of token decimals for WBTC: 8</li>
+<li>dataStreamPrice: price * (10 ^ 8)</li>
+<li>the price per unit of token: <code>dataStreamPrice / (10 ^ 8) / (10 ^ 8) * (10 ^ 30)</code></li>
+<li>e.g. <code>(50,000 * (10 ^ 8)) / (10 ^ 8) / (10 ^ 8) * (10 ^ 30) = 50,000 * (10 ^ 22)</code></li>
+<li>the stored oracle price is: <code>dataStreamPrice * multiplier / (10 ^ 30)</code></li>
+<li>in this case the multiplier should be (10 ^ 44)</li>
+<li>e.g. <code>(50,000 * (10 ^ 8)) * (10 ^ 44) / (10 ^ 30) = 50,000 * (10 ^ 22)</code></li>
+</ul>
+<p>The formula for the multiplier is: <code>10 ^ (60 - dataStreamDecimals - tokenDecimals)</code></p>
+<h1 id="funding-fees">Funding Fees</h1>
+<p>Funding fees incentivise the balancing of long and short positions, the side with the larger open interest pays a funding fee to the side with the smaller open interest.</p>
+<p>Funding fees for the larger side is calculated as <code>(funding factor per second) * (open interest imbalance) ^ (funding exponent factor) / (total open interest)</code>.</p>
+<p>For example if the funding factor per second is 1 / 50,000, and the funding exponent factor is 1, and the long open interest is $150,000 and the short open interest is $50,000 then the funding fee per second for longs would be <code>(1 / 50,000) * 100,000 / 200,000 =&gt; 0.00001 =&gt; 0.001%</code>.</p>
+<p>The funding fee per second for shorts would be <code>-0.00001 * 150,000 / 50,000 =&gt; 0.00003 =&gt; -0.003%</code>.</p>
+<p>It is also possible to set a fundingIncreaseFactorPerSecond value, this would result in the following funding logic:</p>
+<ul>
+<li>The <code>longShortImbalance</code> is calculated as <code>[abs(longOpenInterest - shortOpenInterest) / totalOpenInterest] ^ fundingExponentFactor</code></li>
+<li>If the current <code>longShortImbalance</code> is more than the <code>thresholdForStableFunding</code>, then the funding rate will increase by <code>longShortImbalance * fundingIncreaseFactorPerSecond</code></li>
+<li>If the current <code>longShortImbalance</code> is more than <code>thresholdForDecreaseFunding</code> and less than <code>thresholdForStableFunding</code> and the skew is in the same direction as the funding, then the funding rate will not change</li>
+<li>If the current <code>longShortImbalance</code> is less than <code>thresholdForDecreaseFunding</code> and the skew is in the same direction as the funding, then the funding rate will decrease by <code>fundingDecreaseFactorPerSecond</code></li>
+</ul>
+<h2 id="examples">Examples</h2>
+<h3 id="example-1">Example 1</h3>
+<ul>
+<li>thresholdForDecreaseFunding is 3%</li>
+<li>thresholdForStableFunding is 5%</li>
+<li>fundingIncreaseFactorPerSecond is 0.0001%</li>
+<li>fundingDecreaseFactorPerSecond is 0.000002%</li>
+<li>durationInSeconds is 600 seconds</li>
+<li>longs are paying shorts funding</li>
+<li>there are more longs than shorts</li>
+<li>longShortImbalance is 6%</li>
+</ul>
+<p>Since longShortImbalance &gt; thresholdForStableFunding, savedFundingFactorPerSecond should increase by <code>0.0001% * 6% * 600 = 0.0036%</code></p>
+<h3 id="example-2">Example 2</h3>
+<ul>
+<li>thresholdForDecreaseFunding is 3%</li>
+<li>thresholdForStableFunding is 5%</li>
+<li>fundingIncreaseFactorPerSecond is 0.0001%</li>
+<li>fundingDecreaseFactorPerSecond is 0.000002%</li>
+<li>durationInSeconds is 600 seconds</li>
+<li>longs are paying shorts funding</li>
+<li>there are more longs than shorts</li>
+<li>longShortImbalance is 4%</li>
+</ul>
+<p>Since longs are already paying shorts, the skew is the same, and the longShortImbalance &lt; thresholdForStableFunding, savedFundingFactorPerSecond should not change</p>
+<h3 id="example-3">Example 3</h3>
+<ul>
+<li>thresholdForDecreaseFunding is 3%</li>
+<li>thresholdForStableFunding is 5%</li>
+<li>fundingIncreaseFactorPerSecond is 0.0001%</li>
+<li>fundingDecreaseFactorPerSecond is 0.000002%</li>
+<li>durationInSeconds is 600 seconds</li>
+<li>longs are paying shorts funding</li>
+<li>there are more longs than shorts</li>
+<li>longShortImbalance is 2%</li>
+</ul>
+<p>Since longShortImbalance &lt; thresholdForDecreaseFunding, savedFundingFactorPerSecond should decrease by <code>0.000002% * 600 = 0.0012%</code></p>
+<h3 id="example-4">Example 4</h3>
+<ul>
+<li>thresholdForDecreaseFunding is 3%</li>
+<li>thresholdForStableFunding is 5%</li>
+<li>fundingIncreaseFactorPerSecond is 0.0001%</li>
+<li>fundingDecreaseFactorPerSecond is 0.000002%</li>
+<li>durationInSeconds is 600 seconds</li>
+<li>longs are paying shorts funding</li>
+<li>there are more shorts than longs</li>
+<li>longShortImbalance is 1%</li>
+</ul>
+<p>Since the skew is in the other direction, savedFundingFactorPerSecond should decrease by <code>0.0001% * 1% * 600 = 0.0006%</code></p>
+<p>Note that there are possible ways to game the funding fees, the funding factors should be adjusted to minimize this possibility:</p>
+<ul>
+<li>
+<p>If longOpenInterest &gt; shortOpenInterest and longShortImbalance is within thresholdForStableFunding, a user holding a short position could open a long position to increase the longShortImbalance and attempt to cause the funding fee to increase. In an active market, it should be difficult to predict when an opposing short position would be opened by someone else to earn the increased funding fee which should make this gaming difficult, the funding factors can also be adjusted to help minimize the benefit of this gaming.</p>
+</li>
+<li>
+<p>If longOpenInterest &gt; shortOpenInterest and longShortImbalance &gt; thresholdForStableFunding, a trader holding a long position could make multiple small trades during this time to ensure that the funding factor is continually updated instead of a larger value being used for the entirety of the duration, this should minimize the funding fee for long positions but should not decrease the funding fee below the expected rates.</p>
+</li>
+</ul>
+<h1 id="borrowing-fees">Borrowing Fees</h1>
+<p>There is a borrowing fee paid to liquidity providers, this helps prevent users from opening both long and short positions to take up pool capacity without paying any fees.</p>
+<p>Borrowing fees can use a curve model or kink model.</p>
+<p>To use the curve model, the keys to configure would be <code>BORROWING_FACTOR</code> and <code>BORROWING_EXPONENT_FACTOR</code>, the borrowing factor per second would be calculated as:</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// reservedUsd is the total USD value reserved for positions</span>
+reservedUsd = MarketUtils.getReservedUsd(...)
+
+<span class="hljs-comment">// poolUsd is the USD value of the pool excluding pending trader PnL</span>
+poolUsd = MarketUtils.getPoolUsdWithoutPnl(...)
+
+<span class="hljs-comment">// reservedUsdAfterExponent is the reservedUsd after applying the borrowingExponentFactor for the market</span>
+
+reservedUsdAfterExponent = applyExponentFactor(reservedUsd, borrowingExponentFactor)
+
+borrowingFactorPerSecond = borrowingFactor * reservedUsdAfterExponent / poolUsd
+</div></code></pre>
+<p>To use the kink model, the keys to configure would be <code>OPTIMAL_USAGE_FACTOR</code>, <code>BASE_BORROWING_FACTOR</code> and <code>ABOVE_OPTIMAL_USAGE_BORROWING_FACTOR</code>, the borrowing factor per second would be calculated as:</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// usageFactor is the ratio of value reserved for positions to available value that can be reserved</span>
+usageFactor = MarketUtils.getUsageFactor(...)
+
+borrowingFactorPerSecond = baseBorrowingFactor * usageFactor
+
+<span class="hljs-keyword">if</span> (usageFactor &gt; optimalUsageFactor) {
+  diff = usageFactor - optimalUsageFactor
+  additionalBorrowingFactorPerSecond = aboveOptimalUsageBorrowingFactor - baseBorrowingFactor
+
+  borrowingFactorPerSecond += additionalBorrowingFactorPerSecond * diff / (Precision.FLOAT_PRECISION - optimalUsageFactor)
+}
+</div></code></pre>
+<p>There is also an option to set a skipBorrowingFeeForSmallerSide flag, this would result in the borrowing fee for the smaller side being set to zero. For example, if there are more longs than shorts and skipBorrowingFeeForSmallerSide is true, then the borrowing fee for shorts would be zero.</p>
+<h2 id="price-impact">Price Impact</h2>
+<p>The code for price impact can be found in the <code>/pricing</code> contracts.</p>
+<p>Price impact is calculated as:</p>
+<pre class="hljs"><code><div>(initial USD difference) ^ (price impact exponent) * (price impact factor) - (next USD difference) ^ (price impact exponent) * (price impact factor)
+</div></code></pre>
+<p>For swaps, imbalance is calculated as the difference in the worth of the long tokens and short tokens.</p>
+<p>For example:</p>
+<ul>
+<li>A pool has 10 long tokens, each long token is worth $5000</li>
+<li>The pool also has 50,000 short tokens, each short token is worth $1</li>
+<li>The <code>price impact exponent</code> is set to 2 and <code>price impact factor</code> is set to <code>0.01 / 50,000</code></li>
+<li>The pool is equally balanced with $50,000 of long tokens and $50,000 of short tokens</li>
+<li>If a user deposits 10 long tokens, the pool would now have $100,000 of long tokens and $50,000 of short tokens</li>
+<li>The change in imbalance would be from $0 to -$50,000</li>
+<li>There would be negative price impact charged on the user's deposit, calculated as <code>0 ^ 2 * (0.01 / 50,000) - 50,000 ^ 2 * (0.01 / 50,000) =&gt; -$500</code></li>
+<li>If the user now withdraws 5 long tokens, the balance would change from -$50,000 to -$25,000, a net change of +$25,000</li>
+<li>There would be a positive price impact rebated to the user in the form of additional long tokens, calculated as <code>50,000 ^ 2 * (0.01 / 50,000) - 25,000 ^ 2 * (0.01 / 50,000) =&gt; $375</code></li>
+</ul>
+<p>For position actions (increase / decrease position), imbalance is calculated as the difference in the long and short open interest.</p>
+<p><code>price impact exponents</code> and <code>price impact factors</code> are configured per market and can differ for spot and position actions.</p>
+<p>Note that this calculation is the price impact for a user's trade not the price impact on the pool. For example, a user's trade may have a 0.25% price impact, the next trade for a very small amount may have a 0.5% price impact.</p>
+<p>The purpose of the price impact is to:</p>
+<ul>
+<li>Incentivise balance of tokens in pools</li>
+<li>Incentivise balance of longs / shorts</li>
+<li>Reduce risk of price manipulation</li>
+</ul>
+<p>Since the contracts use an oracle price which would be an average or median price of multiple reference exchanges. Without a price impact, it may be profitable to manipulate the prices on reference exchanges while executing orders on the contracts.</p>
+<p>This risk will also be present if the positive and negative price impact values are similar, for that reason the positive price impact should be set to a low value in times of volatility or irregular price movements.</p>
+<p>For the price impact on position increases / decreases, if negative price impact is deducted as collateral from the position, this could lead to the position having a different leverage from what the user intended, so instead of deducting collateral the position's entry / exit price is adjusted based on the price impact.</p>
+<p>For example:</p>
+<ul>
+<li>The oracle price of the index token is $5000</li>
+<li>A user opens a long position of size $50,000 with a negative price impact of 0.1%</li>
+<li>The user's position size is in USD is $50,000 and the size in tokens is (50,000 / 5000) * (100 - 0.1)% =&gt; 9.99</li>
+<li>This gives the position an entry price of 50,000 / 9.99 =&gt; ~$5005</li>
+<li>The negative price impact is tracked as a number of index tokens in the pool</li>
+<li>In this case there would be 0.01 index tokens in the position impact pool</li>
+<li>The pending PnL of the user at this point would be (50,000 - 9.99 * 5000) =&gt; $50</li>
+<li>The tokens in the position impact pool should be accounted for when calculating the pool value to offset this pending PnL</li>
+<li>The net impact on the pool is zero, +$50 from the pending negative PnL due to price impact and -$50 from the 0.01 index tokens in the position impact pool worth $50</li>
+<li>If the user closes the position at a negative price impact of 0.2%, the position impact pool would increase to 0.03 index tokens</li>
+<li>The user would receive (original position collateral - $150)</li>
+<li>The pool would have an extra $150 of collateral which continues to have a net zero impact on the pool value due to the 0.03 index tokens in the position impact pool</li>
+</ul>
+<p>If the index token is different from both the long and short token of the market, then it is possible that the pool value becomes significantly affected by the position impact pool, if the position impact pool is very large and the index token has a large price increase. An option to gradually reduce the size of the position impact pool may be added if this becomes an issue.</p>
+<p>Price impact is also tracked using a virtual inventory value for positions and swaps, this tracks the imbalance of tokens across similar markets, e.g. ETH/USDC, ETH/USDT.</p>
+<p>In case of a large price movement, it is possible that a large amount of positions are decreased or liquidated on one side causing a significant imbalance between long and short open interest, this could lead to very high price impact values. To mitigate this, a max position impact factor value can be configured. If the current price impact exceeds the max negative price impact, then any excess collateral deducted beyond the max negative price impact would be held within the contract, if there was no price manipulation detected, this collateral can be released to the user. When the negative price impact is capped, it may be profitable to open and immediately close positions, since the positive price impact may now be more than the capped negative price impact. To avoid this, the max positive price impact should be configured to be below the max negative price impact.</p>
+<h1 id="fees">Fees</h1>
+<p>There are configurable swap fees and position fees and per market.</p>
+<p>Execution fees are also estimated and accounted for on creation of deposit, withdrawal, order requests so that keepers can execute transactions at a close to net zero cost.</p>
+<h1 id="reserve-amounts">Reserve Amounts</h1>
+<p>If a market has stablecoins as the short collateral token it should be able to fully pay short profits if the max short open interest does not exceed the amount of stablecoins in the pool.</p>
+<p>If a market has a long collateral token that is different from the index token, the long profits may not be fully paid out if the price increase of the index token exceeds the price increase of the long collateral token.</p>
+<p>Markets have a reserve factor that allows open interest to be capped to a percentage of the pool size, this reduces the impact of profits of short positions and reduces the risk that long positions cannot be fully paid out.</p>
+<h1 id="market-token-price">Market Token Price</h1>
+<p>The price of a market token depends on the worth of the assets in the pool, and the net pending PnL of traders' open positions.</p>
+<p>It is possible for the pending PnL to be capped, the factors used to calculate the market token price can differ depending on the activity:</p>
+<ul>
+<li>
+<p>Keys.MAX_PNL_FACTOR_FOR_DEPOSITS: this is the PnL factor cap when calculating the market token price for deposits</p>
+</li>
+<li>
+<p>Keys.MAX_PNL_FACTOR_FOR_WITHDRAWALS: this is the PnL factor cap when calculating the market token price for withdrawals</p>
+</li>
+<li>
+<p>Keys.MAX_PNL_FACTOR_FOR_TRADERS: this is the PnL factor cap when calculating the market token price for closing a position</p>
+</li>
+</ul>
+<p>These different factors can be configured to help liquidity providers manage risk and to incentivise deposits when needed, e.g. capping of trader PnL helps cap the amount the market token price can be decreased by due to trader PnL, capping of PnL for deposits and withdrawals can lead to a lower market token price for deposits compared to withdrawals which can incentivise deposits when pending PnL is high.</p>
+<h1 id="parameters">Parameters</h1>
+<ul>
+<li>
+<p>minCollateralFactor: This determines the minimum allowed ratio of (position collateral) / (position size)</p>
+</li>
+<li>
+<p>maxPoolAmount: The maximum amount of tokens that can be deposited into a market</p>
+</li>
+<li>
+<p>maxOpenInterest: The maximum open interest that can be opened for a market</p>
+</li>
+<li>
+<p>reserveFactor: This determines the maximum allowed ratio of (worth of tokens reserved for positions) / (tokens in the pool)</p>
+</li>
+<li>
+<p>maxPnlFactor: The maximum ratio of (PnL / worth of tokens in the pool)</p>
+</li>
+<li>
+<p>positionFeeFactor: This determines the percentage amount of fees to be deducted for position increase / decrease actions, the fee amount is based on the change in position size</p>
+</li>
+<li>
+<p>positionImpactFactor: This is the &quot;price impact factor&quot; for positions described in the &quot;Price Impact&quot; section</p>
+</li>
+<li>
+<p>maxPositionImpactFactor: This is the &quot;max price impact&quot; for positions described in the &quot;Price Impact&quot; section</p>
+</li>
+<li>
+<p>positionImpactExponentFactor: This is the &quot;price impact exponent&quot; value for position actions, described in the &quot;Price Impact&quot; section</p>
+</li>
+<li>
+<p>swapFeeFactor: This determines the percentage amount of fees to be deducted for swaps, the fee amount is based on the swap amount</p>
+</li>
+<li>
+<p>swapImpactFactor: This is the &quot;price impact factor&quot; described in the &quot;Price Impact&quot; section</p>
+</li>
+<li>
+<p>swapImpactExponentFactor: This is the &quot;price impact exponent&quot; value for deposits and swaps, described in the &quot;Price Impact&quot; section above</p>
+</li>
+<li>
+<p>fundingFactor: This is the &quot;funding factor per second&quot; value described in the &quot;Funding Fees&quot; section</p>
+</li>
+<li>
+<p>borrowingFactorForLongs: This is the &quot;borrowing factor&quot; for long positions described in the &quot;Borrowing Fees&quot; section</p>
+</li>
+<li>
+<p>borrowingFactorForShorts: This is the &quot;borrowing factor&quot; for short positions described in the &quot;Borrowing Fees&quot; section</p>
+</li>
+<li>
+<p>borrowingExponentFactorForLongs: This is the &quot;borrowing exponent factor&quot; for long positions described in the &quot;Borrowing Fees&quot; section</p>
+</li>
+<li>
+<p>borrowingExponentFactorForShorts: This is the &quot;borrowing exponent factor&quot; for long positions described in the &quot;Borrowing Fees&quot; section</p>
+</li>
+</ul>
+<h1 id="roles">Roles</h1>
+<p>Roles are managed in the RoleStore, the RoleAdmin has access to grant and revoke any role.</p>
+<p>The RoleAdmin will be the deployer initially, but this should be removed after roles have been setup.</p>
+<p>After the initial setup:</p>
+<ul>
+<li>
+<p>Only the Timelock contract should have the RoleAdmin role</p>
+</li>
+<li>
+<p>New roles can be granted by timelock admins with a time delay</p>
+</li>
+<li>
+<p>System values should only be set using the Config contract</p>
+</li>
+<li>
+<p>No EOA should have a Controller role</p>
+</li>
+<li>
+<p>Config keepers and timelock admins could potentially disrupt regular operation through the disabling of features, incorrect setting of values, whitelisting malicious tokens, abusing the positive price impact value, etc</p>
+</li>
+<li>
+<p>It is expected that the timelock multisig should revoke the permissions of malicious or compromised accounts</p>
+</li>
+<li>
+<p>Order keepers and frozen order keepers could potentially extract value through transaction ordering, delayed transaction execution, ADL execution, etc, this will be partially mitigated with a keeper network</p>
+</li>
+<li>
+<p>Oracle signers are expected to accurately report the price of tokens</p>
+</li>
+</ul>
+<h1 id="known-issues">Known Issues</h1>
+<h2 id="tokens">Tokens</h2>
+<ul>
+<li>
+<p>Collateral tokens need to be whitelisted with a configured TOKEN_TRANSFER_GAS_LIMIT</p>
+</li>
+<li>
+<p>Rebasing tokens, tokens that change balance on transfer, with token burns, tokens with callbacks e.g. ERC-777 tokens, etc, are not compatible with the system and should not be whitelisted</p>
+</li>
+</ul>
+<h2 id="keepers">Keepers</h2>
+<ul>
+<li>
+<p>Order keepers can use prices from different timestamps for limit orders with a swap, which would lead to different output amounts</p>
+</li>
+<li>
+<p>Order keepers are expected to validate whether a transaction will revert before sending the transaction to minimize gas wastage</p>
+</li>
+<li>
+<p>Order keepers may cause requests to be cancelled instead of executed by executing the request with insufficient gas</p>
+</li>
+<li>
+<p>If an execution transaction requires a large amount of gas that is close to the maximum block gas limit, it may be possible to stuff blocks to prevent the transaction from being included in blocks</p>
+</li>
+<li>
+<p>In certain blockchains it is possible for the keeper to have control over the tx.gasprice used to execute a transaction which would affect the execution fee paid to the keeper</p>
+</li>
+<li>
+<p>Orders may be prevented from execution by a malicious user intentionally causing a market to be unbalanced resulting in a high price impact, this should be costly and difficult to benefit from</p>
+</li>
+</ul>
+<h2 id="price-impact">Price Impact</h2>
+<ul>
+<li>
+<p>Price impact can be reduced by using positions and swaps and trading across markets, chains, forks, other protocols, this is partially mitigated with virtual inventory tracking</p>
+</li>
+<li>
+<p>A user can reduce price impact by using high leverage positions, this is partially mitigated with the MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER value</p>
+</li>
+<li>
+<p>Calculation of price impact values do not account for fees and the effects resulting from the price impact itself, for most cases the effect on the price impact calculation should be small</p>
+</li>
+</ul>
+<h2 id="market-token-price">Market Token Price</h2>
+<ul>
+<li>
+<p>It is rare but possible for a pool's value to become negative, this can happen since the impactPoolAmount and pending PnL is subtracted from the worth of the tokens in the pool</p>
+</li>
+<li>
+<p>Due to the difference in positive and negative position price impact, there can be a build up of virtual token amounts in the position impact pool which would affect the pricing of market tokens, the position impact pool should be gradually distributed if needed</p>
+</li>
+</ul>
+<h2 id="virtual-inventory">Virtual Inventory</h2>
+<ul>
+<li>
+<p>Virtual inventory tracks the amount of tokens in pools, it must be ensured that the tokens in each grouping are the same type and have the same decimals, i.e. the long tokens across pools in the group should have the same decimals, the short tokens across pools in the group should have the same decimals, assuming USDC has 6 decimals and DAI has 18 decimals, markets like ETH-USDC, ETH-DAI should not be grouped</p>
+</li>
+<li>
+<p>Virtual IDs must be set before market creation / token whitelisting, if it is set after trading for the token / market is done, the tracking would not be accurate and may need to be adjusted</p>
+</li>
+</ul>
+<h2 id="blockchain">Blockchain</h2>
+<ul>
+<li>
+<p>For L2s with sequencers, there is no contract validation to check if the L2 sequencer is active, oracle keepers should stop signing prices if no blocks are being created by the sequencer, if the sequencer resumes regular operation, the oracle keepers should sign prices for the latest blocks using the latest fetched prices</p>
+</li>
+<li>
+<p>In case an L2 sequencer is down, it may prevent deposits into positions to prevent liquidations</p>
+</li>
+<li>
+<p>For transactions that can be executed entirely using on-chain price feeds, it may be possible to take advantage of stale pricing due to price latency or the chain being down, usage of on-chain price feeds should be temporary and low latency feeds should be used instead once all tokens are supported</p>
+</li>
+<li>
+<p>Block re-orgs could allow a user to retroactively cancel an order after it has been executed if price did not move favourably for the user, care should be taken to handle this case if using the contracts on chains where long re-orgs are possible</p>
+</li>
+<li>
+<p>Updating and cancellation of orders could be front-run to prevent order execution, this should not be an issue if the probability of a successful front-running is less than or equal to 50%, if the probability is higher than 50%, fees and price impact should be adjusted to ensure that the strategy is not net profitable, adjusting the ui fee or referral discount could similarly be used to cause order cancellations</p>
+</li>
+<li>
+<p>In case of downtime of the blockchain or oracle, orders may be executed at significantly different prices or may not execute if the order's acceptable price cannot be fulfilled</p>
+</li>
+<li>
+<p>There is a dependency on the accuracy of the block timestamp because oracle prices are validated against this value, for blockchains where the blockchain nodes have some control over the timestamp, care should be taken to set the oracleTimestampAdjustment to a value that would make manipulation of the timestamp unprofitable</p>
+</li>
+</ul>
+<h2 id="glv">GLV</h2>
+<ul>
+<li>
+<p>The GLV shift feature can be exploited by temporarily increasing the utilization in a market that typically has low utilization. Once the keeper executes the shift, the attacker can lower the utilization back to its normal levels. Position fees and price impact should be configured in a way that makes this attack expensive enough to cover the GLV loss.</p>
+</li>
+<li>
+<p>In GLV there may be GM markets which are above their maximum pnlToPoolFactorForTraders. If this GM market's maxPnlFactorForDeposits is higher than maxPnlFactorForTraders then the GM market is valued lower during deposits than it will be once traders have realized their capped profits. Malicious user may observe a GM market in such a condition and deposit into the GLV containing it in order to gain from ADLs which will soon follow. To avoid this maxPnlFactorForDeposits should be less than or equal to maxPnlFactorForTraders.</p>
+</li>
+<li>
+<p>It's technically possible for market value to become negative. In this case the GLV would be unusable until the market value becomes positive.</p>
+</li>
+<li>
+<p>GM tokens could become illiquid due to high pnl factor or high reserved usd. Users can deposit illiquid GM tokens into GVL and withdraw liquidity from a different market, leaving the GLV with illiquid tokens. The glvMaxMarketTokenBalanceUsd and glvMaxMarketTokenBalanceAmount parameters should account for the riskiness of a market to avoid having too many GM tokens from a risky market.</p>
+</li>
+</ul>
+<h2 id="factories">Factories</h2>
+<ul>
+<li>Upon adding a Market with the MarketStoreUtils.set function, the Market is given a lookup where the Market address can be obtained with the Market salt. This lookup is not cleared upon market deletion. The same applies to GLV.</li>
+</ul>
+<h1 id="notes">Notes</h1>
+<h2 id="deployment">Deployment</h2>
+<ul>
+<li><code>scripts/verifyFallback.ts</code> can be used to verify contracts</li>
+<li>One MarketToken contract would need to be verified using <code>npx hardhat verify</code>, thereafter all MarketToken contracts should be verified as the source code would be the same</li>
+</ul>
+<h2 id="configuration">Configuration</h2>
+<ul>
+<li>The <code>MAX_ORACLE_REF_PRICE_DEVIATION_FACTOR</code> is used mainly as a sanity check to help guard against incorrect oracle decimal configuration or incorrect price feed configuration, this should be set to a sufficiently high value to prevent reverts during times of high volatility</li>
+</ul>
+<h2 id="upgrades">Upgrades</h2>
+<ul>
+<li>
+<p>If new contracts are added that may lead to a difference in pricing, e.g. of market tokens between the old and new contracts, then care should be taken to disable the old contracts before the new contracts are enabled</p>
+</li>
+<li>
+<p>Any external protocols that use the Reader contract or potentially outdated calculations for pricing should be reminded to use the latest contracts and calculations, e.g. Chainlink price feeds for GM tokens</p>
+</li>
+<li>
+<p>It is recommended to publish a best effort Changelog documenting important changes that integrations should be aware about, e.g. if a field is added to a struct that is passed into a callback function, this change may not be obvious to integrations</p>
+</li>
+<li>
+<p>If the contracts are used to support equity synthetic markets, care should be taken to ensure that stock splits and similar changes can be handled</p>
+</li>
+<li>
+<p>Contracts with the &quot;CONTROLLER&quot; role have access to important functions such as setting DataStore values, due to this, care should be taken to ensure that such contracts do not have generic functions or functions that can be used to change important values</p>
+</li>
+<li>
+<p>Tests should be added for the different market types, e.g. spot only markets, single token markets</p>
+</li>
+<li>
+<p>The ordering of values in the eventData for callbacks should not be modified unless strictly necessary, since callback contracts may reference the values by a fixed index</p>
+</li>
+<li>
+<p>Note that if a struct that is passed into callbacks is changed, e.g. Deposit, Withdrawal, Order structs, this would cause the functions of callback contracts expecting the previous struct to stop working, due to this, the changes in structs should be highlighted to integrations</p>
+</li>
+<li>
+<p>If the referral system is being used, the OrderHandler should be given access to update the referral code for traders</p>
+</li>
+</ul>
+<h2 id="integrations">Integrations</h2>
+<ul>
+<li>
+<p>Deposits, withdrawals and orders may be cancelled if the requirements specified in the request cannot be fulfilled, e.g. min amount out. Do check where funds and gas refunds will be sent to on cancellation to ensure it matches expectations.</p>
+</li>
+<li>
+<p>Decrease position orders can output two tokens instead of a single token, in case the decrease position swap fails, it is also possible that the output amount and collateral may not be sufficient to cover fees, causing the order to not be executed</p>
+</li>
+<li>
+<p>If there is a large spread, it is possible that opening / closing a position can significantly change the min and max price of the market token, this should not be manipulatable in a profitable way</p>
+</li>
+<li>
+<p>Changes in config values such as FUNDING_FACTOR, STABLE_FUNDING_FACTOR, BORROWING_FACTOR, SKIP_BORROWING_FEE_FOR_SMALLER_SIDE, BORROWING_FEE_RECEIVER_FACTOR, could lead to additional charges for users, it could also result in a change in the price of market tokens</p>
+</li>
+<li>
+<p>If trader PnL is capped due to MAX_PNL_FACTOR_FOR_TRADERS, the percentage of profit paid out to traders may differ depending on the ordering of when positions are decreased / closed since the cap is re-calculated based on the current state of the pool</p>
+</li>
+<li>
+<p>Event data may be passed to callback contracts, the ordering of the params in the eventData will be attempted to be unchanged, so params can be accessed by index, for safety the key of the param should still be validated before use to check if it matches the expected value</p>
+</li>
+<li>
+<p>Some parameters such as order.sizeDelta and order.initialCollateralDeltaAmount may be updated during execution, the updated values may not be passed to the callback contract</p>
+</li>
+<li>
+<p>When creating a callback contract, the callback contract may need to whitelist the DepositHandler, OrderHandler or WithdrawalHandler, it should be noted that new versions of these handlers may be deployed as new code is added to the handlers, it is also possible for two handlers to temporarily exist at the same time, e.g. OrderHandler(1), OrderHandler(2), due to this, the callback contract should be able to whitelist and simultaneously accept callbacks from multiple DepositHandlers, OrderHandlers and WithdrawalHandlers</p>
+</li>
+<li>
+<p>For callback contracts instead of maintaining a separate whitelist for DepositHandlers, OrderHandlers, WithdrawalHandlers, a possible solution would be to validate the role of the msg.sender in the RoleStore, e.g. <code>RoleStore.hasRole(msg.sender, Role.CONTROLLER)</code>, this would check that the msg.sender is a valid handler</p>
+</li>
+<li>
+<p>If using contracts such as the ExchangeRouter, Oracle or Reader do note that their addresses will change as new logic is added</p>
+</li>
+<li>
+<p>If contracts such as the ExchangeRouter, Oracle or Reader are updated, effort should be made to keep the function parameters the same, however, this may not always be possible, e.g. if a new order property is to be supported, the ExchangeRouter.createOrder params will have to be changed</p>
+</li>
+<li>
+<p>The RoleStore and DataStore for deployments should not change, if they are changed a migration of funds from the previous contracts to the new contracts will likely be needed</p>
+</li>
+<li>
+<p>While the code has been structured to minimize the risk of <a href="https://officercia.mirror.xyz/DBzFiDuxmDOTQEbfXhvLdK0DXVpKu1Nkurk0Cqk3QKc">read-only reentrancy</a>, care should be taken to guard against this possibility</p>
+</li>
+<li>
+<p>Token airdrops may occur to the accounts of GM token holders, integrating contracts holding GM tokens must be able to claim these tokens otherwise the tokens would be locked, the exact implementation for this will vary depending on the integrating contract, one possibility is to allow claiming of tokens that are not market tokens, this can be checked using the <code>Keys.MARKET_LIST</code> value</p>
+</li>
+<li>
+<p>ETH transfers are sent with NATIVE_TOKEN_TRANSFER_GAS_LIMIT for the gas limit, if the transfer fails due to insufficient gas or other errors, the ETH is sent as WETH instead</p>
+</li>
+<li>
+<p>Accounts may receive ETH for ADLs / liquidations, if the account cannot receive ETH then WETH would be sent instead</p>
+</li>
+<li>
+<p>Positive price impact is capped by the amount of tokens in the impact pools and based on configured values</p>
+</li>
+<li>
+<p>Negative price impact may be capped by configured values</p>
+</li>
+<li>
+<p>If negative price impact is capped, the additional amount would be kept in the claimable collateral pool, this needs to be manually claimed using the ExchangeRouter.claimCollateral function</p>
+</li>
+<li>
+<p>Positive funding fees need to be manually claimed using the ExchangeRouter.claimFundingFees function</p>
+</li>
+<li>
+<p>Affiliate rewards need to be manually claimed using the ExchangeRouter.claimAffiliateRewards function</p>
+</li>
+<li>
+<p>Markets or features may be disabled</p>
+</li>
+<li>
+<p>Execution will still continue even if a callback reverts</p>
+</li>
+<li>
+<p>Ensure callbacks have sufficient gas</p>
+</li>
+<li>
+<p>Subaccounts can create, update, and cancel any order for an account</p>
+</li>
+<li>
+<p>Subaccounts can spend wnt and collateral from the account</p>
+</li>
+<li>
+<p>UI fees can be changed</p>
+</li>
+<li>
+<p>Referral discounts can be changed</p>
+</li>
+<li>
+<p>Funds for blacklisted addresses will be kept within the protocol</p>
+</li>
+<li>
+<p>The index token is not always guaranteed to be the long token</p>
+</li>
+<li>
+<p>Fee rates change depending on whether there is a positive or negative impact</p>
+</li>
+</ul>
+<h3 id="deposits">Deposits</h3>
+<ul>
+<li>
+<p>Consider PnL Factor when estimating GM price</p>
+</li>
+<li>
+<p>Handle deposit cancellations</p>
+</li>
+<li>
+<p>Ensure only handlers with the CONTROLLER role can call the afterDepositExecution and afterDepositCancellation callback functions</p>
+</li>
+<li>
+<p>Ensure only the correct deposit execution can call callback functions</p>
+</li>
+<li>
+<p>Consider markets with the same long and short token, swaps are not supported for these markets</p>
+</li>
+<li>
+<p>Consider positive and negative price impact</p>
+</li>
+<li>
+<p>There is a request cancellation period for a configured delay where deposit requests cannot be cancelled</p>
+</li>
+<li>
+<p>Output amounts are subject to price impact and fees</p>
+</li>
+<li>
+<p>Deposits are not allowed above the MAX_PNL_FACTOR_FOR_DEPOSITS</p>
+</li>
+<li>
+<p>The first deposit in any market must go to the RECEIVER_FOR_FIRST_DEPOSIT</p>
+</li>
+</ul>
+<h3 id="withdrawals">Withdrawals</h3>
+<ul>
+<li>
+<p>Two minimum outputs must be used for withdrawals</p>
+</li>
+<li>
+<p>Handle withdrawal cancellations</p>
+</li>
+<li>
+<p>Ensure only handlers with the CONTROLLER role can call the afterWithdrawalExecution and afterWithdrawalCancellation callback functions</p>
+</li>
+<li>
+<p>Ensure only the correct withdrawal execution can call callback functions</p>
+</li>
+<li>
+<p>Consider markets with the same long and short token, swaps are not supported for these markets</p>
+</li>
+<li>
+<p>Consider positive and negative price impact</p>
+</li>
+<li>
+<p>There is a request cancellation period for a configured delay where withdrawal requests cannot be cancelled</p>
+</li>
+<li>
+<p>Output amounts are subject to price impact and fees</p>
+</li>
+<li>
+<p>Withdrawals are not allowed above the MAX_PNL_FACTOR_FOR_WITHDRAWALS</p>
+</li>
+</ul>
+<h3 id="orders">Orders</h3>
+<ul>
+<li>
+<p>Handle order cancellations</p>
+</li>
+<li>
+<p>Liquidations and ADLs can trigger the saved callback contract</p>
+</li>
+<li>
+<p>Orders can become frozen</p>
+</li>
+<li>
+<p>Ensure only handlers with the CONTROLLER role can call the afterOrderExecution, afterOrderCancellation and afterOrderFrozen callback functions</p>
+</li>
+<li>
+<p>Ensure only the correct order execution can call callback functions</p>
+</li>
+<li>
+<p>Consider markets with the same long and short token, swaps are not supported for these markets</p>
+</li>
+<li>
+<p>Consider positive and negative price impact</p>
+</li>
+<li>
+<p>Saved callback contracts can be changed</p>
+</li>
+<li>
+<p>There is a request cancellation period for a configured delay where order requests cannot be cancelled</p>
+</li>
+<li>
+<p>Output amounts are subject to price impact and fees</p>
+</li>
+<li>
+<p>The position impact pool is distributed to liquidity providers over time</p>
+</li>
+<li>
+<p>If attempting to compute price impact, the virtual inventory should be consulted</p>
+</li>
+<li>
+<p>Trader PnL is capped above the MAX_PNL_FACTOR_FOR_TRADERS</p>
+</li>
+<li>
+<p>Negative Price Impact can be capped on position decreases</p>
+</li>
+<li>
+<p>Decrease order sizeDelta and collateralDelta will be auto-updated if they are greater than the position can handle</p>
+</li>
+<li>
+<p>Consider willPositionCollateralBeSufficient validation</p>
+</li>
+<li>
+<p>Consider decreasePositionSwapTypes</p>
+</li>
+<li>
+<p>Consider the minimum collateral amount</p>
+</li>
+<li>
+<p>Referrals are still paid out during liquidation</p>
+</li>
+<li>
+<p>It is possible for positions to have zero collateral</p>
+</li>
+<li>
+<p>Positions with zero size cannot exist</p>
+</li>
+</ul>
+<h1 id="commands">Commands</h1>
+<p>To compile contracts:</p>
+<pre class="hljs"><code><div>npx hardhat compile
+</div></code></pre>
+<p>To run all tests:</p>
+<pre class="hljs"><code><div>npx hardhat <span class="hljs-built_in">test</span>
+
+</div></code></pre>
+<p><code>export NODE_OPTIONS=--max_old_space_size=4096</code> may be needed to run tests.</p>
+<p>To print code metrics:</p>
+<pre class="hljs"><code><div>npx ts-node metrics.ts
+</div></code></pre>
+<p>To print test coverage:</p>
+<pre class="hljs"><code><div>npx hardhat coverage
+</div></code></pre>
+
+</body>
+
+</html>
