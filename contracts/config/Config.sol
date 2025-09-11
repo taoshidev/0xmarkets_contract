@@ -502,6 +502,9 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         allowedBaseKeys[Keys.RESERVE_FACTOR] = true;
         allowedBaseKeys[Keys.OPEN_INTEREST_RESERVE_FACTOR] = true;
 
+        // USDC token address for USDC-only deposits/withdrawals
+        allowedBaseKeys[Keys.USDC] = true;
+
         allowedBaseKeys[Keys.MAX_PNL_FACTOR] = true;
         allowedBaseKeys[Keys.MIN_PNL_FACTOR_AFTER_ADL] = true;
 

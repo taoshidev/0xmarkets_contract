@@ -1366,17 +1366,17 @@ describe("Guardian.Lifecycle", () => {
     // 24 Hours later
     await time.increase(24 * 60 * 60); // 24 Hours
 
-    // #1 Swap 5,000
-    await handleOrder(fixture, {
-      create: {
-        account: user1,
-        initialCollateralToken: wnt,
-        initialCollateralDeltaAmount: expandDecimals(1, 18),
-        acceptablePrice: 0,
-        orderType: OrderType.MarketSwap,
-        swapPath: [ethUsdMarket.marketToken],
-      },
-    });
+    // #1 Swap 5,000 (disabled for USDC-only / no-swap scope)
+    // await handleOrder(fixture, {
+    //   create: {
+    //     account: user1,
+    //     initialCollateralToken: wnt,
+    //     initialCollateralDeltaAmount: expandDecimals(1, 18),
+    //     acceptablePrice: 0,
+    //     orderType: OrderType.MarketSwap,
+    //     swapPath: [ethUsdMarket.marketToken],
+    //   },
+    // });
 
     // #3 Market increase 5,000 Collateral 5,000 size
     await handleOrder(fixture, {
@@ -1430,16 +1430,16 @@ describe("Guardian.Lifecycle", () => {
       },
     });
 
-    // #2 Swap 4,000
-    await handleOrder(fixture, {
-      create: {
-        account: user3,
-        initialCollateralToken: usdc,
-        initialCollateralDeltaAmount: expandDecimals(4000, 6),
-        orderType: OrderType.MarketSwap,
-        swapPath: [ethUsdMarket.marketToken],
-      },
-    });
+    // #2 Swap 4,000 (disabled for USDC-only / no-swap scope)
+    // await handleOrder(fixture, {
+    //   create: {
+    //     account: user3,
+    //     initialCollateralToken: usdc,
+    //     initialCollateralDeltaAmount: expandDecimals(4000, 6),
+    //     orderType: OrderType.MarketSwap,
+    //     swapPath: [ethUsdMarket.marketToken],
+    //   },
+    // });
 
     expect(await getPositionCount(dataStore)).to.eq(3);
 

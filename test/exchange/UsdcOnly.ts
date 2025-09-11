@@ -1,8 +1,11 @@
 import { expect } from "chai";
-import { deployFixture } from "../../utils/fixture";
-import { createDeposit, executeDeposit } from "../../utils/deposit";
+import { ethers } from "hardhat";
+import { deployUsdcOnlyFixture } from "../../utils/fixture";
+import { createDeposit, executeDeposit, handleDeposit } from "../../utils/deposit";
 import { createWithdrawal, executeWithdrawal } from "../../utils/withdrawal";
 import { expandDecimals } from "../../utils/math";
+import { errorsContract } from "../../utils/error";
+import * as keys from "../../utils/keys";
 
 describe("USDC-only Deposits/Withdrawals", () => {
   let fixture: any;
@@ -10,13 +13,13 @@ describe("USDC-only Deposits/Withdrawals", () => {
   let contracts: any;
 
   beforeEach(async () => {
-    fixture = await deployFixture();
+    fixture = await deployUsdcOnlyFixture();
     ({ user0 } = fixture.accounts);
     contracts = fixture.contracts;
   });
 
   it("rejects non-USDC deposit", async () => {
-    const { ethUsdMarket, usdc } = contracts;
+    const { ethUsdMarket } = contracts;
 
     await expect(
       createDeposit(fixture, {
@@ -56,5 +59,49 @@ describe("USDC-only Deposits/Withdrawals", () => {
     });
 
     await executeWithdrawal(fixture, { gasUsageLabel: "executeWithdrawal (USDC)" });
+
+    // Check 6-decimal correctness
+    expect(await usdc.decimals()).eq(6);
+    const userUsdc = await usdc.balanceOf(user0.address);
+    expect(userUsdc.mod(1_000_000)).eq(0);
+  });
+
+  it("rejects non-USDC withdrawal on non-USDC market", async () => {
+    const { dataStore, usdc, ethUsdMarket } = contracts;
+
+    // Re-enable non-USDC market for this negative test only
+    await dataStore.setBool(keys.isMarketDisabledKey(ethUsdMarket.marketToken), false);
+
+    // Provide USDC-only liquidity to the pair market to mint some market tokens for user0
+    await handleDeposit(fixture, {
+      create: {
+        market: ethUsdMarket,
+        initialLongToken: usdc.address,
+        initialShortToken: usdc.address,
+        longTokenAmount: 0,
+        shortTokenAmount: expandDecimals(10_000, 6),
+      },
+    });
+
+    // Attempt to withdraw from a market that would include non-USDC tokens (WETH/USDC)
+    // Directly call handler.createWithdrawal to trigger guard at creation time
+    const { withdrawalHandler } = contracts;
+    const zero = ethers.constants.AddressZero;
+    await expect(
+      withdrawalHandler.createWithdrawal(user0.address, {
+        receiver: user0.address,
+        callbackContract: zero,
+        uiFeeReceiver: zero,
+        market: ethUsdMarket.marketToken,
+        longTokenSwapPath: [],
+        shortTokenSwapPath: [],
+        marketTokenAmount: 0,
+        minLongTokenAmount: 0,
+        minShortTokenAmount: 0,
+        shouldUnwrapNativeToken: false,
+        executionFee: 0,
+        callbackGasLimit: 0,
+      })
+    ).to.be.revertedWithCustomError(errorsContract, "InvalidWithdrawalMarketTokens");
   });
 });

@@ -43,6 +43,23 @@ contract WithdrawalHandler is IWithdrawalHandler, BaseHandler {
     ) external override globalNonReentrant onlyController returns (bytes32) {
         FeatureUtils.validateFeature(dataStore, Keys.createWithdrawalFeatureDisabledKey(address(this)));
 
+        // Enforce USDC-only withdrawals at creation time as well
+        address usdc = dataStore.getAddress(Keys.USDC);
+        if (usdc == address(0)) {
+            revert Errors.EmptyHoldingAddress();
+        }
+        Market.Props memory m = MarketUtils.getEnabledMarket(dataStore, params.market);
+        if (m.longToken != usdc || m.shortToken != usdc) {
+            revert Errors.InvalidWithdrawalMarketTokens(m.longToken, m.shortToken, usdc);
+        }
+        try IERC20Metadata(usdc).decimals() returns (uint8 d) {
+            if (d != 6) {
+                revert Errors.InvalidUsdcDecimals(d, 6);
+            }
+        } catch {
+            revert Errors.InvalidUsdcDecimals(0, 6);
+        }
+
         return WithdrawalUtils.createWithdrawal(
             dataStore,
             eventEmitter,

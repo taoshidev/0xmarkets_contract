@@ -224,6 +224,14 @@ export async function deployFixture() {
   );
   const solUsdMarket = await reader.getMarket(dataStore.address, solUsdMarketAddress);
 
+  // Ensure USDC token address is stored
+  const currentUsdc = await dataStore.getAddress(keys.USDC);
+  if (currentUsdc === hre.ethers.constants.AddressZero) {
+    await (
+      await config.multicall([config.interface.encodeFunctionData("setAddress", [keys.USDC, "0x", usdc.address])])
+    ).wait();
+  }
+
   // const ethUsdGlvAddress = getGlvAddress(
   //   wnt.address,
   //   usdc.address,
@@ -341,5 +349,64 @@ export async function deployFixture() {
       // mockVaultV1,
     },
     props: { oracleSalt, signerIndexes: [0, 1, 2, 3, 4, 5, 6], executionFee: "1000000000000000" },
+  };
+}
+
+// USDC-only fixture: disables non-USDC markets to ensure tests do not
+// accidentally interact with multi-collateral or swap-related paths.
+export async function deployUsdcOnlyFixture() {
+  const fixture = await deployFixture();
+  const {
+    dataStore,
+    ethUsdMarket,
+    ethUsdtMarket,
+    ethUsdSpotOnlyMarket,
+    ethUsdSingleTokenMarket,
+    btcUsdMarket,
+    btcUsdSingleTokenMarket,
+    solUsdMarket,
+    reader,
+    depositVault,
+    withdrawalVault,
+    depositHandler,
+    withdrawalHandler,
+    wnt,
+    usdc,
+  } = fixture.contracts as any;
+
+  // Disable all markets except the USDC single-token market
+  const toDisable = [
+    ethUsdMarket,
+    ethUsdtMarket,
+    ethUsdSpotOnlyMarket,
+    btcUsdMarket,
+    btcUsdSingleTokenMarket,
+    solUsdMarket,
+  ].filter(Boolean);
+
+  for (const m of toDisable) {
+    await dataStore.setBool(keys.isMarketDisabledKey(m.marketToken), true);
+  }
+
+  // Ensure the single-token USDC market is enabled
+  await dataStore.setBool(keys.isMarketDisabledKey(ethUsdSingleTokenMarket.marketToken), false);
+
+  // Only expose a minimal whitelist of contracts to USDC-only tests
+  const allowedContracts = {
+    reader,
+    dataStore,
+    depositVault,
+    withdrawalVault,
+    depositHandler,
+    withdrawalHandler,
+    wnt,
+    usdc,
+    ethUsdSingleTokenMarket,
+    ethUsdMarket,
+  } as const;
+
+  return {
+    ...fixture,
+    contracts: allowedContracts as any,
   };
 }
