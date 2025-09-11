@@ -33,7 +33,6 @@ Traders can use either the long or short token as collateral for the market.
 The contracts support the following main features:
 
 - Deposit and withdrawal of liquidity
-- Spot Trading (Swaps)
 - Leverage Trading (Perps, Long / Short)
 - Market orders, limit orders, stop-loss, take-profit orders
 
@@ -41,7 +40,7 @@ The contracts support the following main features:
 
 To avoid front-running issues, most actions require two steps to execute:
 
-- User sends transaction with request details, e.g. deposit / withdraw liquidity, swap, increase / decrease position
+- User sends transaction with request details, e.g. deposit / withdraw liquidity, increase / decrease position
 - Keepers listen for the transactions, include the prices for the request then send a transaction to execute the request
 
 Prices are provided by an off-chain oracle system, which continually signs prices based on the time the prices were queried.
@@ -152,7 +151,6 @@ Open or increase a long / short perp position.
 Market increase order requests are created by calling ExchangeRouter.createOrder, specifying:
 
 - the initial collateral token
-- the array of markets to swap through to get the actual collateral token
 - the amount to increase the position by
 - whether it is a long or short position
 
@@ -175,7 +173,6 @@ Close or decrease a long / short perp position.
 Market decrease order requests are created by calling ExchangeRouter.createOrder, specifying:
 
 - the initial collateral token
-- the array of markets to swap through for the actual output token
 - the amount to decrease the position by
 
 Market decrease order requests are executed using OrderHandler.executeOrder, if the order was created at timestamp `n`, it should be executed with the oracle prices after timestamp `n`.
@@ -471,7 +468,6 @@ In case of a large price movement, it is possible that a large amount of positio
 
 # Fees
 
-There are configurable swap fees and position fees and per market.
 
 Execution fees are also estimated and accounted for on creation of deposit, withdrawal, order requests so that keepers can execute transactions at a close to net zero cost.
 
@@ -517,7 +513,6 @@ These different factors can be configured to help liquidity providers manage ris
 
 - positionImpactExponentFactor: This is the "price impact exponent" value for position actions, described in the "Price Impact" section
 
-- swapFeeFactor: This determines the percentage amount of fees to be deducted for swaps, the fee amount is based on the swap amount
 
 - swapImpactFactor: This is the "price impact factor" described in the "Price Impact" section
 
@@ -567,7 +562,6 @@ After the initial setup:
 
 ## Keepers
 
-- Order keepers can use prices from different timestamps for limit orders with a swap, which would lead to different output amounts
 
 - Order keepers are expected to validate whether a transaction will revert before sending the transaction to minimize gas wastage
 
@@ -664,7 +658,6 @@ After the initial setup:
 
 - Deposits, withdrawals and orders may be cancelled if the requirements specified in the request cannot be fulfilled, e.g. min amount out. Do check where funds and gas refunds will be sent to on cancellation to ensure it matches expectations.
 
-- Decrease position orders can output two tokens instead of a single token, in case the decrease position swap fails, it is also possible that the output amount and collateral may not be sufficient to cover fees, causing the order to not be executed
 
 - If there is a large spread, it is possible that opening / closing a position can significantly change the min and max price of the market token, this should not be manipulatable in a profitable way
 
@@ -800,7 +793,6 @@ After the initial setup:
 
 - Consider willPositionCollateralBeSufficient validation
 
-- Consider decreasePositionSwapTypes
 
 - Consider the minimum collateral amount
 

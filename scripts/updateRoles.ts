@@ -154,11 +154,11 @@ async function main() {
           member: "0xe270e904b3b52fe952f00e797f5dac4a1e058dda",
           contractName: "ShiftHandler",
         },
-        {
-          role: "CONTROLLER",
-          member: "0x1b31d1774270c46dfc3e1e0d2459a1b94cf9373f",
-          contractName: "SwapHandler",
-        },
+        // {
+        //   role: "CONTROLLER",
+        //   member: "0x1b31d1774270c46dfc3e1e0d2459a1b94cf9373f",
+        //   contractName: "SwapHandler", // MVP: swaps disabled
+        // },
         {
           role: "ROUTER_PLUGIN",
           member: "0xfa843af557824be5127eacb3c4b5d86eadeb73a1",

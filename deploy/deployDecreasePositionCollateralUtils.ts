@@ -10,7 +10,7 @@ const func = createDeployFunction({
     "PositionPricingUtils",
     "PositionEventUtils",
     "OrderEventUtils",
-    "DecreasePositionSwapUtils",
+    // "DecreasePositionSwapUtils", // MVP: swaps disabled
   ],
 });
 

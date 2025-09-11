@@ -111,7 +111,7 @@ export async function deployFixture() {
   const increaseOrderUtils = await hre.ethers.getContract("IncreaseOrderUtils");
   const increasePositionUtils = await hre.ethers.getContract("IncreasePositionUtils");
   const positionUtils = await hre.ethers.getContract("PositionUtils");
-  const swapUtils = await hre.ethers.getContract("SwapUtils");
+  // const swapUtils = await hre.ethers.getContract("SwapUtils"); // MVP: swaps disabled
   const referralStorage = await hre.ethers.getContract("ReferralStorage");
   const feeHandler = await hre.ethers.getContract("FeeHandler");
   const mockVaultV1 = await hre.ethers.getContract("MockVaultV1");
@@ -288,7 +288,7 @@ export async function deployFixture() {
       increaseOrderUtils,
       increasePositionUtils,
       positionUtils,
-      swapUtils,
+      // swapUtils, // MVP: swaps disabled
       referralStorage,
       usdcPriceFeed,
       wethPriceFeed,

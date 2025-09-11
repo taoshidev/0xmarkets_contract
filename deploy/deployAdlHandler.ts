@@ -7,7 +7,7 @@ const constructorContracts = [
   "EventEmitter",
   "Oracle",
   "OrderVault",
-  "SwapHandler",
+  // "SwapHandler", // MVP: swaps disabled
   "ReferralStorage",
 ];
 

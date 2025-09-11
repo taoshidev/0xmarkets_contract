@@ -85,19 +85,19 @@ const processGeneralConfig = async ({ generalConfig, oracleConfig, handleConfig 
     `maxCallbackGasLimit`
   );
 
-  await handleConfig("uint", keys.MAX_SWAP_PATH_LENGTH, "0x", generalConfig.maxSwapPathLength, `maxSwapPathLength`);
+  // await handleConfig("uint", keys.MAX_SWAP_PATH_LENGTH, "0x", generalConfig.maxSwapPathLength, `maxSwapPathLength`); // MVP: swaps disabled
 
   await handleConfig("uint", keys.MIN_COLLATERAL_USD, "0x", generalConfig.minCollateralUsd, `minCollateralUsd`);
 
   await handleConfig("uint", keys.MIN_POSITION_SIZE_USD, "0x", generalConfig.minPositionSizeUsd, `minCollateralUsd`);
 
-  await handleConfig(
-    "uint",
-    keys.SWAP_FEE_RECEIVER_FACTOR,
-    "0x",
-    generalConfig.swapFeeReceiverFactor,
-    `swapFeeReceiverFactor`
-  );
+  // await handleConfig(
+  //   "uint",
+  //   keys.SWAP_FEE_RECEIVER_FACTOR,
+  //   "0x",
+  //   generalConfig.swapFeeReceiverFactor,
+  //   `swapFeeReceiverFactor`
+  // ); // MVP: swaps disabled
 
   await handleConfig(
     "uint",
@@ -121,13 +121,13 @@ const processGeneralConfig = async ({ generalConfig, oracleConfig, handleConfig 
 
   await handleConfig("uint", keys.shiftGasLimitKey(), "0x", generalConfig.shiftGasLimit, `shiftGasLimit`);
 
-  await handleConfig(
-    "uint",
-    keys.singleSwapGasLimitKey(),
-    "0x",
-    generalConfig.singleSwapGasLimit,
-    `singleSwapGasLimit`
-  );
+  // await handleConfig(
+  //   "uint",
+  //   keys.singleSwapGasLimitKey(),
+  //   "0x",
+  //   generalConfig.singleSwapGasLimit,
+  //   `singleSwapGasLimit`
+  // ); // MVP: swaps disabled
 
   await handleConfig(
     "uint",
@@ -145,7 +145,7 @@ const processGeneralConfig = async ({ generalConfig, oracleConfig, handleConfig 
     `decreaseOrderGasLimit`
   );
 
-  await handleConfig("uint", keys.swapOrderGasLimitKey(), "0x", generalConfig.swapOrderGasLimit, `swapOrderGasLimit`);
+  // await handleConfig("uint", keys.swapOrderGasLimitKey(), "0x", generalConfig.swapOrderGasLimit, `swapOrderGasLimit`); // MVP: swaps disabled
 
   if (hre.network.name !== "avalanche" || process.env.SKIP_GLV_LIMITS_AVALANCHE !== "true") {
     await handleConfig(
