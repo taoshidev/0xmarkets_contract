@@ -2,8 +2,7 @@ import { expect } from "chai";
 import { deployUsdcOnlyFixture } from "../../utils/fixture";
 import { createDeposit, executeDeposit } from "../../utils/deposit";
 import { createWithdrawal, executeWithdrawal } from "../../utils/withdrawal";
-import { expandDecimals, decimalToFloat } from "../../utils/math";
-import * as keys from "../../utils/keys";
+import { expandDecimals } from "../../utils/math";
 import { ethers } from "hardhat";
 
 describe("Fees/Funding smoke (USDC-only)", () => {
@@ -16,7 +15,7 @@ describe("Fees/Funding smoke (USDC-only)", () => {
   });
 
   it("USDC deposit/withdraw changes balances", async () => {
-    const { dataStore, usdc, ethUsdSingleTokenMarket } = contracts;
+    const { usdc, ethUsdSingleTokenMarket } = contracts;
     // No special fee configuration; focus on successful flow
 
     // Deposit USDC
@@ -32,7 +31,7 @@ describe("Fees/Funding smoke (USDC-only)", () => {
 
     // Withdraw half and verify claimables increased
     const marketToken = ethUsdSingleTokenMarket.marketToken;
-    const marketTokenContract = await (global as any).hre.ethers.getContractAt("MarketToken", marketToken);
+    const marketTokenContract = await ethers.getContractAt("MarketToken", marketToken);
     const bal = await marketTokenContract.balanceOf(fixture.accounts.user0.address);
 
     await createWithdrawal(fixture, {

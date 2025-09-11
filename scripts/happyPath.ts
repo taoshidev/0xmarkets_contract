@@ -14,18 +14,8 @@ async function main() {
   // 2) Build test fixture view
   const fixture = await deployFixture();
   const { user0 } = fixture.accounts as any;
-  const {
-    dataStore,
-    config,
-    reader,
-    depositHandler,
-    withdrawalHandler,
-    depositVault,
-    withdrawalVault,
-    usdc,
-    wnt,
-    ethUsdSingleTokenMarket,
-  } = fixture.contracts as any;
+  const { depositHandler, withdrawalHandler, depositVault, withdrawalVault, usdc, ethUsdSingleTokenMarket } =
+    fixture.contracts as any;
 
   console.log("Deployer:", (await ethers.getSigners())[0].address);
   console.log("User0:", user0.address);
