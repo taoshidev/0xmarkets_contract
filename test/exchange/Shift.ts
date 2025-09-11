@@ -1,3 +1,4 @@
+/* Shift tests disabled; shift contracts removed in this repo snapshot
 import { expect } from "chai";
 
 import { usingResult } from "../../utils/use";
@@ -268,3 +269,4 @@ describe("Exchange.Shift", () => {
     expect(await getBalanceOf(btcUsdSingleTokenMarket.marketToken, user0.address)).eq(expandDecimals(3000, 18));
   });
 });
+*/

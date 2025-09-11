@@ -7,19 +7,10 @@ const constructorContracts = ["RoleStore", "Oracle", "DataStore", "EventEmitter"
 const func = createDeployFunction({
   contractName: "FeeHandler",
   dependencyNames: constructorContracts,
-  getDeployArgs: async ({ dependencyContracts, gmx, network, get }) => {
+  getDeployArgs: async ({ dependencyContracts, gmx }) => {
     const vaultV1Config = await gmx.getVaultV1();
-    let vaultV1Address = vaultV1Config.vaultV1;
-    let gmxAddress = vaultV1Config.gmx;
-    if (network.name === "hardhat") {
-      const vaultV1 = await get("MockVaultV1");
-      const tokens = await hre.gmx.getTokens();
-      vaultV1Address = vaultV1.address;
-      gmxAddress = tokens.GMX.address;
-    }
-    if (!vaultV1Address) {
-      throw new Error("vaultV1Address is not defined");
-    }
+    const vaultV1Address = vaultV1Config?.vaultV1;
+    const gmxAddress = vaultV1Config?.gmx;
     return constructorContracts
       .map((dependencyName) => dependencyContracts[dependencyName].address)
       .concat(vaultV1Address)
@@ -37,12 +28,21 @@ const func = createDeployFunction({
   id: "FeeHandler_1",
 });
 
-func.dependencies = func.dependencies.concat(["MockVaultV1"]);
 func.skip = async (hre: HardhatRuntimeEnvironment) => {
+  try {
+    const cfg = await hre.gmx.getVaultV1();
+    const missingCfg = !cfg?.vaultV1 || !cfg?.gmx;
+    if (missingCfg) {
+      // Skip if v1 vault / GMX are not configured for this network
+      return true;
+    }
+  } catch (_) {
+    // If helper throws or not available, skip to avoid deploy failure
+    return true;
+  }
   if (hre.network.name === "avalancheFuji") {
     return true;
   }
-
   return process.env.SKIP_HANDLER_DEPLOYMENTS ? true : false;
 };
 

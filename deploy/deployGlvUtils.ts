@@ -1,8 +1,9 @@
-import { createDeployFunction } from "../utils/deploy";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { DeployFunction } from "hardhat-deploy/types";
 
-const func = createDeployFunction({
-  contractName: "GlvUtils",
-  libraryNames: ["MarketUtils", "MarketStoreUtils", "GlvStoreUtils"],
-});
-
+// Disabled: GLV contracts removed in commit d4af1ba3
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  void hre;
+};
+func.skip = async () => true;
 export default func;

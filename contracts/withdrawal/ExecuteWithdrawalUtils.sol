@@ -287,20 +287,31 @@ library ExecuteWithdrawalUtils {
         result.secondaryOutputToken = market.shortToken; // USDC 
         result.secondaryOutputAmount = cache.shortTokenOutputAmount;
 
-        // Transfer both amounts to receiver
-        params.withdrawalVault.transferOut(
-            market.longToken,  // USDC
-            withdrawal.receiver(),
-            result.outputAmount,
-            withdrawal.shouldUnwrapNativeToken()
-        );
+        // If both tokens are the same (USDC-only market), consolidate into a single transfer
+        if (market.longToken == market.shortToken) {
+            uint256 consolidatedAmount = result.outputAmount + result.secondaryOutputAmount;
+            result.outputAmount = consolidatedAmount;
+            result.secondaryOutputAmount = 0;
 
-        params.withdrawalVault.transferOut(
-            market.shortToken, // USDC
-            withdrawal.receiver(),
-            result.secondaryOutputAmount, 
-            withdrawal.shouldUnwrapNativeToken()
-        );
+            MarketToken(payable(market.marketToken)).transferOut(
+                market.longToken,
+                withdrawal.receiver(),
+                consolidatedAmount
+            );
+        } else {
+            // Transfer both amounts to receiver from the MarketToken which holds pool funds
+            MarketToken(payable(market.marketToken)).transferOut(
+                market.longToken,
+                withdrawal.receiver(),
+                result.outputAmount
+            );
+
+            MarketToken(payable(market.marketToken)).transferOut(
+                market.shortToken,
+                withdrawal.receiver(),
+                result.secondaryOutputAmount
+            );
+        }
 
         // if the native token was transferred to the receiver in a swap
         // it may be possible to invoke external contracts before the validations

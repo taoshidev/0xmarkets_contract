@@ -3,11 +3,15 @@ import * as keys from "../utils/keys";
 import { setAddressIfDifferent, setUintIfDifferent, setBoolIfDifferent } from "../utils/dataStore";
 import { updateGeneralConfig } from "../scripts/updateGeneralConfigUtils";
 
-const func = async ({ gmx }: HardhatRuntimeEnvironment) => {
+const func = async ({ gmx, getNamedAccounts }: HardhatRuntimeEnvironment) => {
   const generalConfig = await gmx.getGeneral();
+  const { deployer } = await getNamedAccounts();
 
-  await setAddressIfDifferent(keys.FEE_RECEIVER, generalConfig.feeReceiver, "fee receiver");
-  await setAddressIfDifferent(keys.HOLDING_ADDRESS, generalConfig.holdingAddress, "holding address");
+  const feeReceiver = generalConfig.feeReceiver || deployer;
+  const holdingAddress = generalConfig.holdingAddress || deployer;
+
+  await setAddressIfDifferent(keys.FEE_RECEIVER, feeReceiver, "fee receiver");
+  await setAddressIfDifferent(keys.HOLDING_ADDRESS, holdingAddress, "holding address");
 
   await setUintIfDifferent(
     keys.BORROWING_FEE_RECEIVER_FACTOR,

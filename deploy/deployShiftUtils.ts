@@ -1,17 +1,9 @@
-import { createDeployFunction } from "../utils/deploy";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { DeployFunction } from "hardhat-deploy/types";
 
-const func = createDeployFunction({
-  contractName: "ShiftUtils",
-  libraryNames: [
-    "GasUtils",
-    "MarketStoreUtils",
-    "ShiftStoreUtils",
-    "ShiftEventUtils",
-    "DepositEventUtils",
-    "WithdrawalEventUtils",
-    "ExecuteDepositUtils",
-    "ExecuteWithdrawalUtils",
-  ],
-});
-
+// Disabled: Shift contracts not present in this repo snapshot
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  void hre;
+};
+func.skip = async () => true;
 export default func;

@@ -26,4 +26,12 @@ func.skip = async () => {
 export default func;
 */
 
-export {}; // intentionally empty to disable this deploy step
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { DeployFunction } from "hardhat-deploy/types";
+
+// Disabled: swaps not supported
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  void hre;
+};
+func.skip = async () => true;
+export default func;
