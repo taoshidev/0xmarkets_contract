@@ -3,6 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "./BaseHandler.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import "../market/Market.sol";
 
@@ -38,6 +39,27 @@ contract DepositHandler is IDepositHandler, BaseHandler {
         DepositUtils.CreateDepositParams calldata params
     ) external override globalNonReentrant onlyController returns (bytes32) {
         FeatureUtils.validateFeature(dataStore, Keys.createDepositFeatureDisabledKey(address(this)));
+
+        // Enforce USDC-only deposits
+        address usdc = dataStore.getAddress(Keys.USDC);
+        if (usdc == address(0)) {
+            revert Errors.EmptyHoldingAddress(); // reuse generic empty address error
+        }
+        if (params.initialLongToken != usdc) {
+            revert Errors.InvalidDepositToken(params.initialLongToken, usdc);
+        }
+        if (params.initialShortToken != usdc) {
+            revert Errors.InvalidDepositToken(params.initialShortToken, usdc);
+        }
+        // Validate USDC has 6 decimals
+        try IERC20Metadata(usdc).decimals() returns (uint8 d) {
+            if (d != 6) {
+                revert Errors.InvalidUsdcDecimals(d, 6);
+            }
+        } catch {
+            // if decimals() is not supported, consider it invalid
+            revert Errors.InvalidUsdcDecimals(0, 6);
+        }
 
         return DepositUtils.createDeposit(
             dataStore,

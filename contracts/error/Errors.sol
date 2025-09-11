@@ -98,6 +98,10 @@ library Errors {
     // DepositUtils errors
     error EmptyDeposit();
     error EmptyDepositAmounts();
+    // USDC-only deposits / withdrawals
+    error InvalidDepositToken(address provided, address expected);
+    error InvalidWithdrawalMarketTokens(address longToken, address shortToken, address expected);
+    error InvalidUsdcDecimals(uint8 actual, uint8 expected);
 
     // ExecuteDepositUtils errors
     error MinMarketTokens(uint256 received, uint256 expected);

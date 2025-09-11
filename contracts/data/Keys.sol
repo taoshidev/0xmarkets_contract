@@ -7,6 +7,8 @@ pragma solidity ^0.8.0;
 library Keys {
     // @dev key for the address of the wrapped native token
     bytes32 public constant WNT = keccak256(abi.encode("WNT"));
+    // @dev key for the address of the USDC token used for deposits / withdrawals (6 decimals)
+    bytes32 public constant USDC = keccak256(abi.encode("USDC"));
     // @dev key for the nonce value used in NonceUtils
     bytes32 public constant NONCE = keccak256(abi.encode("NONCE"));
 

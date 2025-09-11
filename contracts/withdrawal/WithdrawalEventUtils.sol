@@ -59,15 +59,25 @@ library WithdrawalEventUtils {
     function emitWithdrawalExecuted(
         EventEmitter eventEmitter,
         bytes32 key,
-        address account
+        address account,
+        address outputToken,
+        uint256 outputAmount,
+        address secondaryOutputToken,
+        uint256 secondaryOutputAmount
     ) external {
         EventUtils.EventLogData memory eventData;
 
         eventData.bytes32Items.initItems(1);
         eventData.bytes32Items.setItem(0, "key", key);
 
-        eventData.addressItems.initItems(1);
+        eventData.addressItems.initItems(3);
         eventData.addressItems.setItem(0, "account", account);
+        eventData.addressItems.setItem(1, "outputToken", outputToken);
+        eventData.addressItems.setItem(2, "secondaryOutputToken", secondaryOutputToken);
+
+        eventData.uintItems.initItems(2);
+        eventData.uintItems.setItem(0, "outputAmount", outputAmount);
+        eventData.uintItems.setItem(1, "secondaryOutputAmount", secondaryOutputAmount);
 
         eventEmitter.emitEventLog2(
             "WithdrawalExecuted",

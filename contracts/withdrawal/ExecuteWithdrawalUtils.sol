@@ -130,7 +130,11 @@ library ExecuteWithdrawalUtils {
         WithdrawalEventUtils.emitWithdrawalExecuted(
             params.eventEmitter,
             params.key,
-            withdrawal.account()
+            withdrawal.account(),
+            cache.result.outputToken,
+            cache.result.outputAmount,
+            cache.result.secondaryOutputToken,
+            cache.result.secondaryOutputAmount
         );
 
         EventUtils.EventLogData memory eventData;

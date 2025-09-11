@@ -4,8 +4,10 @@ pragma solidity ^0.8.0;
 
 import "./BaseHandler.sol";
 import "../error/ErrorUtils.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import "../market/Market.sol";
+import "../market/MarketUtils.sol";
 
 import "../withdrawal/Withdrawal.sol";
 import "../withdrawal/WithdrawalVault.sol";
@@ -184,6 +186,23 @@ contract WithdrawalHandler is IWithdrawalHandler, BaseHandler {
         uint256 startingGas = gasleft();
 
         FeatureUtils.validateFeature(dataStore, Keys.executeWithdrawalFeatureDisabledKey(address(this)));
+
+        // Enforce USDC-only withdrawals: market's long/short tokens must be USDC (6 decimals)
+        address usdc = dataStore.getAddress(Keys.USDC);
+        if (usdc == address(0)) {
+            revert Errors.EmptyHoldingAddress(); // reuse generic empty address error
+        }
+        Market.Props memory m = MarketUtils.getEnabledMarket(dataStore, withdrawal.market());
+        if (m.longToken != usdc || m.shortToken != usdc) {
+            revert Errors.InvalidWithdrawalMarketTokens(m.longToken, m.shortToken, usdc);
+        }
+        try IERC20Metadata(usdc).decimals() returns (uint8 d) {
+            if (d != 6) {
+                revert Errors.InvalidUsdcDecimals(d, 6);
+            }
+        } catch {
+            revert Errors.InvalidUsdcDecimals(0, 6);
+        }
 
         ExecuteWithdrawalUtils.ExecuteWithdrawalParams memory params = ExecuteWithdrawalUtils.ExecuteWithdrawalParams(
             dataStore,

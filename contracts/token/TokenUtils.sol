@@ -12,6 +12,7 @@ import "../error/ErrorUtils.sol";
 import "../utils/AccountUtils.sol";
 
 import "./IWNT.sol";
+import "../data/Keys.sol";
 
 /**
  * @title TokenUtils
@@ -32,6 +33,11 @@ library TokenUtils {
      */
     function wnt(DataStore dataStore) internal view returns (address) {
         return dataStore.getAddress(Keys.WNT);
+    }
+
+    // @dev Returns the address of the USDC token used for deposits / withdrawals
+    function usdc(DataStore dataStore) internal view returns (address) {
+        return dataStore.getAddress(Keys.USDC);
     }
 
     /**

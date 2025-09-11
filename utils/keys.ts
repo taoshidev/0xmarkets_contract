@@ -1,6 +1,7 @@
 import { hashString, hashData } from "./hash";
 
 export const WNT = hashString("WNT");
+export const USDC = hashString("USDC");
 export const NONCE = hashString("NONCE");
 
 export const FEE_RECEIVER = hashString("FEE_RECEIVER");
