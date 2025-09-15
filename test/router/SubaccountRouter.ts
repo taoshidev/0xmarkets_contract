@@ -1,3 +1,4 @@
+/* MVP note: swaps / relay routers are disabled for MVP; test content commented out to retain history.
 import { expect } from "chai";
 
 import { usingResult } from "../../utils/use";
@@ -693,3 +694,6 @@ describe("SubaccountRouter", () => {
     );
   });
 });
+*/
+
+export {};

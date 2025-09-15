@@ -1,3 +1,4 @@
+/* GLP migrator tests disabled; migration contracts removed in d4af1ba3
 import { expect } from "chai";
 
 import { deployContract } from "../../utils/deploy";
@@ -348,3 +349,4 @@ describe("GlpMigrator", () => {
     expect(await wbtc.balanceOf(user0.address)).eq(expandDecimals(1, 7));
   });
 });
+*/

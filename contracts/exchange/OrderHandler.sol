@@ -21,7 +21,6 @@ contract OrderHandler is IOrderHandler, BaseOrderHandler {
         EventEmitter _eventEmitter,
         Oracle _oracle,
         OrderVault _orderVault,
-        SwapHandler _swapHandler,
         IReferralStorage _referralStorage
     ) BaseOrderHandler(
         _roleStore,
@@ -29,7 +28,6 @@ contract OrderHandler is IOrderHandler, BaseOrderHandler {
         _eventEmitter,
         _oracle,
         _orderVault,
-        _swapHandler,
         _referralStorage
     ) {}
 
@@ -127,7 +125,7 @@ contract OrderHandler is IOrderHandler, BaseOrderHandler {
         cache.receivedWnt = orderVault.recordTransferIn(cache.wnt);
 
         cache.estimatedGasLimit = GasUtils.estimateExecuteOrderGasLimit(dataStore, order);
-        cache.oraclePriceCount = GasUtils.estimateOrderOraclePriceCount(order.swapPath().length);
+        cache.oraclePriceCount = GasUtils.estimateOrderOraclePriceCount(0);
         (uint256 executionFee, uint256 executionFeeDiff) = GasUtils.validateAndCapExecutionFee(
             dataStore,
             cache.estimatedGasLimit,
@@ -261,11 +259,10 @@ contract OrderHandler is IOrderHandler, BaseOrderHandler {
             startingGas,
             Order.SecondaryOrderType.None
         );
-        // limit swaps require frozen order keeper for execution since on creation it can fail due to output amount
-        // which would automatically cause the order to be frozen
-        // limit increase and limit / trigger decrease orders may fail due to output amount as well and become frozen
+        // frozen orders require special keeper validation
+        // limit increase and decrease orders may fail due to price conditions and become frozen
         // but only if their acceptablePrice is reached
-        if (params.order.isFrozen() || params.order.orderType() == Order.OrderType.LimitSwap) {
+        if (params.order.isFrozen()) {
             _validateFrozenOrderKeeper(keeper);
         }
 

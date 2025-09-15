@@ -1,3 +1,4 @@
+/* MVP note: swaps are disabled for MVP; test content commented out to retain history.
 import { expect } from "chai";
 
 import { deployFixture } from "../../utils/fixture";
@@ -100,3 +101,6 @@ describe("Guardian.SpotOnlyMarkets", () => {
     ).to.be.revertedWithCustomError(errorsContract, "InvalidPositionMarket");
   });
 });
+*/
+
+export {};

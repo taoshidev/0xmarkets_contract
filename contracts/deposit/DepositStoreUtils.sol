@@ -21,8 +21,6 @@ library DepositStoreUtils {
     bytes32 public constant MARKET = keccak256(abi.encode("MARKET"));
     bytes32 public constant INITIAL_LONG_TOKEN = keccak256(abi.encode("INITIAL_LONG_TOKEN"));
     bytes32 public constant INITIAL_SHORT_TOKEN = keccak256(abi.encode("INITIAL_SHORT_TOKEN"));
-    bytes32 public constant LONG_TOKEN_SWAP_PATH = keccak256(abi.encode("LONG_TOKEN_SWAP_PATH"));
-    bytes32 public constant SHORT_TOKEN_SWAP_PATH = keccak256(abi.encode("SHORT_TOKEN_SWAP_PATH"));
 
     bytes32 public constant INITIAL_LONG_TOKEN_AMOUNT = keccak256(abi.encode("INITIAL_LONG_TOKEN_AMOUNT"));
     bytes32 public constant INITIAL_SHORT_TOKEN_AMOUNT = keccak256(abi.encode("INITIAL_SHORT_TOKEN_AMOUNT"));
@@ -65,14 +63,6 @@ library DepositStoreUtils {
 
         deposit.setInitialShortToken(dataStore.getAddress(
             keccak256(abi.encode(key, INITIAL_SHORT_TOKEN))
-        ));
-
-        deposit.setLongTokenSwapPath(dataStore.getAddressArray(
-            keccak256(abi.encode(key, LONG_TOKEN_SWAP_PATH))
-        ));
-
-        deposit.setShortTokenSwapPath(dataStore.getAddressArray(
-            keccak256(abi.encode(key, SHORT_TOKEN_SWAP_PATH))
         ));
 
         deposit.setInitialLongTokenAmount(dataStore.getUint(
@@ -152,16 +142,6 @@ library DepositStoreUtils {
             deposit.initialShortToken()
         );
 
-        dataStore.setAddressArray(
-            keccak256(abi.encode(key, LONG_TOKEN_SWAP_PATH)),
-            deposit.longTokenSwapPath()
-        );
-
-        dataStore.setAddressArray(
-            keccak256(abi.encode(key, SHORT_TOKEN_SWAP_PATH)),
-            deposit.shortTokenSwapPath()
-        );
-
         dataStore.setUint(
             keccak256(abi.encode(key, INITIAL_LONG_TOKEN_AMOUNT)),
             deposit.initialLongTokenAmount()
@@ -239,14 +219,6 @@ library DepositStoreUtils {
 
         dataStore.removeAddress(
             keccak256(abi.encode(key, INITIAL_SHORT_TOKEN))
-        );
-
-        dataStore.removeAddressArray(
-            keccak256(abi.encode(key, LONG_TOKEN_SWAP_PATH))
-        );
-
-        dataStore.removeAddressArray(
-            keccak256(abi.encode(key, SHORT_TOKEN_SWAP_PATH))
         );
 
         dataStore.removeUint(

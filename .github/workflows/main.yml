@@ -12,9 +12,27 @@ jobs:
       - name: Install packages
         uses: actions/setup-node@v3
         with:
-          node-version: '18.x'
+          node-version: '24.x'
       - run: yarn --ignore-scripts
         shell: bash
       - name: Run Tests
         run: yarn hardhat test
+        shell: bash
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '24.x'
+      - run: yarn --ignore-scripts
+        shell: bash
+      - name: Run Solidity Coverage
+        run: |
+          yarn coverage | tee coverage.out
+        shell: bash
+      - name: Enforce Coverage Thresholds
+        run: |
+          node scripts/check-coverage.js
         shell: bash

@@ -6,7 +6,6 @@ import "../market/MarketStoreUtils.sol";
 
 import "../deposit/DepositStoreUtils.sol";
 import "../withdrawal/WithdrawalStoreUtils.sol";
-import "../shift/ShiftStoreUtils.sol";
 
 import "../position/Position.sol";
 import "../position/PositionUtils.sol";
@@ -40,10 +39,6 @@ contract Reader {
 
     function getWithdrawal(DataStore dataStore, bytes32 key) external view returns (Withdrawal.Props memory) {
         return WithdrawalStoreUtils.get(dataStore, key);
-    }
-
-    function getShift(DataStore dataStore, bytes32 key) external view returns (Shift.Props memory) {
-        return ShiftStoreUtils.get(dataStore, key);
     }
 
     function getPosition(DataStore dataStore, bytes32 key) external view returns (Position.Props memory) {
@@ -249,17 +244,6 @@ contract Reader {
         return MarketUtils.getPnlToPoolFactor(dataStore, market, prices, isLong, maximize);
     }
 
-    function getSwapAmountOut(
-        DataStore dataStore,
-        Market.Props memory market,
-        MarketUtils.MarketPrices memory prices,
-        address tokenIn,
-        uint256 amountIn,
-        address uiFeeReceiver
-    ) external view returns (uint256, int256, SwapPricingUtils.SwapFees memory fees) {
-        return ReaderPricingUtils.getSwapAmountOut(dataStore, market, prices, tokenIn, amountIn, uiFeeReceiver);
-    }
-
     function getExecutionPrice(
         DataStore dataStore,
         address marketKey,
@@ -282,28 +266,6 @@ contract Reader {
             );
     }
 
-    function getSwapPriceImpact(
-        DataStore dataStore,
-        address marketKey,
-        address tokenIn,
-        address tokenOut,
-        uint256 amountIn,
-        Price.Props memory tokenInPrice,
-        Price.Props memory tokenOutPrice
-    ) external view returns (int256, int256, int256) {
-        Market.Props memory market = MarketStoreUtils.get(dataStore, marketKey);
-        return
-            ReaderPricingUtils.getSwapPriceImpact(
-                dataStore,
-                market,
-                tokenIn,
-                tokenOut,
-                amountIn,
-                tokenInPrice,
-                tokenOutPrice
-            );
-    }
-
     function getAdlState(
         DataStore dataStore,
         address market,
@@ -319,9 +281,7 @@ contract Reader {
         MarketUtils.MarketPrices memory prices,
         uint256 longTokenAmount,
         uint256 shortTokenAmount,
-        address uiFeeReceiver,
-        ISwapPricingUtils.SwapPricingType swapPricingType,
-        bool includeVirtualInventoryImpact
+        address uiFeeReceiver
     ) external view returns (uint256) {
         return
             ReaderDepositUtils.getDepositAmountOut(
@@ -330,9 +290,7 @@ contract Reader {
                 prices,
                 longTokenAmount,
                 shortTokenAmount,
-                uiFeeReceiver,
-                swapPricingType,
-                includeVirtualInventoryImpact
+                uiFeeReceiver
             );
     }
 
@@ -341,17 +299,14 @@ contract Reader {
         Market.Props memory market,
         MarketUtils.MarketPrices memory prices,
         uint256 marketTokenAmount,
-        address uiFeeReceiver,
-        ISwapPricingUtils.SwapPricingType swapPricingType
+        address uiFeeReceiver
     ) external view returns (uint256, uint256) {
-        return
-            ReaderWithdrawalUtils.getWithdrawalAmountOut(
-                dataStore,
-                market,
-                prices,
-                marketTokenAmount,
-                uiFeeReceiver,
-                swapPricingType
-            );
+        return ReaderWithdrawalUtils.getWithdrawalAmountOut(
+            dataStore,
+            market,
+            prices,
+            marketTokenAmount,
+            uiFeeReceiver
+        );
     }
 }

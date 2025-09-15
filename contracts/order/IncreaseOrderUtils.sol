@@ -3,7 +3,6 @@
 pragma solidity ^0.8.0;
 
 import "./BaseOrderUtils.sol";
-import "../swap/SwapUtils.sol";
 import "../position/IncreasePositionUtils.sol";
 
 // @title IncreaseOrderUtils
@@ -18,21 +17,8 @@ library IncreaseOrderUtils {
     function processOrder(BaseOrderUtils.ExecuteOrderParams memory params) external returns (EventUtils.EventLogData memory) {
         MarketUtils.validatePositionMarket(params.contracts.dataStore, params.market);
 
-        (address collateralToken, uint256 collateralIncrementAmount) = SwapUtils.swap(SwapUtils.SwapParams(
-            params.contracts.dataStore,
-            params.contracts.eventEmitter,
-            params.contracts.oracle,
-            params.contracts.orderVault,
-            params.key,
-            params.order.initialCollateralToken(),
-            params.order.initialCollateralDeltaAmount(),
-            params.swapPathMarkets,
-            params.order.minOutputAmount(),
-            params.order.market(),
-            params.order.uiFeeReceiver(),
-            false,
-            ISwapPricingUtils.SwapPricingType.Swap
-        ));
+        address collateralToken = params.order.initialCollateralToken(); // Always USDC
+        uint256 collateralIncrementAmount = params.order.initialCollateralDeltaAmount();
 
         MarketUtils.validateMarketCollateralToken(params.market, collateralToken);
 

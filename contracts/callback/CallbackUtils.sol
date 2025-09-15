@@ -10,10 +10,7 @@ import "../data/Keys.sol";
 import "./IOrderCallbackReceiver.sol";
 import "./IDepositCallbackReceiver.sol";
 import "./IWithdrawalCallbackReceiver.sol";
-import "./IShiftCallbackReceiver.sol";
 import "./IGasFeeCallbackReceiver.sol";
-import "./IGlvDepositCallbackReceiver.sol";
-import "./IGlvWithdrawalCallbackReceiver.sol";
 
 // @title CallbackUtils
 // @dev most features require a two step process to complete
@@ -35,10 +32,7 @@ library CallbackUtils {
     using Address for address;
     using Deposit for Deposit.Props;
     using Withdrawal for Withdrawal.Props;
-    using Shift for Shift.Props;
     using Order for Order.Props;
-    using GlvDeposit for GlvDeposit.Props;
-    using GlvWithdrawal for GlvWithdrawal.Props;
 
     event AfterDepositExecutionError(bytes32 key, Deposit.Props deposit);
     event AfterDepositCancellationError(bytes32 key, Deposit.Props deposit);
@@ -46,17 +40,9 @@ library CallbackUtils {
     event AfterWithdrawalExecutionError(bytes32 key, Withdrawal.Props withdrawal);
     event AfterWithdrawalCancellationError(bytes32 key, Withdrawal.Props withdrawal);
 
-    event AfterShiftExecutionError(bytes32 key, Shift.Props shift);
-    event AfterShiftCancellationError(bytes32 key, Shift.Props shift);
-
     event AfterOrderExecutionError(bytes32 key, Order.Props order);
     event AfterOrderCancellationError(bytes32 key, Order.Props order);
     event AfterOrderFrozenError(bytes32 key, Order.Props order);
-
-    event AfterGlvDepositExecutionError(bytes32 key, GlvDeposit.Props glvDeposit);
-    event AfterGlvDepositCancellationError(bytes32 key, GlvDeposit.Props glvDeposit);
-    event AfterGlvWithdrawalExecutionError(bytes32 key, GlvWithdrawal.Props glvWithdrawal);
-    event AfterGlvWithdrawalCancellationError(bytes32 key, GlvWithdrawal.Props glvWithdrawal);
 
     // @dev validate that the callbackGasLimit is less than the max specified value
     // this is to prevent callback gas limits which are larger than the max gas limits per block
@@ -197,43 +183,6 @@ library CallbackUtils {
         }
     }
 
-    function afterShiftExecution(
-        bytes32 key,
-        Shift.Props memory shift,
-        EventUtils.EventLogData memory eventData
-    ) internal {
-        if (!isValidCallbackContract(shift.callbackContract())) { return; }
-
-        validateGasLeftForCallback(shift.callbackGasLimit());
-
-        try IShiftCallbackReceiver(shift.callbackContract()).afterShiftExecution{ gas: shift.callbackGasLimit() }(
-            key,
-            shift,
-            eventData
-        ) {
-        } catch {
-            emit AfterShiftExecutionError(key, shift);
-        }
-    }
-    function afterShiftCancellation(
-        bytes32 key,
-        Shift.Props memory shift,
-        EventUtils.EventLogData memory eventData
-    ) internal {
-        if (!isValidCallbackContract(shift.callbackContract())) { return; }
-
-        validateGasLeftForCallback(shift.callbackGasLimit());
-
-        try IShiftCallbackReceiver(shift.callbackContract()).afterShiftCancellation{ gas: shift.callbackGasLimit() }(
-            key,
-            shift,
-            eventData
-        ) {
-        } catch {
-            emit AfterShiftCancellationError(key, shift);
-        }
-    }
-
     // @dev called after an order execution
     // note that the order.size, order.initialCollateralDeltaAmount and other
     // properties may be updated during execution, the new values may not be
@@ -300,96 +249,6 @@ library CallbackUtils {
         ) {
         } catch {
             emit AfterOrderFrozenError(key, order);
-        }
-    }
-
-    // @dev called after a glvDeposit execution
-    // @param key the key of the glvDeposit
-    // @param glvDeposit the glvDeposit that was executed
-    function afterGlvDepositExecution(
-        bytes32 key,
-        GlvDeposit.Props memory glvDeposit,
-        EventUtils.EventLogData memory eventData
-    ) internal {
-        if (!isValidCallbackContract(glvDeposit.callbackContract())) {
-            return;
-        }
-
-        validateGasLeftForCallback(glvDeposit.callbackGasLimit());
-
-        try IGlvDepositCallbackReceiver(glvDeposit.callbackContract()).afterGlvDepositExecution{ gas: glvDeposit.callbackGasLimit() }(
-            key,
-            glvDeposit,
-            eventData
-        ) {
-        } catch {
-            emit AfterGlvDepositExecutionError(key, glvDeposit);
-        }
-    }
-
-    // @dev called after a glvDeposit cancellation
-    // @param key the key of the glvDeposit
-    // @param glvDeposit the glvDeposit that was cancelled
-    function afterGlvDepositCancellation(
-        bytes32 key,
-        GlvDeposit.Props memory glvDeposit,
-        EventUtils.EventLogData memory eventData
-    ) internal {
-        if (!isValidCallbackContract(glvDeposit.callbackContract())) { return; }
-
-        validateGasLeftForCallback(glvDeposit.callbackGasLimit());
-
-        try IGlvDepositCallbackReceiver(glvDeposit.callbackContract()).afterGlvDepositCancellation{ gas: glvDeposit.callbackGasLimit() }(
-            key,
-            glvDeposit,
-            eventData
-        ) {
-        } catch {
-            emit AfterGlvDepositCancellationError(key, glvDeposit);
-        }
-    }
-
-    // @dev called after a glvWithdrawal execution
-    // @param key the key of the glvWithdrawal
-    // @param glvWithdrawal the glvWithdrawal that was executed
-    function afterGlvWithdrawalExecution(
-        bytes32 key,
-        GlvWithdrawal.Props memory glvWithdrawal,
-        EventUtils.EventLogData memory eventData
-    ) internal {
-        if (!isValidCallbackContract(glvWithdrawal.callbackContract())) { return; }
-
-        validateGasLeftForCallback(glvWithdrawal.callbackGasLimit());
-
-        try IGlvWithdrawalCallbackReceiver(glvWithdrawal.callbackContract()).afterGlvWithdrawalExecution{ gas: glvWithdrawal.callbackGasLimit() }(
-            key,
-            glvWithdrawal,
-            eventData
-        ) {
-        } catch {
-            emit AfterGlvWithdrawalExecutionError(key, glvWithdrawal);
-        }
-    }
-
-    // @dev called after a glvWithdrawal cancellation
-    // @param key the key of the glvWithdrawal
-    // @param glvWithdrawal the glvWithdrawal that was cancelled
-    function afterGlvWithdrawalCancellation(
-        bytes32 key,
-        GlvWithdrawal.Props memory glvWithdrawal,
-        EventUtils.EventLogData memory eventData
-    ) internal {
-        if (!isValidCallbackContract(glvWithdrawal.callbackContract())) { return; }
-
-        validateGasLeftForCallback(glvWithdrawal.callbackGasLimit());
-
-        try IGlvWithdrawalCallbackReceiver(glvWithdrawal.callbackContract()).afterGlvWithdrawalCancellation{ gas: glvWithdrawal.callbackGasLimit() }(
-            key,
-            glvWithdrawal,
-            eventData
-        ) {
-        } catch {
-            emit AfterGlvWithdrawalCancellationError(key, glvWithdrawal);
         }
     }
 

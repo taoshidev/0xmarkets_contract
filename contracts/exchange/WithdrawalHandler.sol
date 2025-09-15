@@ -4,8 +4,10 @@ pragma solidity ^0.8.0;
 
 import "./BaseHandler.sol";
 import "../error/ErrorUtils.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import "../market/Market.sol";
+import "../market/MarketUtils.sol";
 
 import "../withdrawal/Withdrawal.sol";
 import "../withdrawal/WithdrawalVault.sol";
@@ -40,6 +42,23 @@ contract WithdrawalHandler is IWithdrawalHandler, BaseHandler {
         WithdrawalUtils.CreateWithdrawalParams calldata params
     ) external override globalNonReentrant onlyController returns (bytes32) {
         FeatureUtils.validateFeature(dataStore, Keys.createWithdrawalFeatureDisabledKey(address(this)));
+
+        // Enforce USDC-only withdrawals at creation time as well
+        address usdc = dataStore.getAddress(Keys.USDC);
+        if (usdc == address(0)) {
+            revert Errors.EmptyHoldingAddress();
+        }
+        Market.Props memory m = MarketUtils.getEnabledMarket(dataStore, params.market);
+        if (m.longToken != usdc || m.shortToken != usdc) {
+            revert Errors.InvalidWithdrawalMarketTokens(m.longToken, m.shortToken, usdc);
+        }
+        try IERC20Metadata(usdc).decimals() returns (uint8 d) {
+            if (d != 6) {
+                revert Errors.InvalidUsdcDecimals(d, 6);
+            }
+        } catch {
+            revert Errors.InvalidUsdcDecimals(0, 6);
+        }
 
         return WithdrawalUtils.createWithdrawal(
             dataStore,
@@ -102,8 +121,7 @@ contract WithdrawalHandler is IWithdrawalHandler, BaseHandler {
         try this._executeWithdrawal{ gas: executionGas }(
             key,
             withdrawal,
-            msg.sender,
-            ISwapPricingUtils.SwapPricingType.Withdrawal
+            msg.sender
         ) {
         } catch (bytes memory reasonBytes) {
             _handleWithdrawalError(
@@ -133,16 +151,6 @@ contract WithdrawalHandler is IWithdrawalHandler, BaseHandler {
 
         oracle.validateSequencerUp();
 
-        if (
-            params.longTokenSwapPath.length != 0 ||
-            params.shortTokenSwapPath.length != 0
-        ) {
-            revert Errors.SwapsNotAllowedForAtomicWithdrawal(
-                params.longTokenSwapPath.length,
-                params.shortTokenSwapPath.length
-            );
-        }
-
         bytes32 key = WithdrawalUtils.createWithdrawal(
             dataStore,
             eventEmitter,
@@ -156,8 +164,7 @@ contract WithdrawalHandler is IWithdrawalHandler, BaseHandler {
         this._executeWithdrawal(
             key,
             withdrawal,
-            account,
-            ISwapPricingUtils.SwapPricingType.AtomicWithdrawal
+            account
         );
     }
 
@@ -166,8 +173,7 @@ contract WithdrawalHandler is IWithdrawalHandler, BaseHandler {
     // @param params OracleUtils.SimulatePricesParams
     function simulateExecuteWithdrawal(
         bytes32 key,
-        OracleUtils.SimulatePricesParams memory params,
-        ISwapPricingUtils.SwapPricingType swapPricingType
+        OracleUtils.SimulatePricesParams memory params
     ) external
         override
         onlyController
@@ -181,8 +187,7 @@ contract WithdrawalHandler is IWithdrawalHandler, BaseHandler {
         this._executeWithdrawal(
             key,
             withdrawal,
-            msg.sender,
-            swapPricingType
+            msg.sender
         );
     }
 
@@ -193,12 +198,28 @@ contract WithdrawalHandler is IWithdrawalHandler, BaseHandler {
     function _executeWithdrawal(
         bytes32 key,
         Withdrawal.Props memory withdrawal,
-        address keeper,
-        ISwapPricingUtils.SwapPricingType swapPricingType
+        address keeper
     ) external onlySelf {
         uint256 startingGas = gasleft();
 
         FeatureUtils.validateFeature(dataStore, Keys.executeWithdrawalFeatureDisabledKey(address(this)));
+
+        // Enforce USDC-only withdrawals: market's long/short tokens must be USDC (6 decimals)
+        address usdc = dataStore.getAddress(Keys.USDC);
+        if (usdc == address(0)) {
+            revert Errors.EmptyHoldingAddress(); // reuse generic empty address error
+        }
+        Market.Props memory m = MarketUtils.getEnabledMarket(dataStore, withdrawal.market());
+        if (m.longToken != usdc || m.shortToken != usdc) {
+            revert Errors.InvalidWithdrawalMarketTokens(m.longToken, m.shortToken, usdc);
+        }
+        try IERC20Metadata(usdc).decimals() returns (uint8 d) {
+            if (d != 6) {
+                revert Errors.InvalidUsdcDecimals(d, 6);
+            }
+        } catch {
+            revert Errors.InvalidUsdcDecimals(0, 6);
+        }
 
         ExecuteWithdrawalUtils.ExecuteWithdrawalParams memory params = ExecuteWithdrawalUtils.ExecuteWithdrawalParams(
             dataStore,
@@ -207,8 +228,7 @@ contract WithdrawalHandler is IWithdrawalHandler, BaseHandler {
             oracle,
             key,
             keeper,
-            startingGas,
-            swapPricingType
+            startingGas
         );
 
         ExecuteWithdrawalUtils.executeWithdrawal(params, withdrawal);

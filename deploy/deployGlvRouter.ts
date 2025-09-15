@@ -1,19 +1,10 @@
-import { grantRoleIfNotGranted } from "../utils/role";
-import { createDeployFunction } from "../utils/deploy";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { DeployFunction } from "hardhat-deploy/types";
 
-const constructorContracts = ["Router", "RoleStore", "DataStore", "EventEmitter", "GlvHandler", "ExternalHandler"];
-
-const func = createDeployFunction({
-  contractName: "GlvRouter",
-  dependencyNames: constructorContracts,
-  getDeployArgs: async ({ dependencyContracts }) => {
-    return constructorContracts.map((dependencyName) => dependencyContracts[dependencyName].address);
-  },
-  libraryNames: ["GlvDepositStoreUtils", "GlvWithdrawalStoreUtils"],
-  afterDeploy: async ({ deployedContract }) => {
-    await grantRoleIfNotGranted(deployedContract.address, "CONTROLLER");
-    await grantRoleIfNotGranted(deployedContract.address, "ROUTER_PLUGIN");
-  },
-});
-
+// Disabled: GLV contracts removed in commit d4af1ba3
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  // noop – disabled deploy; touch param to satisfy linter
+  void hre;
+};
+func.skip = async () => true;
 export default func;

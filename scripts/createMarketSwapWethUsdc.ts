@@ -1,3 +1,7 @@
+/*
+  MVP note: swaps are not supported; keep file for history but disable execution.
+  Original contents are commented out below.
+
 import hre from "hardhat";
 
 import { getMarketTokenAddress, DEFAULT_MARKET_TYPE } from "../utils/market";
@@ -127,3 +131,6 @@ main()
     console.error(ex);
     process.exit(1);
   });
+*/
+
+export {} as any;

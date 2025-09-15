@@ -9,13 +9,12 @@ import "./DepositVault.sol";
 import "./DepositStoreUtils.sol";
 import "./DepositEventUtils.sol";
 
-import "../pricing/SwapPricingUtils.sol";
 import "../oracle/Oracle.sol";
 import "../position/PositionUtils.sol";
 
 import "../gas/GasUtils.sol";
 import "../callback/CallbackUtils.sol";
-
+import "../fee/FeeUtils.sol";
 import "../utils/Array.sol";
 
 // @title DepositUtils
@@ -47,8 +46,6 @@ library ExecuteDepositUtils {
         bytes32 key;
         address keeper;
         uint256 startingGas;
-        ISwapPricingUtils.SwapPricingType swapPricingType;
-        bool includeVirtualInventoryImpact;
     }
 
     // @dev _ExecuteDepositParams struct used in executeDeposit to avoid stack
@@ -161,46 +158,25 @@ library ExecuteDepositUtils {
             Keys.MAX_PNL_FACTOR_FOR_DEPOSITS
         );
 
-        cache.longTokenAmount = swap(
-            params,
-            deposit.longTokenSwapPath(),
+        cache.longTokenAmount = deposit.initialLongTokenAmount();
+        cache.shortTokenAmount = deposit.initialShortTokenAmount();
+
+        params.depositVault.transferOut(
             deposit.initialLongToken(),
-            deposit.initialLongTokenAmount(),
             cache.market.marketToken,
-            cache.market.longToken,
-            deposit.uiFeeReceiver()
+            cache.longTokenAmount
         );
 
-        cache.shortTokenAmount = swap(
-            params,
-            deposit.shortTokenSwapPath(),
+        params.depositVault.transferOut(
             deposit.initialShortToken(),
-            deposit.initialShortTokenAmount(),
-            cache.market.marketToken,
-            cache.market.shortToken,
-            deposit.uiFeeReceiver()
+            cache.market.marketToken, 
+            cache.shortTokenAmount
         );
-
-        if (cache.longTokenAmount == 0 && cache.shortTokenAmount == 0) {
-            revert Errors.EmptyDepositAmountsAfterSwap();
-        }
 
         cache.longTokenUsd = cache.longTokenAmount * cache.prices.longTokenPrice.midPrice();
         cache.shortTokenUsd = cache.shortTokenAmount * cache.prices.shortTokenPrice.midPrice();
 
-        cache.priceImpactUsd = SwapPricingUtils.getPriceImpactUsd(
-            SwapPricingUtils.GetPriceImpactUsdParams(
-                params.dataStore,
-                cache.market,
-                cache.market.longToken,
-                cache.market.shortToken,
-                cache.prices.longTokenPrice.midPrice(),
-                cache.prices.shortTokenPrice.midPrice(),
-                cache.longTokenUsd.toInt256(),
-                cache.shortTokenUsd.toInt256(),
-                params.includeVirtualInventoryImpact
-            )
-        );
+        cache.priceImpactUsd = 0;
 
         if (cache.longTokenAmount > 0) {
             _ExecuteDepositParams memory _params = _ExecuteDepositParams(
@@ -250,8 +226,7 @@ library ExecuteDepositUtils {
             deposit.account(),
             cache.longTokenAmount,
             cache.shortTokenAmount,
-            cache.receivedMarketTokens,
-            params.swapPricingType
+            cache.receivedMarketTokens
         );
 
         MarketPoolValueInfo.Props memory poolValueInfo = MarketUtils.getPoolValueInfo(
@@ -287,7 +262,7 @@ library ExecuteDepositUtils {
             deposit.callbackContract(),
             deposit.executionFee(),
             params.startingGas,
-            GasUtils.estimateDepositOraclePriceCount(deposit.longTokenSwapPath().length + deposit.shortTokenSwapPath().length),
+            GasUtils.estimateDepositOraclePriceCount(0),
             params.keeper,
             deposit.receiver()
         );
@@ -301,21 +276,16 @@ library ExecuteDepositUtils {
     function _executeDeposit(ExecuteDepositParams memory params, _ExecuteDepositParams memory _params) internal returns (uint256) {
         // for markets where longToken == shortToken, the price impact factor should be set to zero
         // in which case, the priceImpactUsd would always equal zero
-        SwapPricingUtils.SwapFees memory fees = SwapPricingUtils.getSwapFees(
-            params.dataStore,
-            _params.market.marketToken,
-            _params.amount,
-            _params.priceImpactUsd > 0, // forPositiveImpact
-            _params.uiFeeReceiver,
-            params.swapPricingType
-        );
+        uint256 depositFeeAmount = Precision.applyFactor(_params.amount, params.dataStore.getUint(Keys.DEPOSIT_FEE_FACTOR));
+
+        uint256 uiFeeAmount = Precision.applyFactor(_params.amount, MarketUtils.getUiFeeFactor(params.dataStore, _params.uiFeeReceiver));        
 
         FeeUtils.incrementClaimableFeeAmount(
             params.dataStore,
             params.eventEmitter,
             _params.market.marketToken,
             _params.tokenIn,
-            fees.feeReceiverAmount,
+            depositFeeAmount,
             Keys.DEPOSIT_FEE_TYPE
         );
 
@@ -325,19 +295,9 @@ library ExecuteDepositUtils {
             _params.uiFeeReceiver,
             _params.market.marketToken,
             _params.tokenIn,
-            fees.uiFeeAmount,
+            uiFeeAmount,
             Keys.UI_DEPOSIT_FEE_TYPE
         );
-
-        SwapPricingUtils.emitSwapFeesCollected(
-            params.eventEmitter,
-            params.key,
-            _params.market.marketToken,
-            _params.tokenIn,
-            _params.tokenInPrice.min,
-            Keys.DEPOSIT_FEE_TYPE,
-            fees
-         );
 
         uint256 mintAmount;
 
@@ -392,95 +352,10 @@ library ExecuteDepositUtils {
         // and again when calculating the mintAmount
         //
         // to avoid this, set the priceImpactUsd to be zero for this case
-        if (_params.priceImpactUsd > 0 && marketTokensSupply == 0) {
-            _params.priceImpactUsd = 0;
-        }
-
-        if (_params.priceImpactUsd > 0) {
-            // when there is a positive price impact factor,
-            // tokens from the swap impact pool are used to mint additional market tokens for the user
-            // for example, if 50,000 USDC is deposited and there is a positive price impact
-            // an additional 0.005 ETH may be used to mint market tokens
-            // the swap impact pool is decreased by the used amount
-            //
-            // priceImpactUsd is calculated based on pricing assuming only depositAmount of tokenIn
-            // was added to the pool
-            // since impactAmount of tokenOut is added to the pool here, the calculation of
-            // the price impact would not be entirely accurate
-            //
-            // it is possible that the addition of the positive impact amount of tokens into the pool
-            // could increase the imbalance of the pool, for most cases this should not be a significant
-            // change compared to the improvement of balance from the actual deposit
-            (int256 positiveImpactAmount, /* uint256 cappedDiffUsd */) = MarketUtils.applySwapImpactWithCap(
-                params.dataStore,
-                params.eventEmitter,
-                _params.market.marketToken,
-                _params.tokenOut,
-                _params.tokenOutPrice,
-                _params.priceImpactUsd
-            );
-
-            // calculate the usd amount using positiveImpactAmount since it may
-            // be capped by the max available amount in the impact pool
-            // use tokenOutPrice.max to get the USD value since the positiveImpactAmount
-            // was calculated using a USD value divided by tokenOutPrice.max
-            //
-            // for the initial deposit, the pool value and token supply would be zero
-            // so the market token price is treated as 1 USD
-            //
-            // it is possible for the pool value to be more than zero and the token supply
-            // to be zero, in that case, the market token price is also treated as 1 USD
-            mintAmount += MarketUtils.usdToMarketTokenAmount(
-                positiveImpactAmount.toUint256() * _params.tokenOutPrice.max,
-                poolValue,
-                marketTokensSupply
-            );
-
-            // deposit the token out, that was withdrawn from the impact pool, to mint market tokens
-            MarketUtils.applyDeltaToPoolAmount(
-                params.dataStore,
-                params.eventEmitter,
-                _params.market,
-                _params.tokenOut,
-                positiveImpactAmount
-            );
-
-            // MarketUtils.validatePoolUsdForDeposit is not called here
-            // this is to prevent unnecessary reverts
-            // for example, if the pool's long token is close to the deposit cap
-            // but the short token is not close to the cap, depositing the short
-            // token can lead to a positive price impact which can cause the
-            // long token's deposit cap to be exceeded
-            // in this case, it is preferrable that the pool can still be
-            // rebalanced even if the deposit cap may be exceeded
-
-            MarketUtils.validatePoolAmount(
-                params.dataStore,
-                _params.market,
-                _params.tokenOut
-            );
-        }
-
-        if (_params.priceImpactUsd < 0) {
-            // when there is a negative price impact factor,
-            // less of the deposit amount is used to mint market tokens
-            // for example, if 10 ETH is deposited and there is a negative price impact
-            // only 9.995 ETH may be used to mint market tokens
-            // the remaining 0.005 ETH will be stored in the swap impact pool
-            (int256 negativeImpactAmount, /* uint256 cappedDiffUsd */) = MarketUtils.applySwapImpactWithCap(
-                params.dataStore,
-                params.eventEmitter,
-                _params.market.marketToken,
-                _params.tokenIn,
-                _params.tokenInPrice,
-                _params.priceImpactUsd
-            );
-
-            fees.amountAfterFees -= (-negativeImpactAmount).toUint256();
-        }
+        _params.priceImpactUsd = 0;
 
         mintAmount += MarketUtils.usdToMarketTokenAmount(
-            fees.amountAfterFees * _params.tokenInPrice.min,
+            depositFeeAmount + uiFeeAmount + _params.amount * _params.tokenInPrice.min,
             poolValue,
             marketTokensSupply
         );
@@ -490,7 +365,7 @@ library ExecuteDepositUtils {
             params.eventEmitter,
             _params.market,
             _params.tokenIn,
-            (fees.amountAfterFees + fees.feeAmountForPool).toInt256()
+            (depositFeeAmount + uiFeeAmount + _params.amount).toInt256()
         );
 
         MarketUtils.validatePoolUsdForDeposit(
@@ -509,47 +384,6 @@ library ExecuteDepositUtils {
         MarketToken(payable(_params.market.marketToken)).mint(_params.receiver, mintAmount);
 
         return mintAmount;
-    }
-
-    function swap(
-        ExecuteDepositParams memory params,
-        address[] memory swapPath,
-        address initialToken,
-        uint256 inputAmount,
-        address market,
-        address expectedOutputToken,
-        address uiFeeReceiver
-    ) internal returns (uint256) {
-        Market.Props[] memory swapPathMarkets = MarketUtils.getSwapPathMarkets(
-            params.dataStore,
-            swapPath
-        );
-
-        (address outputToken, uint256 outputAmount) = SwapUtils.swap(
-            SwapUtils.SwapParams(
-                params.dataStore, // dataStore
-                params.eventEmitter, // eventEmitter
-                params.oracle, // oracle
-                params.depositVault, // bank
-                params.key, // key
-                initialToken, // tokenIn
-                inputAmount, // amountIn
-                swapPathMarkets, // swapPathMarkets
-                0, // minOutputAmount
-                market, // receiver
-                uiFeeReceiver, // uiFeeReceiver
-                false, // shouldUnwrapNativeToken
-                ISwapPricingUtils.SwapPricingType.Swap
-            )
-        );
-
-        if (outputToken != expectedOutputToken) {
-            revert Errors.InvalidSwapOutputToken(outputToken, expectedOutputToken);
-        }
-
-        MarketUtils.validateMarketTokenBalance(params.dataStore, swapPathMarkets);
-
-        return outputAmount;
     }
 
     // this method validates that a specified minimum number of market tokens are locked

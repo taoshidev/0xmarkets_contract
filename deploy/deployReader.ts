@@ -13,7 +13,7 @@ const func = createDeployFunction({
     "ReaderPricingUtils",
     "ReaderUtils",
     "ReaderWithdrawalUtils",
-    "ShiftStoreUtils",
+    // "ShiftStoreUtils", // disabled: artifact not present
     "WithdrawalStoreUtils",
   ],
 });

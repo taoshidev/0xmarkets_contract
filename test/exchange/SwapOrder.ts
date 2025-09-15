@@ -1,3 +1,4 @@
+/* Swaps are disabled in MVP; keeping test for history but disabled.
 import { expect } from "chai";
 
 import { deployFixture } from "../../utils/fixture";
@@ -285,3 +286,6 @@ describe("Exchange.SwapOrder", () => {
     });
   });
 });
+*/
+
+export {};

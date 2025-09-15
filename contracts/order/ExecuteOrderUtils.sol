@@ -15,7 +15,6 @@ import "../event/EventEmitter.sol";
 
 import "./IncreaseOrderUtils.sol";
 import "./DecreaseOrderUtils.sol";
-import "./SwapOrderUtils.sol";
 import "./BaseOrderUtils.sol";
 
 import "../gas/GasUtils.sol";
@@ -80,7 +79,6 @@ library ExecuteOrderUtils {
         if (params.market.marketToken != address(0)) {
             MarketUtils.validateMarketTokenBalance(params.contracts.dataStore, params.market);
         }
-        MarketUtils.validateMarketTokenBalance(params.contracts.dataStore, params.swapPathMarkets);
 
         OrderUtils.updateAutoCancelList(params.contracts.dataStore, params.key, params.order, false);
 
@@ -103,7 +101,7 @@ library ExecuteOrderUtils {
             params.order.callbackContract(),
             params.order.executionFee(),
             params.startingGas,
-            GasUtils.estimateOrderOraclePriceCount(params.order.swapPath().length),
+            GasUtils.estimateOrderOraclePriceCount(0),
             params.keeper,
             params.order.receiver()
         );
@@ -139,10 +137,6 @@ library ExecuteOrderUtils {
 
         if (BaseOrderUtils.isDecreaseOrder(params.order.orderType())) {
             return DecreaseOrderUtils.processOrder(params);
-        }
-
-        if (BaseOrderUtils.isSwapOrder(params.order.orderType())) {
-            return SwapOrderUtils.processOrder(params);
         }
 
         revert Errors.UnsupportedOrderType(uint256(params.order.orderType()));

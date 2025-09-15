@@ -21,10 +21,8 @@ library OrderStoreUtils {
     bytes32 public constant UI_FEE_RECEIVER = keccak256(abi.encode("UI_FEE_RECEIVER"));
     bytes32 public constant MARKET = keccak256(abi.encode("MARKET"));
     bytes32 public constant INITIAL_COLLATERAL_TOKEN = keccak256(abi.encode("INITIAL_COLLATERAL_TOKEN"));
-    bytes32 public constant SWAP_PATH = keccak256(abi.encode("SWAP_PATH"));
 
     bytes32 public constant ORDER_TYPE = keccak256(abi.encode("ORDER_TYPE"));
-    bytes32 public constant DECREASE_POSITION_SWAP_TYPE = keccak256(abi.encode("DECREASE_POSITION_SWAP_TYPE"));
     bytes32 public constant SIZE_DELTA_USD = keccak256(abi.encode("SIZE_DELTA_USD"));
     bytes32 public constant INITIAL_COLLATERAL_DELTA_AMOUNT = keccak256(abi.encode("INITIAL_COLLATERAL_DELTA_AMOUNT"));
     bytes32 public constant TRIGGER_PRICE = keccak256(abi.encode("TRIGGER_PRICE"));
@@ -74,16 +72,8 @@ library OrderStoreUtils {
             keccak256(abi.encode(key, INITIAL_COLLATERAL_TOKEN))
         ));
 
-        order.setSwapPath(dataStore.getAddressArray(
-            keccak256(abi.encode(key, SWAP_PATH))
-        ));
-
         order.setOrderType(Order.OrderType(dataStore.getUint(
             keccak256(abi.encode(key, ORDER_TYPE))
-        )));
-
-        order.setDecreasePositionSwapType(Order.DecreasePositionSwapType(dataStore.getUint(
-            keccak256(abi.encode(key, DECREASE_POSITION_SWAP_TYPE))
         )));
 
         order.setSizeDeltaUsd(dataStore.getUint(
@@ -187,19 +177,9 @@ library OrderStoreUtils {
             order.initialCollateralToken()
         );
 
-        dataStore.setAddressArray(
-            keccak256(abi.encode(key, SWAP_PATH)),
-            order.swapPath()
-        );
-
         dataStore.setUint(
             keccak256(abi.encode(key, ORDER_TYPE)),
             uint256(order.orderType())
-        );
-
-        dataStore.setUint(
-            keccak256(abi.encode(key, DECREASE_POSITION_SWAP_TYPE)),
-            uint256(order.decreasePositionSwapType())
         );
 
         dataStore.setUint(
@@ -311,16 +291,8 @@ library OrderStoreUtils {
             keccak256(abi.encode(key, INITIAL_COLLATERAL_TOKEN))
         );
 
-        dataStore.removeAddressArray(
-            keccak256(abi.encode(key, SWAP_PATH))
-        );
-
         dataStore.removeUint(
             keccak256(abi.encode(key, ORDER_TYPE))
-        );
-
-        dataStore.removeUint(
-            keccak256(abi.encode(key, DECREASE_POSITION_SWAP_TYPE))
         );
 
         dataStore.removeUint(

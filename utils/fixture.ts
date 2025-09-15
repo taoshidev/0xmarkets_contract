@@ -4,7 +4,8 @@ import { expandDecimals } from "./math";
 import { hashData } from "./hash";
 import { getMarketTokenAddress, DEFAULT_MARKET_TYPE } from "./market";
 import { getSyntheticTokenAddress } from "./token";
-import { getGlvAddress } from "./glv";
+import * as keys from "./keys";
+// import { getGlvAddress } from "./glv"; // GLV disabled
 
 export async function deployFixture() {
   await hre.deployments.fixture();
@@ -63,29 +64,29 @@ export async function deployFixture() {
   const mockRiskOracle = await hre.ethers.getContract("MockRiskOracle");
   const timelock = await hre.ethers.getContract("Timelock");
   const reader = await hre.ethers.getContract("Reader");
-  const glvReader = await hre.ethers.getContract("GlvReader");
+  // const glvReader = await hre.ethers.getContract("GlvReader"); // GLV disabled
   const roleStore = await hre.ethers.getContract("RoleStore");
   const dataStore = await hre.ethers.getContract("DataStore");
   const depositVault = await hre.ethers.getContract("DepositVault");
   const withdrawalVault = await hre.ethers.getContract("WithdrawalVault");
-  const shiftVault = await hre.ethers.getContract("ShiftVault");
+  // const shiftVault = await hre.ethers.getContract("ShiftVault"); // Shift disabled
   const eventEmitter = await hre.ethers.getContract("EventEmitter");
   const oracleStore = await hre.ethers.getContract("OracleStore");
   const orderVault = await hre.ethers.getContract("OrderVault");
-  const glvVault = await hre.ethers.getContract("GlvVault");
+  // const glvVault = await hre.ethers.getContract("GlvVault");
   const marketFactory = await hre.ethers.getContract("MarketFactory");
-  const glvFactory = await hre.ethers.getContract("GlvFactory");
-  const glvHandler = await hre.ethers.getContract("GlvHandler");
-  const glvRouter = await hre.ethers.getContract("GlvRouter");
-  const glvDepositStoreUtils = await hre.ethers.getContract("GlvDepositStoreUtils");
-  const glvWithdrawalStoreUtils = await hre.ethers.getContract("GlvWithdrawalStoreUtils");
-  const glvShiftStoreUtils = await hre.ethers.getContract("GlvShiftStoreUtils");
-  const glvStoreUtils = await hre.ethers.getContract("GlvStoreUtils");
+  // const glvFactory = await hre.ethers.getContract("GlvFactory");
+  // const glvHandler = await hre.ethers.getContract("GlvHandler");
+  // const glvRouter = await hre.ethers.getContract("GlvRouter");
+  // const glvDepositStoreUtils = await hre.ethers.getContract("GlvDepositStoreUtils");
+  // const glvWithdrawalStoreUtils = await hre.ethers.getContract("GlvWithdrawalStoreUtils");
+  // const glvShiftStoreUtils = await hre.ethers.getContract("GlvShiftStoreUtils");
+  // const glvStoreUtils = await hre.ethers.getContract("GlvStoreUtils");
   const depositHandler = await hre.ethers.getContract("DepositHandler");
   const depositUtils = await hre.ethers.getContract("DepositUtils");
   const executeDepositUtils = await hre.ethers.getContract("ExecuteDepositUtils");
   const withdrawalHandler = await hre.ethers.getContract("WithdrawalHandler");
-  const shiftHandler = await hre.ethers.getContract("ShiftHandler");
+  // const shiftHandler = await hre.ethers.getContract("ShiftHandler"); // Shift disabled
   const orderHandler = await hre.ethers.getContract("OrderHandler");
   const baseOrderUtils = await hre.ethers.getContract("BaseOrderUtils");
   const orderUtils = await hre.ethers.getContract("OrderUtils");
@@ -104,17 +105,36 @@ export async function deployFixture() {
   const marketStoreUtils = await hre.ethers.getContract("MarketStoreUtils");
   const depositStoreUtils = await hre.ethers.getContract("DepositStoreUtils");
   const withdrawalStoreUtils = await hre.ethers.getContract("WithdrawalStoreUtils");
-  const shiftStoreUtils = await hre.ethers.getContract("ShiftStoreUtils");
+  // const shiftStoreUtils = await hre.ethers.getContract("ShiftStoreUtils"); // Shift disabled
   const positionStoreUtils = await hre.ethers.getContract("PositionStoreUtils");
   const orderStoreUtils = await hre.ethers.getContract("OrderStoreUtils");
   const decreasePositionUtils = await hre.ethers.getContract("DecreasePositionUtils");
   const increaseOrderUtils = await hre.ethers.getContract("IncreaseOrderUtils");
   const increasePositionUtils = await hre.ethers.getContract("IncreasePositionUtils");
   const positionUtils = await hre.ethers.getContract("PositionUtils");
-  const swapUtils = await hre.ethers.getContract("SwapUtils");
+  // const swapUtils = await hre.ethers.getContract("SwapUtils"); // MVP: swaps disabled
   const referralStorage = await hre.ethers.getContract("ReferralStorage");
-  const feeHandler = await hre.ethers.getContract("FeeHandler");
-  const mockVaultV1 = await hre.ethers.getContract("MockVaultV1");
+  // helper to fetch optional contracts that may be skipped in this snapshot
+  const getOptionalContract = async (name: string) => {
+    try {
+      return await hre.ethers.getContract(name);
+    } catch (_err) {
+      return undefined as any;
+    }
+  };
+  const feeHandler = await getOptionalContract("FeeHandler");
+  // const mockVaultV1 = await hre.ethers.getContract("MockVaultV1"); // removed
+
+  // Ensure holding address is configured to avoid EmptyHoldingAddress on withdrawals
+  const currentHolding = await dataStore.getAddress(keys.HOLDING_ADDRESS);
+  if (currentHolding === hre.ethers.constants.AddressZero) {
+    const deployer = wallet.address;
+    await (
+      await config.multicall([
+        config.interface.encodeFunctionData("setAddress", [keys.HOLDING_ADDRESS, "0x", deployer]),
+      ])
+    ).wait();
+  }
 
   const ethUsdMarketAddress = getMarketTokenAddress(
     wnt.address,
@@ -204,16 +224,24 @@ export async function deployFixture() {
   );
   const solUsdMarket = await reader.getMarket(dataStore.address, solUsdMarketAddress);
 
-  const ethUsdGlvAddress = getGlvAddress(
-    wnt.address,
-    usdc.address,
-    ethers.constants.HashZero,
-    "GMX Liquidity Vault [WETH-USDC]",
-    "GLV [WETH-USDC]",
-    glvFactory.address,
-    roleStore.address,
-    dataStore.address
-  );
+  // Ensure USDC token address is stored
+  const currentUsdc = await dataStore.getAddress(keys.USDC);
+  if (currentUsdc === hre.ethers.constants.AddressZero) {
+    await (
+      await config.multicall([config.interface.encodeFunctionData("setAddress", [keys.USDC, "0x", usdc.address])])
+    ).wait();
+  }
+
+  // const ethUsdGlvAddress = getGlvAddress(
+  //   wnt.address,
+  //   usdc.address,
+  //   ethers.constants.HashZero,
+  //   "GMX Liquidity Vault [WETH-USDC]",
+  //   "GLV [WETH-USDC]",
+  //   glvFactory.address,
+  //   roleStore.address,
+  //   dataStore.address
+  // );
 
   return {
     accountList,
@@ -254,7 +282,7 @@ export async function deployFixture() {
       depositVault,
       eventEmitter,
       withdrawalVault,
-      shiftVault,
+      // shiftVault,
       oracleStore,
       orderVault,
       marketFactory,
@@ -262,7 +290,7 @@ export async function deployFixture() {
       depositUtils,
       executeDepositUtils,
       withdrawalHandler,
-      shiftHandler,
+      // shiftHandler,
       orderHandler,
       baseOrderUtils,
       orderUtils,
@@ -281,14 +309,14 @@ export async function deployFixture() {
       marketStoreUtils,
       depositStoreUtils,
       withdrawalStoreUtils,
-      shiftStoreUtils,
+      // shiftStoreUtils,
       positionStoreUtils,
       orderStoreUtils,
       decreasePositionUtils,
       increaseOrderUtils,
       increasePositionUtils,
       positionUtils,
-      swapUtils,
+      // swapUtils, // MVP: swaps disabled
       referralStorage,
       usdcPriceFeed,
       wethPriceFeed,
@@ -308,18 +336,77 @@ export async function deployFixture() {
       btcUsdSingleTokenMarket,
       solUsdMarket,
       feeHandler,
-      glvFactory,
-      glvHandler,
-      glvVault,
-      glvRouter,
-      ethUsdGlvAddress,
-      glvDepositStoreUtils,
-      glvWithdrawalStoreUtils,
-      glvShiftStoreUtils,
-      glvStoreUtils,
-      glvReader,
-      mockVaultV1,
+      // glvFactory,
+      // glvHandler,
+      // glvVault,
+      // glvRouter,
+      // ethUsdGlvAddress,
+      // glvDepositStoreUtils,
+      // glvWithdrawalStoreUtils,
+      // glvShiftStoreUtils,
+      // glvStoreUtils,
+      // glvReader,
+      // mockVaultV1,
     },
     props: { oracleSalt, signerIndexes: [0, 1, 2, 3, 4, 5, 6], executionFee: "1000000000000000" },
+  };
+}
+
+// USDC-only fixture: disables non-USDC markets to ensure tests do not
+// accidentally interact with multi-collateral or swap-related paths.
+export async function deployUsdcOnlyFixture() {
+  const fixture = await deployFixture();
+  const {
+    dataStore,
+    ethUsdMarket,
+    ethUsdtMarket,
+    ethUsdSpotOnlyMarket,
+    ethUsdSingleTokenMarket,
+    btcUsdMarket,
+    btcUsdSingleTokenMarket,
+    solUsdMarket,
+    reader,
+    depositVault,
+    withdrawalVault,
+    depositHandler,
+    withdrawalHandler,
+    wnt,
+    usdc,
+  } = fixture.contracts as any;
+
+  // Disable all markets except the USDC single-token market
+  const toDisable = [
+    ethUsdMarket,
+    ethUsdtMarket,
+    ethUsdSpotOnlyMarket,
+    btcUsdMarket,
+    btcUsdSingleTokenMarket,
+    solUsdMarket,
+  ].filter(Boolean);
+
+  for (const m of toDisable) {
+    await dataStore.setBool(keys.isMarketDisabledKey(m.marketToken), true);
+  }
+
+  // Ensure the single-token USDC market is enabled
+  await dataStore.setBool(keys.isMarketDisabledKey(ethUsdSingleTokenMarket.marketToken), false);
+
+  // Only expose a minimal whitelist of contracts to USDC-only tests
+  const allowedContracts = {
+    reader,
+    dataStore,
+    depositVault,
+    withdrawalVault,
+    depositHandler,
+    withdrawalHandler,
+    wnt,
+    usdc,
+    ethUsdSingleTokenMarket,
+    ethUsdMarket,
+  } as const;
+
+  return {
+    ...fixture,
+    contracts: allowedContracts as any,
   };
 }

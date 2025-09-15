@@ -203,11 +203,6 @@ library DecreasePositionUtils {
         cache.pnlToken = params.position.isLong() ? params.market.longToken : params.market.shortToken;
         cache.pnlTokenPrice = params.position.isLong() ? cache.prices.longTokenPrice : cache.prices.shortTokenPrice;
 
-        if (params.order.decreasePositionSwapType() != Order.DecreasePositionSwapType.NoSwap &&
-            cache.pnlToken == params.position.collateralToken()) {
-            params.order.setDecreasePositionSwapType(Order.DecreasePositionSwapType.NoSwap);
-        }
-
         if (BaseOrderUtils.isLiquidationOrder(params.order.orderType())) {
             (bool isLiquidatable, string memory reason, PositionUtils.IsPositionLiquidatableInfo memory info) = PositionUtils.isPositionLiquidatable(
                 params.contracts.dataStore,
@@ -339,7 +334,12 @@ library DecreasePositionUtils {
             cache.collateralTokenPrice
         );
 
-        values = DecreasePositionSwapUtils.swapWithdrawnCollateralToPnlToken(params, values);
+        // No swapping needed in USDC-only system - all collateral and PnL are already in USDC
+        // Simply ensure any secondary output is consolidated to primary output
+        if (values.output.secondaryOutputAmount > 0) {
+            values.output.outputAmount += values.output.secondaryOutputAmount;
+            values.output.secondaryOutputAmount = 0;
+        }
 
         return DecreasePositionResult(
             values.output.outputToken,

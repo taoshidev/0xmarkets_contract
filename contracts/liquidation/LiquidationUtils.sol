@@ -38,8 +38,7 @@ library LiquidationUtils {
             CallbackUtils.getSavedCallbackContract(dataStore, account, market), // callbackContract
             address(0), // uiFeeReceiver
             market, // market
-            position.collateralToken(), // initialCollateralToken
-            new address[](0) // swapPath
+            position.collateralToken() // initialCollateralToken
         );
 
         // no slippage is set for this order, in case of a liquidation the amount
@@ -61,7 +60,6 @@ library LiquidationUtils {
         // using the realized profit
         Order.Numbers memory numbers = Order.Numbers(
             Order.OrderType.Liquidation, // orderType
-            Order.DecreasePositionSwapType.SwapPnlTokenToCollateralToken, // decreasePositionSwapType
             position.sizeInUsd(), // sizeDeltaUsd
             0, // initialCollateralDeltaAmount
             0, // triggerPrice

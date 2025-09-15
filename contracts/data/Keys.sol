@@ -7,6 +7,8 @@ pragma solidity ^0.8.0;
 library Keys {
     // @dev key for the address of the wrapped native token
     bytes32 public constant WNT = keccak256(abi.encode("WNT"));
+    // @dev key for the address of the USDC token used for deposits / withdrawals (6 decimals)
+    bytes32 public constant USDC = keccak256(abi.encode("USDC"));
     // @dev key for the nonce value used in NonceUtils
     bytes32 public constant NONCE = keccak256(abi.encode("NONCE"));
 
@@ -32,17 +34,12 @@ library Keys {
     bytes32 public constant DEPOSIT_FEE_TYPE = keccak256(abi.encode("DEPOSIT_FEE_TYPE"));
     // @dev key for withdrawal fees
     bytes32 public constant WITHDRAWAL_FEE_TYPE = keccak256(abi.encode("WITHDRAWAL_FEE_TYPE"));
-    // @dev key for swap fees
-    bytes32 public constant SWAP_FEE_TYPE = keccak256(abi.encode("SWAP_FEE_TYPE"));
-    bytes32 public constant ATOMIC_SWAP_FEE_TYPE = keccak256(abi.encode("ATOMIC_SWAP_FEE_TYPE"));
     // @dev key for position fees
     bytes32 public constant POSITION_FEE_TYPE = keccak256(abi.encode("POSITION_FEE_TYPE"));
     // @dev key for ui deposit fees
     bytes32 public constant UI_DEPOSIT_FEE_TYPE = keccak256(abi.encode("UI_DEPOSIT_FEE_TYPE"));
     // @dev key for ui withdrawal fees
     bytes32 public constant UI_WITHDRAWAL_FEE_TYPE = keccak256(abi.encode("UI_WITHDRAWAL_FEE_TYPE"));
-    // @dev key for ui swap fees
-    bytes32 public constant UI_SWAP_FEE_TYPE = keccak256(abi.encode("UI_SWAP_FEE_TYPE"));
     // @dev key for ui position fees
     bytes32 public constant UI_POSITION_FEE_TYPE = keccak256(abi.encode("UI_POSITION_FEE_TYPE"));
 
@@ -108,10 +105,6 @@ library Keys {
     // @dev key for is market disabled
     bytes32 public constant IS_MARKET_DISABLED = keccak256(abi.encode("IS_MARKET_DISABLED"));
 
-    // @dev key for the max swap path length allowed
-    bytes32 public constant MAX_SWAP_PATH_LENGTH = keccak256(abi.encode("MAX_SWAP_PATH_LENGTH"));
-    // @dev key used to store markets observed in a swap path, to ensure that a swap path contains unique markets
-    bytes32 public constant SWAP_PATH_MARKET_FLAG = keccak256(abi.encode("SWAP_PATH_MARKET_FLAG"));
     // @dev key used to store the min market tokens for the first deposit for a market
     bytes32 public constant MIN_MARKET_TOKENS_FOR_FIRST_DEPOSIT = keccak256(abi.encode("MIN_MARKET_TOKENS_FOR_FIRST_DEPOSIT"));
 
@@ -202,8 +195,6 @@ library Keys {
     bytes32 public constant POSITION_FEE_RECEIVER_FACTOR = keccak256(abi.encode("POSITION_FEE_RECEIVER_FACTOR"));
     // @dev key for the percentage amount of liquidation fees to be received
     bytes32 public constant LIQUIDATION_FEE_RECEIVER_FACTOR = keccak256(abi.encode("LIQUIDATION_FEE_RECEIVER_FACTOR"));
-    // @dev key for the percentage amount of swap fees to be received
-    bytes32 public constant SWAP_FEE_RECEIVER_FACTOR = keccak256(abi.encode("SWAP_FEE_RECEIVER_FACTOR"));
     // @dev key for the percentage amount of borrowing fees to be received
     bytes32 public constant BORROWING_FEE_RECEIVER_FACTOR = keccak256(abi.encode("BORROWING_FEE_RECEIVER_FACTOR"));
 
@@ -234,14 +225,10 @@ library Keys {
     bytes32 public constant GLV_PER_MARKET_GAS_LIMIT = keccak256(abi.encode("GLV_PER_MARKET_GAS_LIMIT"));
     // @dev key for the estimated gas limit for shifts
     bytes32 public constant SHIFT_GAS_LIMIT = keccak256(abi.encode("SHIFT_GAS_LIMIT"));
-    // @dev key for the estimated gas limit for single swaps
-    bytes32 public constant SINGLE_SWAP_GAS_LIMIT = keccak256(abi.encode("SINGLE_SWAP_GAS_LIMIT"));
     // @dev key for the estimated gas limit for increase orders
     bytes32 public constant INCREASE_ORDER_GAS_LIMIT = keccak256(abi.encode("INCREASE_ORDER_GAS_LIMIT"));
     // @dev key for the estimated gas limit for decrease orders
     bytes32 public constant DECREASE_ORDER_GAS_LIMIT = keccak256(abi.encode("DECREASE_ORDER_GAS_LIMIT"));
-    // @dev key for the estimated gas limit for swap orders
-    bytes32 public constant SWAP_ORDER_GAS_LIMIT = keccak256(abi.encode("SWAP_ORDER_GAS_LIMIT"));
     // @dev key for the amount of gas to forward for token transfers
     bytes32 public constant TOKEN_TRANSFER_GAS_LIMIT = keccak256(abi.encode("TOKEN_TRANSFER_GAS_LIMIT"));
     // @dev key for the amount of gas to forward for native token transfers
@@ -266,8 +253,6 @@ library Keys {
     bytes32 public constant VIRTUAL_TOKEN_ID = keccak256(abi.encode("VIRTUAL_TOKEN_ID"));
     // @dev key for the virtual id of markets
     bytes32 public constant VIRTUAL_MARKET_ID = keccak256(abi.encode("VIRTUAL_MARKET_ID"));
-    // @dev key for the virtual inventory for swaps
-    bytes32 public constant VIRTUAL_INVENTORY_FOR_SWAPS = keccak256(abi.encode("VIRTUAL_INVENTORY_FOR_SWAPS"));
     // @dev key for the virtual inventory for positions
     bytes32 public constant VIRTUAL_INVENTORY_FOR_POSITIONS = keccak256(abi.encode("VIRTUAL_INVENTORY_FOR_POSITIONS"));
 
@@ -285,14 +270,6 @@ library Keys {
     bytes32 public constant PRO_DISCOUNT_FACTOR = keccak256(abi.encode("PRO_DISCOUNT_FACTOR"));
     // @dev key for the liquidation fee factor
     bytes32 public constant LIQUIDATION_FEE_FACTOR = keccak256(abi.encode("LIQUIDATION_FEE_FACTOR"));
-    // @dev key for the swap impact factor
-    bytes32 public constant SWAP_IMPACT_FACTOR = keccak256(abi.encode("SWAP_IMPACT_FACTOR"));
-    // @dev key for the swap impact exponent factor
-    bytes32 public constant SWAP_IMPACT_EXPONENT_FACTOR = keccak256(abi.encode("SWAP_IMPACT_EXPONENT_FACTOR"));
-    // @dev key for the swap fee factor
-    bytes32 public constant SWAP_FEE_FACTOR = keccak256(abi.encode("SWAP_FEE_FACTOR"));
-    // @dev key for the atomic swap fee factor
-    bytes32 public constant ATOMIC_SWAP_FEE_FACTOR = keccak256(abi.encode("ATOMIC_SWAP_FEE_FACTOR"));
     bytes32 public constant ATOMIC_WITHDRAWAL_FEE_FACTOR = keccak256(abi.encode("ATOMIC_WITHDRAWAL_FEE_FACTOR"));
     bytes32 public constant DEPOSIT_FEE_FACTOR = keccak256(abi.encode("DEPOSIT_FEE_FACTOR"));
     bytes32 public constant WITHDRAWAL_FEE_FACTOR = keccak256(abi.encode("WITHDRAWAL_FEE_FACTOR"));
@@ -320,8 +297,6 @@ library Keys {
     bytes32 public constant POSITION_IMPACT_POOL_DISTRIBUTION_RATE = keccak256(abi.encode("POSITION_IMPACT_POOL_DISTRIBUTION_RATE"));
     // @dev key for position impact pool distributed at
     bytes32 public constant POSITION_IMPACT_POOL_DISTRIBUTED_AT = keccak256(abi.encode("POSITION_IMPACT_POOL_DISTRIBUTED_AT"));
-    // @dev key for swap impact pool amount
-    bytes32 public constant SWAP_IMPACT_POOL_AMOUNT = keccak256(abi.encode("SWAP_IMPACT_POOL_AMOUNT"));
     // @dev key for price feed
     bytes32 public constant PRICE_FEED = keccak256(abi.encode("PRICE_FEED"));
     // @dev key for price feed multiplier
@@ -420,10 +395,6 @@ library Keys {
     bytes32 public constant SUBACCOUNT_AUTO_TOP_UP_AMOUNT = keccak256(abi.encode("SUBACCOUNT_AUTO_TOP_UP_AMOUNT"));
     // @dev key for subaccount order action
     bytes32 public constant SUBACCOUNT_ORDER_ACTION = keccak256(abi.encode("SUBACCOUNT_ORDER_ACTION"));
-    // @dev key for fee distributor swap order token index
-    bytes32 public constant FEE_DISTRIBUTOR_SWAP_TOKEN_INDEX = keccak256(abi.encode("FEE_DISTRIBUTOR_SWAP_TOKEN_INDEX"));
-    // @dev key for fee distributor swap fee batch
-    bytes32 public constant FEE_DISTRIBUTOR_SWAP_FEE_BATCH = keccak256(abi.encode("FEE_DISTRIBUTOR_SWAP_FEE_BATCH"));
 
     bytes32 public constant GLV_MAX_MARKET_COUNT = keccak256(abi.encode("GLV_MAX_MARKET_COUNT"));
     bytes32 public constant GLV_MAX_MARKET_TOKEN_BALANCE_USD = keccak256(abi.encode("GLV_MAX_MARKET_TOKEN_BALANCE_USD"));
@@ -607,12 +578,6 @@ library Keys {
         return GLV_PER_MARKET_GAS_LIMIT;
     }
 
-    // @dev key for single swap gas limit
-    // @return key for single swap gas limit
-    function singleSwapGasLimitKey() internal pure returns (bytes32) {
-        return SINGLE_SWAP_GAS_LIMIT;
-    }
-
     // @dev key for increase order gas limit
     // @return key for increase order gas limit
     function increaseOrderGasLimitKey() internal pure returns (bytes32) {
@@ -623,19 +588,6 @@ library Keys {
     // @return key for decrease order gas limit
     function decreaseOrderGasLimitKey() internal pure returns (bytes32) {
         return DECREASE_ORDER_GAS_LIMIT;
-    }
-
-    // @dev key for swap order gas limit
-    // @return key for swap order gas limit
-    function swapOrderGasLimitKey() internal pure returns (bytes32) {
-        return SWAP_ORDER_GAS_LIMIT;
-    }
-
-    function swapPathMarketFlagKey(address market) internal pure returns (bytes32) {
-        return keccak256(abi.encode(
-            SWAP_PATH_MARKET_FLAG,
-            market
-        ));
     }
 
     // @dev key for whether create glv deposit is disabled
@@ -1042,17 +994,6 @@ library Keys {
        ));
    }
 
-   // @dev the key for the virtual inventory for swaps
-   // @param the virtualMarketId the virtual market id
-   // @param the token to check the inventory for
-   function virtualInventoryForSwapsKey(bytes32 virtualMarketId, bool isLongToken) internal pure returns (bytes32) {
-       return keccak256(abi.encode(
-           VIRTUAL_INVENTORY_FOR_SWAPS,
-           virtualMarketId,
-           isLongToken
-       ));
-   }
-
     // @dev key for position impact factor
     // @param market the market address to check
     // @param isPositive whether the impact is positive or negative
@@ -1132,50 +1073,6 @@ library Keys {
     function liquidationFeeFactorKey(address market) internal pure returns (bytes32) {
         return keccak256(abi.encode(
             LIQUIDATION_FEE_FACTOR,
-            market
-        ));
-    }
-
-    // @dev key for swap impact factor
-    // @param market the market address to check
-    // @param isPositive whether the impact is positive or negative
-    // @return key for swap impact factor
-    function swapImpactFactorKey(address market, bool isPositive) internal pure returns (bytes32) {
-        return keccak256(abi.encode(
-            SWAP_IMPACT_FACTOR,
-            market,
-            isPositive
-        ));
-    }
-
-    // @dev key for swap impact exponent factor
-    // @param market the market address to check
-    // @return key for swap impact exponent factor
-    function swapImpactExponentFactorKey(address market) internal pure returns (bytes32) {
-        return keccak256(abi.encode(
-            SWAP_IMPACT_EXPONENT_FACTOR,
-            market
-        ));
-    }
-
-
-    // @dev key for swap fee factor
-    // @param market the market address to check
-    // @return key for swap fee factor
-    function swapFeeFactorKey(address market, bool forPositiveImpact) internal pure returns (bytes32) {
-        return keccak256(abi.encode(
-            SWAP_FEE_FACTOR,
-            market,
-            forPositiveImpact
-        ));
-    }
-
-    // @dev key for atomic swap fee factor
-    // @param market the market address to check
-    // @return key for atomic swap fee factor
-    function atomicSwapFeeFactorKey(address market) internal pure returns (bytes32) {
-        return keccak256(abi.encode(
-            ATOMIC_SWAP_FEE_FACTOR,
             market
         ));
     }
@@ -1340,18 +1237,6 @@ library Keys {
         return keccak256(abi.encode(
             POSITION_IMPACT_POOL_DISTRIBUTED_AT,
             market
-        ));
-    }
-
-    // @dev key for amount of tokens in a market's swap impact pool
-    // @param market the market to check
-    // @param token the token to check
-    // @return key for amount of tokens in a market's swap impact pool
-    function swapImpactPoolAmountKey(address market, address token) internal pure returns (bytes32) {
-        return keccak256(abi.encode(
-            SWAP_IMPACT_POOL_AMOUNT,
-            market,
-            token
         ));
     }
 
@@ -1894,26 +1779,6 @@ library Keys {
         return keccak256(abi.encode(
             STABLE_PRICE,
             token
-        ));
-    }
-
-    // @dev key for fee distributor swap token index
-    // @param orderKey the swap order key
-    // @return key for fee distributor swap token index
-    function feeDistributorSwapTokenIndexKey(bytes32 orderKey) internal pure returns (bytes32) {
-        return keccak256(abi.encode(
-            FEE_DISTRIBUTOR_SWAP_TOKEN_INDEX,
-            orderKey
-        ));
-    }
-
-    // @dev key for fee distributor swap fee batch key
-    // @param orderKey the swap order key
-    // @return key for fee distributor swap fee batch key
-    function feeDistributorSwapFeeBatchKey(bytes32 orderKey) internal pure returns (bytes32) {
-        return keccak256(abi.encode(
-            FEE_DISTRIBUTOR_SWAP_FEE_BATCH,
-            orderKey
         ));
     }
 

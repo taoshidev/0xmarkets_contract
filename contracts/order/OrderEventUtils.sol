@@ -33,21 +33,17 @@ library OrderEventUtils {
         eventData.addressItems.setItem(4, "market", order.market());
         eventData.addressItems.setItem(5, "initialCollateralToken", order.initialCollateralToken());
 
-        eventData.addressItems.initArrayItems(1);
-        eventData.addressItems.setItem(0, "swapPath", order.swapPath());
-
-        eventData.uintItems.initItems(11);
+        eventData.uintItems.initItems(10);
         eventData.uintItems.setItem(0, "orderType", uint256(order.orderType()));
-        eventData.uintItems.setItem(1, "decreasePositionSwapType", uint256(order.decreasePositionSwapType()));
-        eventData.uintItems.setItem(2, "sizeDeltaUsd", order.sizeDeltaUsd());
-        eventData.uintItems.setItem(3, "initialCollateralDeltaAmount", order.initialCollateralDeltaAmount());
-        eventData.uintItems.setItem(4, "triggerPrice", order.triggerPrice());
-        eventData.uintItems.setItem(5, "acceptablePrice", order.acceptablePrice());
-        eventData.uintItems.setItem(6, "executionFee", order.executionFee());
-        eventData.uintItems.setItem(7, "callbackGasLimit", order.callbackGasLimit());
-        eventData.uintItems.setItem(8, "minOutputAmount", order.minOutputAmount());
-        eventData.uintItems.setItem(9, "updatedAtTime", order.updatedAtTime());
-        eventData.uintItems.setItem(10, "validFromTime", order.validFromTime());
+        eventData.uintItems.setItem(1, "sizeDeltaUsd", order.sizeDeltaUsd());
+        eventData.uintItems.setItem(2, "initialCollateralDeltaAmount", order.initialCollateralDeltaAmount());
+        eventData.uintItems.setItem(3, "triggerPrice", order.triggerPrice());
+        eventData.uintItems.setItem(4, "acceptablePrice", order.acceptablePrice());
+        eventData.uintItems.setItem(5, "executionFee", order.executionFee());
+        eventData.uintItems.setItem(6, "callbackGasLimit", order.callbackGasLimit());
+        eventData.uintItems.setItem(7, "minOutputAmount", order.minOutputAmount());
+        eventData.uintItems.setItem(8, "updatedAtTime", order.updatedAtTime());
+        eventData.uintItems.setItem(9, "validFromTime", order.validFromTime());
 
         eventData.boolItems.initItems(3);
         eventData.boolItems.setItem(0, "isLong", order.isLong());

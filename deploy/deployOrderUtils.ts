@@ -10,7 +10,7 @@ const func = createDeployFunction({
     "OrderEventUtils",
     "IncreaseOrderUtils",
     "DecreaseOrderUtils",
-    "SwapOrderUtils",
+    // "SwapOrderUtils", // MVP: swaps disabled
     "GasUtils",
   ],
 });

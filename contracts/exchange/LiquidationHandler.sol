@@ -19,7 +19,6 @@ contract LiquidationHandler is BaseOrderHandler {
         EventEmitter _eventEmitter,
         Oracle _oracle,
         OrderVault _orderVault,
-        SwapHandler _swapHandler,
         IReferralStorage _referralStorage
     ) BaseOrderHandler(
         _roleStore,
@@ -27,7 +26,6 @@ contract LiquidationHandler is BaseOrderHandler {
         _eventEmitter,
         _oracle,
         _orderVault,
-        _swapHandler,
         _referralStorage
     ) {}
 

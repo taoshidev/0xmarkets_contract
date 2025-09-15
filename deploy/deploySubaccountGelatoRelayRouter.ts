@@ -17,7 +17,13 @@ const func = createDeployFunction({
   getDeployArgs: async ({ dependencyContracts }) => {
     return constructorContracts.map((dependencyName) => dependencyContracts[dependencyName].address);
   },
-  libraryNames: ["MarketStoreUtils", "MarketUtils", "OrderStoreUtils", "SwapUtils", "SubaccountUtils"],
+  libraryNames: [
+    "MarketStoreUtils",
+    "MarketUtils",
+    "OrderStoreUtils",
+    // "SwapUtils", // MVP: swaps disabled
+    "SubaccountUtils",
+  ],
   afterDeploy: async ({ deployedContract }) => {
     await grantRoleIfNotGranted(deployedContract.address, "CONTROLLER");
     await grantRoleIfNotGranted(deployedContract.address, "ROUTER_PLUGIN");

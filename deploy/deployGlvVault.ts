@@ -1,14 +1,9 @@
-import { createDeployFunction } from "../utils/deploy";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { DeployFunction } from "hardhat-deploy/types";
 
-const constructorContracts = ["RoleStore", "DataStore"];
-
-const func = createDeployFunction({
-  contractName: "GlvVault",
-  dependencyNames: constructorContracts,
-  getDeployArgs: async ({ dependencyContracts }) => {
-    return constructorContracts.map((dependencyName) => dependencyContracts[dependencyName].address);
-  },
-  id: "GlvVault_1",
-});
-
+// Disabled: GLV contracts removed in commit d4af1ba3
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  void hre;
+};
+func.skip = async () => true;
 export default func;

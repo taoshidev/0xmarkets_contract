@@ -50,7 +50,6 @@ library PositionUtils {
         DataStore dataStore;
         EventEmitter eventEmitter;
         Oracle oracle;
-        SwapHandler swapHandler;
         IReferralStorage referralStorage;
     }
 

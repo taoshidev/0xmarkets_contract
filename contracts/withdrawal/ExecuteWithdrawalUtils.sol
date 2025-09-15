@@ -8,7 +8,7 @@ import "./WithdrawalVault.sol";
 import "./WithdrawalStoreUtils.sol";
 import "./WithdrawalEventUtils.sol";
 
-import "../pricing/SwapPricingUtils.sol";
+import "../fee/FeeUtils.sol";
 import "../oracle/Oracle.sol";
 import "../position/PositionUtils.sol";
 
@@ -40,7 +40,6 @@ library ExecuteWithdrawalUtils {
         bytes32 key;
         address keeper;
         uint256 startingGas;
-        ISwapPricingUtils.SwapPricingType swapPricingType;
     }
 
     struct ExecuteWithdrawalCache {
@@ -56,8 +55,10 @@ library ExecuteWithdrawalUtils {
     struct _ExecuteWithdrawalCache {
         uint256 longTokenOutputAmount;
         uint256 shortTokenOutputAmount;
-        SwapPricingUtils.SwapFees longTokenFees;
-        SwapPricingUtils.SwapFees shortTokenFees;
+        uint256 longTokenProtocolFee;
+        uint256 shortTokenProtocolFee;
+        uint256 longTokenUiFee;
+        uint256 shortTokenUiFee;
         uint256 longTokenPoolAmountDelta;
         uint256 shortTokenPoolAmountDelta;
     }
@@ -67,13 +68,6 @@ library ExecuteWithdrawalUtils {
         uint256 outputAmount;
         address secondaryOutputToken;
         uint256 secondaryOutputAmount;
-    }
-
-    struct SwapCache {
-        Market.Props[] swapPathMarkets;
-        SwapUtils.SwapParams swapParams;
-        address outputToken;
-        uint256 outputAmount;
     }
 
     /**
@@ -137,7 +131,10 @@ library ExecuteWithdrawalUtils {
             params.eventEmitter,
             params.key,
             withdrawal.account(),
-            params.swapPricingType
+            cache.result.outputToken,
+            cache.result.outputAmount,
+            cache.result.secondaryOutputToken,
+            cache.result.secondaryOutputAmount
         );
 
         EventUtils.EventLogData memory eventData;
@@ -149,9 +146,7 @@ library ExecuteWithdrawalUtils {
         eventData.uintItems.setItem(1, "secondaryOutputAmount", cache.result.secondaryOutputAmount);
         CallbackUtils.afterWithdrawalExecution(params.key, withdrawal, eventData);
 
-        cache.oraclePriceCount = GasUtils.estimateWithdrawalOraclePriceCount(
-            withdrawal.longTokenSwapPath().length + withdrawal.shortTokenSwapPath().length
-        );
+        cache.oraclePriceCount = GasUtils.estimateWithdrawalOraclePriceCount(0);
 
         GasUtils.payExecutionFee(
             params.dataStore,
@@ -189,13 +184,13 @@ library ExecuteWithdrawalUtils {
             withdrawal.marketTokenAmount()
         );
 
-        cache.longTokenFees = SwapPricingUtils.getSwapFees(
-            params.dataStore,
-            market.marketToken,
+        cache.longTokenProtocolFee = Precision.applyFactor(
+            cache.longTokenOutputAmount, 
+            params.dataStore.getUint(Keys.WITHDRAWAL_FEE_FACTOR)
+        );
+        cache.longTokenUiFee = Precision.applyFactor(
             cache.longTokenOutputAmount,
-            false, // forPositiveImpact
-            withdrawal.uiFeeReceiver(),
-            params.swapPricingType
+            MarketUtils.getUiFeeFactor(params.dataStore, withdrawal.uiFeeReceiver())
         );
 
         FeeUtils.incrementClaimableFeeAmount(
@@ -203,7 +198,7 @@ library ExecuteWithdrawalUtils {
             params.eventEmitter,
             market.marketToken,
             market.longToken,
-            cache.longTokenFees.feeReceiverAmount,
+            cache.longTokenProtocolFee,
             Keys.WITHDRAWAL_FEE_TYPE
         );
 
@@ -213,17 +208,17 @@ library ExecuteWithdrawalUtils {
             withdrawal.uiFeeReceiver(),
             market.marketToken,
             market.longToken,
-            cache.longTokenFees.uiFeeAmount,
+            cache.longTokenUiFee,
             Keys.UI_WITHDRAWAL_FEE_TYPE
         );
 
-        cache.shortTokenFees = SwapPricingUtils.getSwapFees(
-            params.dataStore,
-            market.marketToken,
+        cache.shortTokenProtocolFee = Precision.applyFactor(
+            cache.shortTokenOutputAmount, 
+            params.dataStore.getUint(Keys.WITHDRAWAL_FEE_FACTOR)
+        );
+        cache.shortTokenUiFee = Precision.applyFactor(
             cache.shortTokenOutputAmount,
-            false, // forPositiveImpact
-            withdrawal.uiFeeReceiver(),
-            params.swapPricingType
+            MarketUtils.getUiFeeFactor(params.dataStore, withdrawal.uiFeeReceiver())
         );
 
         FeeUtils.incrementClaimableFeeAmount(
@@ -231,7 +226,7 @@ library ExecuteWithdrawalUtils {
             params.eventEmitter,
             market.marketToken,
             market.shortToken,
-            cache.shortTokenFees.feeReceiverAmount,
+            cache.shortTokenProtocolFee,
             Keys.WITHDRAWAL_FEE_TYPE
         );
 
@@ -241,16 +236,16 @@ library ExecuteWithdrawalUtils {
             withdrawal.uiFeeReceiver(),
             market.marketToken,
             market.shortToken,
-            cache.shortTokenFees.uiFeeAmount,
+            cache.shortTokenUiFee,
             Keys.UI_WITHDRAWAL_FEE_TYPE
         );
 
         // the pool will be reduced by the outputAmount minus the fees for the pool
-        cache.longTokenPoolAmountDelta = cache.longTokenOutputAmount - cache.longTokenFees.feeAmountForPool;
-        cache.longTokenOutputAmount = cache.longTokenFees.amountAfterFees;
+        cache.longTokenPoolAmountDelta = cache.longTokenOutputAmount - cache.longTokenProtocolFee;
+        cache.longTokenOutputAmount = cache.longTokenOutputAmount - cache.longTokenProtocolFee;
 
-        cache.shortTokenPoolAmountDelta = cache.shortTokenOutputAmount - cache.shortTokenFees.feeAmountForPool;
-        cache.shortTokenOutputAmount = cache.shortTokenFees.amountAfterFees;
+        cache.shortTokenPoolAmountDelta = cache.shortTokenOutputAmount - cache.shortTokenProtocolFee;
+        cache.shortTokenOutputAmount = cache.shortTokenOutputAmount - cache.shortTokenProtocolFee;
 
         // it is rare but possible for withdrawals to be blocked because pending borrowing fees
         // have not yet been deducted from position collateral and credited to the poolAmount value
@@ -287,49 +282,36 @@ library ExecuteWithdrawalUtils {
         params.withdrawalVault.syncTokenBalance(market.marketToken);
 
         ExecuteWithdrawalResult memory result;
-        (result.outputToken, result.outputAmount) = _swap(
-            params,
-            market,
-            market.longToken,
-            cache.longTokenOutputAmount,
-            withdrawal.longTokenSwapPath(),
-            withdrawal.minLongTokenAmount(),
-            withdrawal.receiver(),
-            withdrawal.uiFeeReceiver(),
-            withdrawal.shouldUnwrapNativeToken()
-        );
+        result.outputToken = market.longToken; // USDC
+        result.outputAmount = cache.longTokenOutputAmount;
+        result.secondaryOutputToken = market.shortToken; // USDC 
+        result.secondaryOutputAmount = cache.shortTokenOutputAmount;
 
-        (result.secondaryOutputToken, result.secondaryOutputAmount) = _swap(
-            params,
-            market,
-            market.shortToken,
-            cache.shortTokenOutputAmount,
-            withdrawal.shortTokenSwapPath(),
-            withdrawal.minShortTokenAmount(),
-            withdrawal.receiver(),
-            withdrawal.uiFeeReceiver(),
-            withdrawal.shouldUnwrapNativeToken()
-        );
+        // If both tokens are the same (USDC-only market), consolidate into a single transfer
+        if (market.longToken == market.shortToken) {
+            uint256 consolidatedAmount = result.outputAmount + result.secondaryOutputAmount;
+            result.outputAmount = consolidatedAmount;
+            result.secondaryOutputAmount = 0;
 
-        SwapPricingUtils.emitSwapFeesCollected(
-            params.eventEmitter,
-            params.key,
-            market.marketToken,
-            market.longToken,
-            prices.longTokenPrice.min,
-            Keys.WITHDRAWAL_FEE_TYPE,
-            cache.longTokenFees
-        );
+            MarketToken(payable(market.marketToken)).transferOut(
+                market.longToken,
+                withdrawal.receiver(),
+                consolidatedAmount
+            );
+        } else {
+            // Transfer both amounts to receiver from the MarketToken which holds pool funds
+            MarketToken(payable(market.marketToken)).transferOut(
+                market.longToken,
+                withdrawal.receiver(),
+                result.outputAmount
+            );
 
-        SwapPricingUtils.emitSwapFeesCollected(
-            params.eventEmitter,
-            params.key,
-            market.marketToken,
-            market.shortToken,
-            prices.shortTokenPrice.min,
-            Keys.WITHDRAWAL_FEE_TYPE,
-            cache.shortTokenFees
-        );
+            MarketToken(payable(market.marketToken)).transferOut(
+                market.shortToken,
+                withdrawal.receiver(),
+                result.secondaryOutputAmount
+            );
+        }
 
         // if the native token was transferred to the receiver in a swap
         // it may be possible to invoke external contracts before the validations
@@ -358,46 +340,6 @@ library ExecuteWithdrawalUtils {
         );
 
         return result;
-    }
-
-    function _swap(
-        ExecuteWithdrawalParams memory params,
-        Market.Props memory market,
-        address tokenIn,
-        uint256 amountIn,
-        address[] memory swapPath,
-        uint256 minOutputAmount,
-        address receiver,
-        address uiFeeReceiver,
-        bool shouldUnwrapNativeToken
-    ) internal returns (address, uint256) {
-        SwapCache memory cache;
-
-        cache.swapPathMarkets = MarketUtils.getSwapPathMarkets(params.dataStore, swapPath);
-
-        cache.swapParams = SwapUtils.SwapParams({
-            dataStore: params.dataStore,
-            eventEmitter: params.eventEmitter,
-            oracle: params.oracle,
-            bank: Bank(payable(market.marketToken)),
-            key: params.key,
-            tokenIn: tokenIn,
-            amountIn: amountIn,
-            swapPathMarkets: cache.swapPathMarkets,
-            minOutputAmount: minOutputAmount,
-            receiver: receiver,
-            uiFeeReceiver: uiFeeReceiver,
-            shouldUnwrapNativeToken: shouldUnwrapNativeToken,
-            swapPricingType: params.swapPricingType
-        });
-
-        (cache.outputToken, cache.outputAmount) = SwapUtils.swap(cache.swapParams);
-
-        // validate that internal state changes are correct before calling
-        // external callbacks
-        MarketUtils.validateMarketTokenBalance(params.dataStore, cache.swapPathMarkets);
-
-        return (cache.outputToken, cache.outputAmount);
     }
 
     function _getOutputAmounts(

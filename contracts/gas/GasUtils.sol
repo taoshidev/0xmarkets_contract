@@ -10,10 +10,8 @@ import "../utils/Precision.sol";
 
 import "../deposit/Deposit.sol";
 import "../withdrawal/Withdrawal.sol";
-import "../shift/Shift.sol";
-import "../order/Order.sol";
 import "../order/BaseOrderUtils.sol";
-import "../glv/glvWithdrawal/GlvWithdrawal.sol";
+import "../order/Order.sol";
 
 import "../bank/StrictBank.sol";
 
@@ -22,10 +20,7 @@ import "../bank/StrictBank.sol";
 library GasUtils {
     using Deposit for Deposit.Props;
     using Withdrawal for Withdrawal.Props;
-    using Shift for Shift.Props;
     using Order for Order.Props;
-    using GlvDeposit for GlvDeposit.Props;
-    using GlvWithdrawal for GlvWithdrawal.Props;
 
     using EventUtils for EventUtils.AddressItems;
     using EventUtils for EventUtils.UintItems;
@@ -311,34 +306,6 @@ library GasUtils {
         return 3 + swapsCount;
     }
 
-    // @dev get estimated number of oracle prices for shift
-    function estimateShiftOraclePriceCount() internal pure returns (uint256) {
-        // for single asset markets only 3 prices will be required
-        // and keeper will slightly overpay
-        // it should not be an issue because execution fee goes back to keeper
-        return 4;
-    }
-
-    function estimateGlvDepositOraclePriceCount(
-        uint256 marketCount,
-        uint256 swapsCount
-    ) internal pure returns (uint256) {
-        // for single asset markets oracle price count will be overestimated by 1
-        // it should not be an issue for GLV with multiple markets
-        // because relative difference would be insignificant
-        return 2 + marketCount + swapsCount;
-    }
-
-    function estimateGlvWithdrawalOraclePriceCount(
-        uint256 marketCount,
-        uint256 swapsCount
-    ) internal pure returns (uint256) {
-        // for single asset markets oracle price count will be overestimated by 1
-        // it should not be an issue for GLV with multiple markets
-        // because relative difference would be insignificant
-        return 2 + marketCount + swapsCount;
-    }
-
     // @dev the estimated gas limit for deposits
     // @param dataStore DataStore
     // @param deposit the deposit to estimate the gas limit for
@@ -346,11 +313,7 @@ library GasUtils {
         DataStore dataStore,
         Deposit.Props memory deposit
     ) internal view returns (uint256) {
-        uint256 gasPerSwap = dataStore.getUint(Keys.singleSwapGasLimitKey());
-        uint256 swapCount = deposit.longTokenSwapPath().length + deposit.shortTokenSwapPath().length;
-        uint256 gasForSwaps = swapCount * gasPerSwap;
-
-        return dataStore.getUint(Keys.depositGasLimitKey()) + deposit.callbackGasLimit() + gasForSwaps;
+        return dataStore.getUint(Keys.depositGasLimitKey()) + deposit.callbackGasLimit();
     }
 
     // @dev the estimated gas limit for withdrawals
@@ -360,21 +323,7 @@ library GasUtils {
         DataStore dataStore,
         Withdrawal.Props memory withdrawal
     ) internal view returns (uint256) {
-        uint256 gasPerSwap = dataStore.getUint(Keys.singleSwapGasLimitKey());
-        uint256 swapCount = withdrawal.longTokenSwapPath().length + withdrawal.shortTokenSwapPath().length;
-        uint256 gasForSwaps = swapCount * gasPerSwap;
-
-        return dataStore.getUint(Keys.withdrawalGasLimitKey()) + withdrawal.callbackGasLimit() + gasForSwaps;
-    }
-
-    // @dev the estimated gas limit for shifts
-    // @param dataStore DataStore
-    // @param shift the shift to estimate the gas limit for
-    function estimateExecuteShiftGasLimit(
-        DataStore dataStore,
-        Shift.Props memory shift
-    ) internal view returns (uint256) {
-        return dataStore.getUint(Keys.shiftGasLimitKey()) + shift.callbackGasLimit();
+        return dataStore.getUint(Keys.withdrawalGasLimitKey()) + withdrawal.callbackGasLimit();
     }
 
     // @dev the estimated gas limit for orders
@@ -392,10 +341,6 @@ library GasUtils {
             return estimateExecuteDecreaseOrderGasLimit(dataStore, order);
         }
 
-        if (BaseOrderUtils.isSwapOrder(order.orderType())) {
-            return estimateExecuteSwapOrderGasLimit(dataStore, order);
-        }
-
         revert Errors.UnsupportedOrderType(uint256(order.orderType()));
     }
 
@@ -406,12 +351,7 @@ library GasUtils {
         DataStore dataStore,
         Order.Props memory order
     ) internal view returns (uint256) {
-        uint256 gasPerSwap = dataStore.getUint(Keys.singleSwapGasLimitKey());
-        return
-            dataStore.getUint(Keys.increaseOrderGasLimitKey()) +
-            gasPerSwap *
-            order.swapPath().length +
-            order.callbackGasLimit();
+        return dataStore.getUint(Keys.increaseOrderGasLimitKey()) + order.callbackGasLimit();
     }
 
     // @dev the estimated gas limit for decrease orders
@@ -421,81 +361,8 @@ library GasUtils {
         DataStore dataStore,
         Order.Props memory order
     ) internal view returns (uint256) {
-        uint256 gasPerSwap = dataStore.getUint(Keys.singleSwapGasLimitKey());
-        uint256 swapCount = order.swapPath().length;
-        if (order.decreasePositionSwapType() != Order.DecreasePositionSwapType.NoSwap) {
-            swapCount += 1;
-        }
 
-        return dataStore.getUint(Keys.decreaseOrderGasLimitKey()) + gasPerSwap * swapCount + order.callbackGasLimit();
-    }
-
-    // @dev the estimated gas limit for swap orders
-    // @param dataStore DataStore
-    // @param order the order to estimate the gas limit for
-    function estimateExecuteSwapOrderGasLimit(
-        DataStore dataStore,
-        Order.Props memory order
-    ) internal view returns (uint256) {
-        uint256 gasPerSwap = dataStore.getUint(Keys.singleSwapGasLimitKey());
-        return
-            dataStore.getUint(Keys.swapOrderGasLimitKey()) +
-            gasPerSwap *
-            order.swapPath().length +
-            order.callbackGasLimit();
-    }
-
-    // @dev the estimated gas limit for glv deposits
-    // @param dataStore DataStore
-    // @param deposit the deposit to estimate the gas limit for
-    function estimateExecuteGlvDepositGasLimit(
-        DataStore dataStore,
-        GlvDeposit.Props memory glvDeposit,
-        uint256 marketCount
-    ) internal view returns (uint256) {
-        // glv deposit execution gas consumption depends on the amount of markets
-        uint256 gasPerGlvPerMarket = dataStore.getUint(Keys.glvPerMarketGasLimitKey());
-        uint256 gasForGlvMarkets = gasPerGlvPerMarket * marketCount;
-        uint256 glvDepositGasLimit = dataStore.getUint(Keys.glvDepositGasLimitKey());
-
-        uint256 gasLimit = glvDepositGasLimit + glvDeposit.callbackGasLimit() + gasForGlvMarkets;
-
-        if (glvDeposit.isMarketTokenDeposit()) {
-            // user provided GM, no separate deposit will be created and executed in this case
-            return gasLimit;
-        }
-
-        uint256 gasPerSwap = dataStore.getUint(Keys.singleSwapGasLimitKey());
-        uint256 swapCount = glvDeposit.longTokenSwapPath().length + glvDeposit.shortTokenSwapPath().length;
-        uint256 gasForSwaps = swapCount * gasPerSwap;
-
-        return gasLimit + dataStore.getUint(Keys.depositGasLimitKey()) + gasForSwaps;
-    }
-
-    // @dev the estimated gas limit for glv withdrawals
-    // @param dataStore DataStore
-    // @param withdrawal the withdrawal to estimate the gas limit for
-    function estimateExecuteGlvWithdrawalGasLimit(
-        DataStore dataStore,
-        GlvWithdrawal.Props memory glvWithdrawal,
-        uint256 marketCount
-    ) internal view returns (uint256) {
-        // glv withdrawal execution gas consumption depends on the amount of markets
-        uint256 gasPerGlvPerMarket = dataStore.getUint(Keys.glvPerMarketGasLimitKey());
-        uint256 gasForGlvMarkets = gasPerGlvPerMarket * marketCount;
-        uint256 glvWithdrawalGasLimit = dataStore.getUint(Keys.glvWithdrawalGasLimitKey());
-
-        uint256 gasLimit = glvWithdrawalGasLimit + glvWithdrawal.callbackGasLimit() + gasForGlvMarkets;
-
-        uint256 gasPerSwap = dataStore.getUint(Keys.singleSwapGasLimitKey());
-        uint256 swapCount = glvWithdrawal.longTokenSwapPath().length + glvWithdrawal.shortTokenSwapPath().length;
-        uint256 gasForSwaps = swapCount * gasPerSwap;
-
-        return gasLimit + dataStore.getUint(Keys.withdrawalGasLimitKey()) + gasForSwaps;
-    }
-
-    function estimateExecuteGlvShiftGasLimit(DataStore dataStore) internal view returns (uint256) {
-        return dataStore.getUint(Keys.glvShiftGasLimitKey());
+        return dataStore.getUint(Keys.decreaseOrderGasLimitKey()) + order.callbackGasLimit();
     }
 
     function emitKeeperExecutionFee(EventEmitter eventEmitter, address keeper, uint256 executionFeeAmount) internal {

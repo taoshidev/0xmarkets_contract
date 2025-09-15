@@ -80,13 +80,11 @@ library OrderUtils {
         cache.shouldRecordSeparateExecutionFeeTransfer = true;
 
         if (
-            params.orderType == Order.OrderType.MarketSwap ||
-            params.orderType == Order.OrderType.LimitSwap ||
             params.orderType == Order.OrderType.MarketIncrease ||
             params.orderType == Order.OrderType.LimitIncrease ||
             params.orderType == Order.OrderType.StopIncrease
         ) {
-            // for swaps and increase orders, the initialCollateralDeltaAmount is set based on the amount of tokens
+            // for increase orders, the initialCollateralDeltaAmount is set based on the amount of tokens
             // transferred to the orderVault
             cache.initialCollateralDeltaAmount = orderVault.recordTransferIn(params.addresses.initialCollateralToken);
             if (params.addresses.initialCollateralToken == cache.wnt) {
@@ -127,9 +125,6 @@ library OrderUtils {
             revert Errors.UnexpectedValidFromTime(uint256(params.orderType));
         }
 
-        // validate swap path markets
-        MarketUtils.validateSwapPath(dataStore, params.addresses.swapPath);
-
         Order.Props memory order;
 
         order.setAccount(account);
@@ -139,9 +134,7 @@ library OrderUtils {
         order.setMarket(params.addresses.market);
         order.setInitialCollateralToken(params.addresses.initialCollateralToken);
         order.setUiFeeReceiver(params.addresses.uiFeeReceiver);
-        order.setSwapPath(params.addresses.swapPath);
         order.setOrderType(params.orderType);
-        order.setDecreasePositionSwapType(params.decreasePositionSwapType);
         order.setSizeDeltaUsd(params.numbers.sizeDeltaUsd);
         order.setInitialCollateralDeltaAmount(cache.initialCollateralDeltaAmount);
         order.setTriggerPrice(params.numbers.triggerPrice);
@@ -162,7 +155,7 @@ library OrderUtils {
         CallbackUtils.validateCallbackGasLimit(dataStore, order.callbackGasLimit());
 
         cache.estimatedGasLimit = GasUtils.estimateExecuteOrderGasLimit(dataStore, order);
-        cache.oraclePriceCount = GasUtils.estimateOrderOraclePriceCount(params.addresses.swapPath.length);
+        cache.oraclePriceCount = GasUtils.estimateOrderOraclePriceCount(0);
         uint256 executionFee;
         (executionFee, cache.executionFeeDiff) = GasUtils.validateAndCapExecutionFee(
             dataStore,
@@ -216,7 +209,7 @@ library OrderUtils {
 
         OrderStoreUtils.remove(params.dataStore, params.key, order.account());
 
-        if (BaseOrderUtils.isIncreaseOrder(order.orderType()) || BaseOrderUtils.isSwapOrder(order.orderType())) {
+        if (BaseOrderUtils.isIncreaseOrder(order.orderType())) {
             if (order.initialCollateralDeltaAmount() > 0) {
                 address cancellationReceiver = order.cancellationReceiver();
                 if (cancellationReceiver == address(0)) {
@@ -259,7 +252,7 @@ library OrderUtils {
             order.callbackContract(),
             order.executionFee(),
             params.startingGas,
-            GasUtils.estimateOrderOraclePriceCount(order.swapPath().length),
+            GasUtils.estimateOrderOraclePriceCount(0),
             params.keeper,
             executionFeeReceiver
         );
@@ -310,7 +303,7 @@ library OrderUtils {
             order.callbackContract(),
             order.executionFee(),
             startingGas,
-            GasUtils.estimateOrderOraclePriceCount(order.swapPath().length),
+            GasUtils.estimateOrderOraclePriceCount(0),
             keeper,
             order.receiver()
         );

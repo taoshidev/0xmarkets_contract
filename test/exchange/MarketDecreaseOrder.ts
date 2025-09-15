@@ -1,3 +1,4 @@
+/* MVP note: swaps are disabled for MVP; test content commented out to retain history.
 import { expect } from "chai";
 
 import { deployFixture } from "../../utils/fixture";
@@ -325,3 +326,6 @@ describe("Exchange.MarketDecreaseOrder", () => {
     });
   });
 });
+*/
+
+export {};

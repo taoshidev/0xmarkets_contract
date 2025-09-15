@@ -7,7 +7,6 @@ import "../event/EventUtils.sol";
 import "../utils/Cast.sol";
 
 import "./Withdrawal.sol";
-import "../pricing/ISwapPricingUtils.sol";
 
 library WithdrawalEventUtils {
     using Withdrawal for Withdrawal.Props;
@@ -33,10 +32,6 @@ library WithdrawalEventUtils {
         eventData.addressItems.setItem(1, "receiver", withdrawal.receiver());
         eventData.addressItems.setItem(2, "callbackContract", withdrawal.callbackContract());
         eventData.addressItems.setItem(3, "market", withdrawal.market());
-
-        eventData.addressItems.initArrayItems(2);
-        eventData.addressItems.setItem(0, "longTokenSwapPath", withdrawal.longTokenSwapPath());
-        eventData.addressItems.setItem(1, "shortTokenSwapPath", withdrawal.shortTokenSwapPath());
 
         eventData.uintItems.initItems(7);
         eventData.uintItems.setItem(0, "marketTokenAmount", withdrawal.marketTokenAmount());
@@ -65,18 +60,24 @@ library WithdrawalEventUtils {
         EventEmitter eventEmitter,
         bytes32 key,
         address account,
-        ISwapPricingUtils.SwapPricingType swapPricingType
+        address outputToken,
+        uint256 outputAmount,
+        address secondaryOutputToken,
+        uint256 secondaryOutputAmount
     ) external {
         EventUtils.EventLogData memory eventData;
 
         eventData.bytes32Items.initItems(1);
         eventData.bytes32Items.setItem(0, "key", key);
 
-        eventData.addressItems.initItems(1);
+        eventData.addressItems.initItems(3);
         eventData.addressItems.setItem(0, "account", account);
+        eventData.addressItems.setItem(1, "outputToken", outputToken);
+        eventData.addressItems.setItem(2, "secondaryOutputToken", secondaryOutputToken);
 
-        eventData.uintItems.initItems(1);
-        eventData.uintItems.setItem(0, "swapPricingType", uint256(swapPricingType));
+        eventData.uintItems.initItems(2);
+        eventData.uintItems.setItem(0, "outputAmount", outputAmount);
+        eventData.uintItems.setItem(1, "secondaryOutputAmount", secondaryOutputAmount);
 
         eventEmitter.emitEventLog2(
             "WithdrawalExecuted",

@@ -10,9 +10,6 @@ import "../position/Position.sol";
 import "../market/MarketUtils.sol";
 import "../market/Market.sol";
 
-import "../pricing/ISwapPricingUtils.sol";
-import "../pricing/SwapPricingUtils.sol";
-
 library ReaderWithdrawalUtils {
     using SignedMath for int256;
     using SafeCast for uint256;
@@ -47,8 +44,7 @@ library ReaderWithdrawalUtils {
         Market.Props memory market,
         MarketUtils.MarketPrices memory prices,
         uint256 marketTokenAmount,
-        address uiFeeReceiver,
-        ISwapPricingUtils.SwapPricingType swapPricingType
+        address uiFeeReceiver
     ) external view returns (uint256, uint256) {
         GetWithdrawalAmountOutCache memory cache;
 
@@ -85,27 +81,31 @@ library ReaderWithdrawalUtils {
         cache.longTokenOutputAmount = cache.longTokenOutputUsd / prices.longTokenPrice.max;
         cache.shortTokenOutputAmount = cache.shortTokenOutputUsd / prices.shortTokenPrice.max;
 
-        SwapPricingUtils.SwapFees memory longTokenFees = SwapPricingUtils.getSwapFees(
-            dataStore,
-            market.marketToken,
-            cache.longTokenOutputAmount,
-            false, // forPositiveImpact
-            uiFeeReceiver,
-            swapPricingType
+        uint256 totalOutputAmount = cache.longTokenOutputAmount + cache.shortTokenOutputAmount;
+    
+        // Calculate withdrawal fee
+        uint256 withdrawalFeeAmount = Precision.applyFactor(
+            totalOutputAmount,
+            dataStore.getUint(Keys.WITHDRAWAL_FEE_FACTOR)
         );
-
-        SwapPricingUtils.SwapFees memory shortTokenFees = SwapPricingUtils.getSwapFees(
-            dataStore,
-            market.marketToken,
-            cache.shortTokenOutputAmount,
-            false, // forPositiveImpact
-            uiFeeReceiver,
-            swapPricingType
+        
+        // Calculate UI fee
+        uint256 uiFeeAmount = Precision.applyFactor(
+            totalOutputAmount,
+            MarketUtils.getUiFeeFactor(dataStore, uiFeeReceiver)
         );
-
-        return (
-            longTokenFees.amountAfterFees,
-            shortTokenFees.amountAfterFees
+        
+        // Calculate total amount after fees
+        uint256 totalFees = withdrawalFeeAmount + uiFeeAmount;
+        uint256 totalAmountAfterFees = totalOutputAmount - totalFees;
+        
+        uint256 longTokenAfterFees = Precision.mulDiv(
+            totalAmountAfterFees, 
+            cache.longTokenOutputAmount, 
+            totalOutputAmount
         );
+        uint256 shortTokenAfterFees = totalAmountAfterFees - longTokenAfterFees;
+        
+        return (longTokenAfterFees, shortTokenAfterFees);
     }
 }

@@ -10,8 +10,6 @@ import "../role/RoleModule.sol";
 import "../oracle/OracleModule.sol";
 import "../utils/BasicMulticall.sol";
 import "../fee/FeeUtils.sol";
-import "../v1/IVaultV1.sol";
-import "../v1/IVaultGovV1.sol";
 
 // @title FeeHandler
 contract FeeHandler is ReentrancyGuard, RoleModule, OracleModule, BasicMulticall {
@@ -29,7 +27,6 @@ contract FeeHandler is ReentrancyGuard, RoleModule, OracleModule, BasicMulticall
 
     DataStore public immutable dataStore;
     EventEmitter public immutable eventEmitter;
-    IVaultV1 public immutable vaultV1;
     address public immutable gmx;
 
     constructor(
@@ -37,12 +34,10 @@ contract FeeHandler is ReentrancyGuard, RoleModule, OracleModule, BasicMulticall
         Oracle _oracle,
         DataStore _dataStore,
         EventEmitter _eventEmitter,
-        IVaultV1 _vaultV1,
         address _gmx
     ) RoleModule(_roleStore) OracleModule(_oracle) {
         dataStore = _dataStore;
         eventEmitter = _eventEmitter;
-        vaultV1 = _vaultV1;
         gmx = _gmx;
     }
 
@@ -69,7 +64,6 @@ contract FeeHandler is ReentrancyGuard, RoleModule, OracleModule, BasicMulticall
         uint256 feeAmount;
         if (version == v1) {
             uint256 balanceBefore = IERC20(feeToken).balanceOf(address(this));
-            IVaultGovV1(vaultV1.gov()).withdrawFees(address(vaultV1), feeToken, address(this));
             uint256 balanceAfter = IERC20(feeToken).balanceOf(address(this));
             feeAmount = balanceAfter - balanceBefore;
         } else if (version == v2) {
@@ -133,7 +127,7 @@ contract FeeHandler is ReentrancyGuard, RoleModule, OracleModule, BasicMulticall
 
         for (uint256 i; i < markets.length; i++) {
             if (version == v1) {
-                feeAmount = vaultV1.feeReserves(feeToken);
+                feeAmount = 0;
             } else if (version == v2) {
                 address market = markets[i];
                 _validateMarket(market);

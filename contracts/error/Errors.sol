@@ -98,12 +98,14 @@ library Errors {
     // DepositUtils errors
     error EmptyDeposit();
     error EmptyDepositAmounts();
+    // USDC-only deposits / withdrawals
+    error InvalidDepositToken(address provided, address expected);
+    error InvalidWithdrawalMarketTokens(address longToken, address shortToken, address expected);
+    error InvalidUsdcDecimals(uint8 actual, uint8 expected);
 
     // ExecuteDepositUtils errors
     error MinMarketTokens(uint256 received, uint256 expected);
-    error EmptyDepositAmountsAfterSwap();
     error InvalidPoolValueForDeposit(int256 poolValue);
-    error InvalidSwapOutputToken(address outputToken, address expectedOutputToken);
     error InvalidReceiverForFirstDeposit(address receiver, address expectedReceiver);
     error InvalidMinMarketTokensForFirstDeposit(uint256 minMarketTokens, uint256 expectedMinMarketTokens);
 
@@ -119,7 +121,6 @@ library Errors {
     // FeeDistributor errors
     error InvalidFeeBatchTokenIndex(uint256 tokenIndex, uint256 feeBatchTokensLength);
     error InvalidAmountInForFeeBatch(uint256 amountIn, uint256 remainingAmount);
-    error InvalidSwapPathForV1(address[] path, address bridgingToken);
 
     // GlpMigrator errors
     error InvalidGlpAmount(uint256 totalGlpAmountToRedeem, uint256 totalGlpAmount);
@@ -128,7 +129,6 @@ library Errors {
     // GlvHandler errors
     error InvalidGlvDepositInitialLongToken(address initialLongToken);
     error InvalidGlvDepositInitialShortToken(address initialShortToken);
-    error InvalidGlvDepositSwapPath(uint256 longTokenSwapPathLength, uint256 shortTokenSwapPathLength);
     error MinGlvTokens(uint256 received, uint256 expected);
 
     // OrderHandler errors
@@ -165,17 +165,14 @@ library Errors {
     // MarketUtils errors
     error EmptyMarket();
     error DisabledMarket(address market);
-    error MaxSwapPathLengthExceeded(uint256 swapPathLengh, uint256 maxSwapPathLength);
     error InsufficientPoolAmount(uint256 poolAmount, uint256 amount);
     error InsufficientReserve(uint256 reservedUsd, uint256 maxReservedUsd);
     error InsufficientReserveForOpenInterest(uint256 reservedUsd, uint256 maxReservedUsd);
     error UnableToGetOppositeToken(address inputToken, address market);
     error UnexpectedTokenForVirtualInventory(address token, address market);
     error EmptyMarketTokenSupply();
-    error InvalidSwapMarket(address market);
     error UnableToGetCachedTokenPrice(address token, address market);
     error CollateralAlreadyClaimed(uint256 adjustedClaimableAmount, uint256 claimedAmount);
-    error OpenInterestCannotBeUpdatedForSwapOnlyMarket(address market);
     error MaxOpenInterestExceeded(uint256 openInterest, uint256 maxOpenInterest);
     error MaxPoolAmountExceeded(uint256 poolAmount, uint256 maxPoolAmount);
     error MaxPoolUsdForDepositExceeded(uint256 poolUsd, uint256 maxPoolUsdForDeposit);
@@ -278,9 +275,6 @@ library Errors {
     // OrderStoreUtils errors
     error OrderNotFound(bytes32 key);
 
-    // SwapOrderUtils errors
-    error UnexpectedMarket();
-
     // DecreasePositionCollateralUtils errors
     error InsufficientFundsToPayForCosts(uint256 remainingCostUsd, string step);
     error InvalidOutputToken(address tokenOut, address expectedTokenOut);
@@ -288,7 +282,6 @@ library Errors {
     // DecreasePositionUtils errors
     error InvalidDecreaseOrderSize(uint256 sizeDeltaUsd, uint256 positionSizeInUsd);
     error UnableToWithdrawCollateral(int256 estimatedRemainingCollateralUsd);
-    error InvalidDecreasePositionSwapType(uint256 decreasePositionSwapType);
     error PositionShouldNotBeLiquidated(
         string reason,
         int256 remainingCollateralUsd,
@@ -329,9 +322,6 @@ library Errors {
     error LongTokensAreNotEqual(address fromMarketLongToken, address toMarketLongToken);
     error ShortTokensAreNotEqual(address fromMarketLongToken, address toMarketLongToken);
 
-    // SwapPricingUtils errors
-    error UsdDeltaExceedsPoolValue(int256 usdDelta, uint256 poolUsd);
-
     // RoleModule errors
     error Unauthorized(address msgSender, string role);
 
@@ -348,9 +338,6 @@ library Errors {
     // SwapUtils errors
     error InvalidTokenIn(address tokenIn, address market);
     error InsufficientOutputAmount(uint256 outputAmount, uint256 minOutputAmount);
-    error InsufficientSwapOutputAmount(uint256 outputAmount, uint256 minOutputAmount);
-    error DuplicatedMarketInSwapPath(address market);
-    error SwapPriceImpactExceedsAmountIn(uint256 amountAfterFees, int256 negativeImpactAmount);
 
     // SubaccountRouter errors
     error InvalidReceiverForSubaccountOrder(address receiver, address expectedReceiver);
@@ -392,9 +379,6 @@ library Errors {
         string label
     );
 
-    // WithdrawalHandler errors
-    error SwapsNotAllowedForAtomicWithdrawal(uint256 longTokenSwapPathLength, uint256 shortTokenSwapPathLength);
-
     // WithdrawalStoreUtils errors
     error WithdrawalNotFound(bytes32 key);
 
@@ -426,8 +410,6 @@ library Errors {
 
     // Gelato relay errors
     error InvalidSignature(string signatureType);
-    // User sent incorrect fee token or incorrect swap path
-    error UnexpectedRelayFeeTokenAfterSwap(address feeToken, address expectedFeeToken);
     error UnexpectedRelayFeeToken(address feeToken, address expectedFeeToken);
     // Contract received unsupported fee token from Gelato relay
     error UnsupportedRelayFeeToken(address feeToken, address expectedFeeToken);

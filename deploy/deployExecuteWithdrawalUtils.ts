@@ -10,8 +10,8 @@ const func = createDeployFunction({
     "MarketEventUtils",
     "WithdrawalStoreUtils",
     "WithdrawalEventUtils",
-    "SwapUtils",
-    "SwapPricingUtils",
+    // "SwapUtils", // MVP: swaps disabled
+    // "SwapPricingUtils", // MVP: swaps disabled
     "PositionUtils",
   ],
 });
