@@ -1,4 +1,4 @@
-import { hashString, hashData } from "./hash";
+import { hashData, hashString } from "./hash";
 
 export const WNT = hashString("WNT");
 export const USDC = hashString("USDC");
@@ -261,6 +261,8 @@ export const BUYBACK_MAX_PRICE_AGE = hashString("BUYBACK_MAX_PRICE_AGE");
 export const WITHDRAWABLE_BUYBACK_TOKEN_AMOUNT = hashString("WITHDRAWABLE_BUYBACK_TOKEN_AMOUNT");
 
 export const VALID_FROM_TIME = hashString("VALID_FROM_TIME");
+
+export const ASSET_TOKEN = hashString("ASSET_TOKEN");
 
 export function accountDepositListKey(account) {
   return hashData(["bytes32", "address"], [ACCOUNT_DEPOSIT_LIST, account]);
@@ -804,4 +806,8 @@ export function buybackMaxPriceImpactFactorKey(token: string) {
 
 export function withdrawableBuybackTokenAmountKey(buybackToken: string) {
   return hashData(["bytes32", "address"], [WITHDRAWABLE_BUYBACK_TOKEN_AMOUNT, buybackToken]);
+}
+
+export function assetTokenKey(asset: string) {
+  return hashData(["bytes32", "string"], [ASSET_TOKEN, asset]);
 }
