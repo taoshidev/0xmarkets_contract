@@ -98,6 +98,10 @@ export const IS_ORACLE_PROVIDER_ENABLED = hashString("IS_ORACLE_PROVIDER_ENABLED
 export const IS_ATOMIC_ORACLE_PROVIDER = hashString("IS_ATOMIC_ORACLE_PROVIDER");
 export const CHAINLINK_PAYMENT_TOKEN = hashString("CHAINLINK_PAYMENT_TOKEN");
 
+// Pyth-specific constants
+export const PYTH_FEED_ID = hashString("PYTH_FEED_ID");
+export const PYTH_CONFIDENCE_INTERVAL = hashString("PYTH_CONFIDENCE_INTERVAL");
+
 export const MIN_COLLATERAL_FACTOR = hashString("MIN_COLLATERAL_FACTOR");
 export const MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER = hashString(
   "MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER"
@@ -804,4 +808,13 @@ export function buybackMaxPriceImpactFactorKey(token: string) {
 
 export function withdrawableBuybackTokenAmountKey(buybackToken: string) {
   return hashData(["bytes32", "address"], [WITHDRAWABLE_BUYBACK_TOKEN_AMOUNT, buybackToken]);
+}
+
+// Pyth-specific key functions
+export function pythFeedIdKey(token: string) {
+  return hashData(["bytes32", "address"], [PYTH_FEED_ID, token]);
+}
+
+export function pythConfidenceIntervalKey(token: string) {
+  return hashData(["bytes32", "address"], [PYTH_CONFIDENCE_INTERVAL, token]);
 }
