@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { DataStore, MockPythLazer, PythAdapter, Oracle, MintableToken } from "../../typechain-types";
+import { DataStore, MockPythLazer, PythAdapter, MintableToken } from "../../typechain-types";
 import { deployFixture } from "../../utils/fixture";
 import * as keys from "../../utils/keys";
 import { expandDecimals } from "../../utils/math";
@@ -10,7 +10,6 @@ describe("PythAdapter", function () {
   let dataStore: DataStore;
   let mockPythLazer: MockPythLazer;
   let pythAdapter: PythAdapter;
-  let oracle: Oracle;
   let wallet: SignerWithAddress;
   let user0: SignerWithAddress;
   let eurUsdToken: MintableToken;
@@ -32,7 +31,6 @@ describe("PythAdapter", function () {
 
     // Extract contracts with proper typing
     dataStore = fixture.contracts.dataStore as DataStore;
-    oracle = fixture.contracts.oracle as Oracle;
     wnt = fixture.contracts.wnt;
     wbtc = fixture.contracts.wbtc;
 
@@ -52,7 +50,7 @@ describe("PythAdapter", function () {
         "pyth-lazer/PythLazerLib.sol:PythLazerLib": pythLazerLib.address,
       },
     });
-    pythAdapter = (await PythAdapter.deploy(dataStore.address, oracle.address, mockPythLazer.address)) as PythAdapter;
+    pythAdapter = (await PythAdapter.deploy(dataStore.address, mockPythLazer.address)) as PythAdapter;
 
     // Deploy dummy EUR/USD token for FX testing
     const MintableToken = await ethers.getContractFactory("MintableToken");
@@ -101,7 +99,6 @@ describe("PythAdapter", function () {
   describe("Deployment and Configuration", function () {
     it("Should deploy with correct parameters", async function () {
       expect(await pythAdapter.dataStore()).to.equal(dataStore.address);
-      expect(await pythAdapter.oracle()).to.equal(oracle.address);
       expect(await pythAdapter.pythLazer()).to.equal(mockPythLazer.address);
     });
 
@@ -213,7 +210,7 @@ describe("PythAdapter", function () {
     });
   });
 
-  describe("Access Control for getOraclePrice", function () {
+  describe("getOraclePrice Functionality", function () {
     beforeEach(async function () {
       // Create fresh payload to avoid staleness
       const currentTimestamp = Math.floor(Date.now() / 1000);
@@ -231,21 +228,8 @@ describe("PythAdapter", function () {
       await pythAdapter.connect(user0).updatePrice(wnt.address, updateData, { value: VERIFICATION_FEE });
     });
 
-    it("Should reject getOraclePrice from non-oracle address", async function () {
-      await expect(pythAdapter.connect(user0).getOraclePrice(wnt.address, "0x")).to.be.revertedWith(
-        "PythAdapter: Only oracle allowed"
-      );
-    });
-
-    it("Should return valid price data when called by oracle", async function () {
-      // Impersonate oracle address to call getOraclePrice
-      await ethers.provider.send("hardhat_impersonateAccount", [oracle.address]);
-      await ethers.provider.send("hardhat_setBalance", [oracle.address, ethers.utils.parseEther("1.0").toHexString()]);
-      const oracleSigner = await ethers.getSigner(oracle.address);
-
-      const result = await pythAdapter.connect(oracleSigner).callStatic.getOraclePrice(wnt.address, "0x");
-
-      await ethers.provider.send("hardhat_stopImpersonatingAccount", [oracle.address]);
+    it("Should return valid price data when called by anyone", async function () {
+      const result = await pythAdapter.connect(user0).callStatic.getOraclePrice(wnt.address, "0x");
 
       // Verify result structure
       expect(result.token).to.equal(wnt.address);
@@ -257,17 +241,9 @@ describe("PythAdapter", function () {
 
     it("Should reject getOraclePrice when no valid price available", async function () {
       // Don't update any price first, try to get price for unconfigured token
-
-      // Impersonate oracle address
-      await ethers.provider.send("hardhat_impersonateAccount", [oracle.address]);
-      await ethers.provider.send("hardhat_setBalance", [oracle.address, ethers.utils.parseEther("1.0").toHexString()]);
-      const oracleSigner = await ethers.getSigner(oracle.address);
-
-      await expect(pythAdapter.connect(oracleSigner).callStatic.getOraclePrice(wbtc.address, "0x")).to.be.revertedWith(
+      await expect(pythAdapter.connect(user0).callStatic.getOraclePrice(wbtc.address, "0x")).to.be.revertedWith(
         "PythAdapter: No valid price available"
       );
-
-      await ethers.provider.send("hardhat_stopImpersonatingAccount", [oracle.address]);
     });
   });
 
@@ -396,14 +372,8 @@ describe("PythAdapter", function () {
       await ethers.provider.send("evm_increaseTime", [shortMaxAge + 1]);
       await ethers.provider.send("evm_mine", []);
 
-      // Impersonate oracle to call getOraclePrice
-      await ethers.provider.send("hardhat_impersonateAccount", [oracle.address]);
-      await ethers.provider.send("hardhat_setBalance", [oracle.address, ethers.utils.parseEther("1.0").toHexString()]);
-      const oracleSigner = await ethers.getSigner(oracle.address);
-
-      await expect(pythAdapter.connect(oracleSigner).callStatic.getOraclePrice(wnt.address, "0x")).to.be.reverted;
-
-      await ethers.provider.send("hardhat_stopImpersonatingAccount", [oracle.address]);
+      // Try to get price - should be reverted due to staleness
+      await expect(pythAdapter.connect(user0).callStatic.getOraclePrice(wnt.address, "0x")).to.be.reverted;
     });
 
     it("Should allow prices within max age", async function () {
@@ -411,18 +381,12 @@ describe("PythAdapter", function () {
       const reasonableMaxAge = 3600; // 1 hour
       await dataStore.setUint(keys.MAX_ORACLE_PRICE_AGE, reasonableMaxAge);
 
-      // Impersonate oracle to call getOraclePrice
-      await ethers.provider.send("hardhat_impersonateAccount", [oracle.address]);
-      await ethers.provider.send("hardhat_setBalance", [oracle.address, ethers.utils.parseEther("1.0").toHexString()]);
-      const oracleSigner = await ethers.getSigner(oracle.address);
-
-      const result = await pythAdapter.connect(oracleSigner).callStatic.getOraclePrice(wnt.address, "0x");
+      // Get price directly - no need for oracle impersonation anymore
+      const result = await pythAdapter.connect(user0).callStatic.getOraclePrice(wnt.address, "0x");
 
       expect(result.min).to.be.gt(0);
       expect(result.max).to.be.gt(0);
       expect(result.timestamp).to.be.gt(0);
-
-      await ethers.provider.send("hardhat_stopImpersonatingAccount", [oracle.address]);
     });
 
     it("Should work when max age is not configured (zero)", async function () {
@@ -434,15 +398,9 @@ describe("PythAdapter", function () {
       await ethers.provider.send("evm_mine", []);
 
       // Should still work
-      await ethers.provider.send("hardhat_impersonateAccount", [oracle.address]);
-      await ethers.provider.send("hardhat_setBalance", [oracle.address, ethers.utils.parseEther("1.0").toHexString()]);
-      const oracleSigner = await ethers.getSigner(oracle.address);
-
-      const result = await pythAdapter.connect(oracleSigner).callStatic.getOraclePrice(wnt.address, "0x");
+      const result = await pythAdapter.connect(user0).callStatic.getOraclePrice(wnt.address, "0x");
 
       expect(result.min).to.be.gt(0);
-
-      await ethers.provider.send("hardhat_stopImpersonatingAccount", [oracle.address]);
     });
   });
 
@@ -659,12 +617,8 @@ describe("PythAdapter", function () {
       const updateData = await mockPythLazer.createMockUpdateData(ETH_FEED_ID);
       await pythAdapter.connect(user0).updatePrice(wnt.address, updateData, { value: VERIFICATION_FEE });
 
-      // Get data as Oracle would
-      await ethers.provider.send("hardhat_impersonateAccount", [oracle.address]);
-      await ethers.provider.send("hardhat_setBalance", [oracle.address, ethers.utils.parseEther("1.0").toHexString()]);
-      const oracleSigner = await ethers.getSigner(oracle.address);
-
-      const result = await pythAdapter.connect(oracleSigner).callStatic.getOraclePrice(wnt.address, "0x");
+      // Get data as Oracle would - now anyone can call it
+      const result = await pythAdapter.connect(user0).callStatic.getOraclePrice(wnt.address, "0x");
 
       // Verify Oracle.sol can extract: pyth_price, pyth_conf, pyth_publish_time
       expect(result.token).to.equal(wnt.address);
@@ -672,8 +626,6 @@ describe("PythAdapter", function () {
       expect(result.max).to.be.gt(0); // pyth_conf
       expect(result.timestamp).to.be.gt(0); // pyth_publish_time
       expect(result.provider).to.equal(pythAdapter.address);
-
-      await ethers.provider.send("hardhat_stopImpersonatingAccount", [oracle.address]);
     });
 
     it("Should validate Oracle.sol can perform dual-oracle validation", async function () {
@@ -683,18 +635,12 @@ describe("PythAdapter", function () {
       const updateData = await mockPythLazer.createMockUpdateData(ETH_FEED_ID);
       await pythAdapter.connect(user0).updatePrice(wnt.address, updateData, { value: VERIFICATION_FEE });
 
-      await ethers.provider.send("hardhat_impersonateAccount", [oracle.address]);
-      await ethers.provider.send("hardhat_setBalance", [oracle.address, ethers.utils.parseEther("1.0").toHexString()]);
-      const oracleSigner = await ethers.getSigner(oracle.address);
-
-      const result = await pythAdapter.connect(oracleSigner).callStatic.getOraclePrice(wnt.address, "0x");
+      const result = await pythAdapter.connect(user0).callStatic.getOraclePrice(wnt.address, "0x");
 
       // Verify the data format matches expected structure for dual validation
       expect(result.min).to.equal(expandDecimals(2000, 30)); // pyth_price in 30 decimals
       expect(result.max).to.equal(expandDecimals(1, 30)); // pyth_conf in 30 decimals
       expect(result.provider).to.equal(pythAdapter.address);
-
-      await ethers.provider.send("hardhat_stopImpersonatingAccount", [oracle.address]);
     });
   });
 

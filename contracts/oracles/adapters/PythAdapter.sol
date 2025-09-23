@@ -22,7 +22,6 @@ import {PythLazerLib} from "pyth-lazer/PythLazerLib.sol";
 contract PythAdapter is IOracleProvider {
     
     DataStore public immutable dataStore;
-    address public immutable oracle;        // Oracle.sol address
     PythLazer public immutable pythLazer;
     
     // Simplified result structure
@@ -51,18 +50,12 @@ contract PythAdapter is IOracleProvider {
         uint256 excessAmount
     );
     
-    modifier onlyOracle() {
-        require(msg.sender == oracle, "PythAdapter: Only oracle allowed");
-        _;
-    }
     
     constructor(
         DataStore _dataStore,
-        address _oracle,
         PythLazer _pythLazer
     ) {
         dataStore = _dataStore;
-        oracle = _oracle;
         pythLazer = _pythLazer;
     }
     
@@ -75,7 +68,7 @@ contract PythAdapter is IOracleProvider {
     function getOraclePrice(
         address token,
         bytes memory /* data */  
-    ) external view onlyOracle returns (OracleUtils.ValidatedPrice memory) {
+    ) external view returns (OracleUtils.ValidatedPrice memory) {
         
         // Read stored price (updated by updatePrice function)
         PythPriceData memory pythData = storedPrices[token];
