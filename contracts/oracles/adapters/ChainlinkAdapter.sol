@@ -39,12 +39,6 @@ contract ChainlinkAdapter is IOracleProvider {
         address adapter
     );
 
-    modifier onlyOracle() {
-        if (msg.sender != oracle) {
-            revert Errors.Unauthorized(msg.sender, "Oracle");
-        }
-        _;
-    }
 
     constructor(
         DataStore _dataStore,
@@ -67,7 +61,7 @@ contract ChainlinkAdapter is IOracleProvider {
     function getOraclePrice(
         address token,
         bytes memory data
-    ) external onlyOracle returns (OracleUtils.ValidatedPrice memory) {
+    ) external returns (OracleUtils.ValidatedPrice memory) {
         
         // Determine which Chainlink mode to use for this token
         ChainlinkMode mode = getChainlinkMode(token);

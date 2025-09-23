@@ -19,7 +19,6 @@ import "../../error/Errors.sol";
 contract ChainlinkPriceFeedAdapter is IOracleProvider {
     
     DataStore public immutable dataStore;
-    address public immutable oracle;
     
     // Events
     event ChainlinkPriceUpdated(
@@ -30,19 +29,11 @@ contract ChainlinkPriceFeedAdapter is IOracleProvider {
         uint80 roundId
     );
 
-    modifier onlyOracle() {
-        if (msg.sender != oracle) {
-            revert Errors.Unauthorized(msg.sender, "Oracle");
-        }
-        _;
-    }
 
     constructor(
-        DataStore _dataStore,
-        address _oracle
+        DataStore _dataStore
     ) {
         dataStore = _dataStore;
-        oracle = _oracle;
     }
 
     /**
@@ -53,7 +44,7 @@ contract ChainlinkPriceFeedAdapter is IOracleProvider {
     function getOraclePrice(
         address token,
         bytes memory /* data */
-    ) external onlyOracle returns (OracleUtils.ValidatedPrice memory) {
+    ) external returns (OracleUtils.ValidatedPrice memory) {
         
         // Get price feed address for this token
         address priceFeedAddress = dataStore.getAddress(Keys.priceFeedKey(token));

@@ -47,7 +47,7 @@ describe("ChainlinkAdapter - Basic Tests", () => {
 
     // Deploy ChainlinkPriceFeedAdapter
     const ChainlinkPriceFeedAdapter = await ethers.getContractFactory("ChainlinkPriceFeedAdapter");
-    chainlinkPriceFeedAdapter = await ChainlinkPriceFeedAdapter.deploy(dataStore.address, oracle.address);
+    chainlinkPriceFeedAdapter = await ChainlinkPriceFeedAdapter.deploy(dataStore.address);
 
     // Deploy ChainlinkDataStreamAdapter
     const ChainlinkDataStreamAdapter = await ethers.getContractFactory("ChainlinkDataStreamAdapter");
@@ -101,16 +101,8 @@ describe("ChainlinkAdapter - Basic Tests", () => {
 
   describe("Basic Price Retrieval", () => {
     it("Should route WETH price through Price Feeds adapter", async function () {
-      // The ChainlinkPriceFeedAdapter requires the caller to be the oracle address
-      // Let's use impersonation to call from the oracle address
-      await ethers.provider.send("hardhat_impersonateAccount", [oracle.address]);
-
-      // Set the balance of the oracle account for gas (since it's a contract, not an EOA)
-      await ethers.provider.send("hardhat_setBalance", [oracle.address, ethers.utils.parseEther("1.0").toHexString()]);
-
-      const oracleSigner = await ethers.getSigner(oracle.address);
-
-      const result = await chainlinkPriceFeedAdapter.connect(oracleSigner).callStatic.getOraclePrice(wnt.address, "0x");
+      // ChainlinkPriceFeedAdapter is now publicly accessible
+      const result = await chainlinkPriceFeedAdapter.connect(deployer).callStatic.getOraclePrice(wnt.address, "0x");
 
       console.log("Raw result min:", result.min.toString());
       // Expected price per unit of WETH: 2000 USD / (10^18 WETH decimals) * (10^30 precision) = 2000 * 10^12
@@ -121,8 +113,6 @@ describe("ChainlinkAdapter - Basic Tests", () => {
       expect(result.min).to.equal(expectedPrice);
       expect(result.max).to.equal(expectedPrice);
       expect(result.provider).to.equal(chainlinkPriceFeedAdapter.address);
-
-      await ethers.provider.send("hardhat_stopImpersonatingAccount", [oracle.address]);
     });
   });
 
@@ -171,9 +161,11 @@ describe("ChainlinkAdapter - Basic Tests", () => {
     });
   });
 
-  describe("Access Control", () => {
-    it("Should only allow oracle to call getOraclePrice", async function () {
-      await expect(chainlinkAdapter.connect(accounts.user0).getOraclePrice(wnt.address, "0x")).to.be.reverted; // Allow any revert, as it might be a custom error
+  describe("Public Access", () => {
+    it("Should allow anyone to call getOraclePrice", async function () {
+      const result = await chainlinkAdapter.connect(accounts.user0).callStatic.getOraclePrice(wnt.address, "0x");
+      expect(result.token).to.equal(wnt.address);
+      expect(result.provider).to.be.oneOf([chainlinkPriceFeedAdapter.address, chainlinkDataStreamAdapter.address]);
     });
   });
 
@@ -182,7 +174,7 @@ describe("ChainlinkAdapter - Basic Tests", () => {
       const TestToken = await ethers.getContractFactory("MintableToken");
       const testToken = await TestToken.deploy("Test", "TEST", 18);
 
-      // Test with PriceFeedAdapter directly
+      // Test with PriceFeedAdapter directly - now publicly accessible but should still revert for unconfigured token
       await expect(chainlinkPriceFeedAdapter.connect(deployer).getOraclePrice(testToken.address, "0x")).to.be.reverted;
     });
   });
@@ -213,19 +205,10 @@ describe("ChainlinkAdapter - Basic Tests", () => {
         1 // answeredInRound
       );
 
-      // Test with PriceFeedAdapter directly using oracle impersonation
-      await ethers.provider.send("hardhat_impersonateAccount", [oracle.address]);
-
-      // Set the balance of the oracle account for gas (since it's a contract, not an EOA)
-      await ethers.provider.send("hardhat_setBalance", [oracle.address, ethers.utils.parseEther("1.0").toHexString()]);
-
-      const oracleSigner = await ethers.getSigner(oracle.address);
-
+      // Test with PriceFeedAdapter directly - now publicly accessible
       const result = await chainlinkPriceFeedAdapter
-        .connect(oracleSigner)
+        .connect(deployer)
         .callStatic.getOraclePrice(eurUsdToken.address, "0x");
-
-      await ethers.provider.send("hardhat_stopImpersonatingAccount", [oracle.address]);
 
       expect(result.token).to.equal(eurUsdToken.address);
       // Expected price per unit of EUR/USD: 1.0850 USD / (10^18 token decimals) * (10^30 precision) = 1.0850 * 10^12
