@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import * as keys from "../utils/keys";
 import { setAddressIfDifferent } from "../utils/dataStore";
+import * as keys from "../utils/keys";
 
 const func = async ({ gmx, deployments }: HardhatRuntimeEnvironment) => {
   const log = deployments.log;
@@ -17,7 +17,7 @@ const func = async ({ gmx, deployments }: HardhatRuntimeEnvironment) => {
   await setAddressIfDifferent(keys.USDC, usdc, "USDC token address");
 };
 
-func.tags = ["USDCConfig"];
 func.dependencies = ["DataStore", "Config", "Multicall", "Roles", "Tokens"];
-export default func;
+func.tags = ["USDCConfig"];
 
+export default func;
