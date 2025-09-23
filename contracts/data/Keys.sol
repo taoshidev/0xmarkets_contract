@@ -188,6 +188,10 @@ library Keys {
     bytes32 public constant ORACLE_PROVIDER_FOR_TOKEN = keccak256(abi.encode("ORACLE_PROVIDER_FOR_TOKEN"));
     // @dev key for the chainlink payment token
     bytes32 public constant CHAINLINK_PAYMENT_TOKEN = keccak256(abi.encode("CHAINLINK_PAYMENT_TOKEN"));
+    // @dev key for pyth feed id
+    bytes32 public constant PYTH_FEED_ID = keccak256(abi.encode("PYTH_FEED_ID"));
+    // @dev key for pyth confidence interval
+    bytes32 public constant PYTH_CONFIDENCE_INTERVAL = keccak256(abi.encode("PYTH_CONFIDENCE_INTERVAL"));
     // @dev key for the sequencer grace duration
     bytes32 public constant SEQUENCER_GRACE_DURATION = keccak256(abi.encode("SEQUENCER_GRACE_DURATION"));
 
@@ -1977,4 +1981,20 @@ library Keys {
             token
         ));
     }
+
+    function pythFeedIdKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            PYTH_FEED_ID,
+            token
+        ));
+    }
+    
+    function pythConfidenceIntervalKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            PYTH_CONFIDENCE_INTERVAL,
+            token
+        ));
+    }
+    
+    
 }
