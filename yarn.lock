@@ -1070,10 +1070,9 @@
   resolved "https://registry.yarnpkg.com/@fastify/busboy/-/busboy-2.1.1.tgz#b9da6a878a371829a0502c9b6c1c143ef6663f4d"
   integrity sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==
 
-"@gelatonetwork/relay-context@4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@gelatonetwork/relay-context/-/relay-context-4.1.0.tgz#ef1c91bc568b85e6a623eb3e34ec5e39aef275fa"
-  integrity sha512-I1dc36eVa8YMOTalkjAgQCcudxx6X5ywqkqO38gkzBjmnuCzGK9mFpifCP32g5xIQApwveItznXS1cgiOkCjpg==
+"@gelatonetwork/relay-context@https://github.com/taoshidev/relay-context-contracts#ac73c20c3bc80a8b38a1cedd65be491880fde81d":
+  version "4.1.1"
+  resolved "https://github.com/taoshidev/relay-context-contracts#ac73c20c3bc80a8b38a1cedd65be491880fde81d"
   dependencies:
     "@openzeppelin/contracts" "4.9.3"
 
