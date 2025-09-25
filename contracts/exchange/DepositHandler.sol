@@ -43,22 +43,13 @@ contract DepositHandler is IDepositHandler, BaseHandler {
         // Enforce USDC-only deposits
         address usdc = dataStore.getAddress(Keys.USDC);
         if (usdc == address(0)) {
-            revert Errors.EmptyHoldingAddress(); // reuse generic empty address error
+            revert Errors.EmptyHoldingAddress();
         }
         if (params.initialLongToken != usdc) {
             revert Errors.InvalidDepositToken(params.initialLongToken, usdc);
         }
         if (params.initialShortToken != usdc) {
             revert Errors.InvalidDepositToken(params.initialShortToken, usdc);
-        }
-        // Validate USDC has 6 decimals
-        try IERC20Metadata(usdc).decimals() returns (uint8 d) {
-            if (d != 6) {
-                revert Errors.InvalidUsdcDecimals(d, 6);
-            }
-        } catch {
-            // if decimals() is not supported, consider it invalid
-            revert Errors.InvalidUsdcDecimals(0, 6);
         }
 
         return DepositUtils.createDeposit(

@@ -2,9 +2,9 @@ import { expect } from "chai";
 import { deployContract } from "../../utils/deploy";
 import { deployFixture } from "../../utils/fixture";
 
-import { grantRole } from "../../utils/role";
-import { getMarketCount, getMarketKeys, DEFAULT_MARKET_TYPE } from "../../utils/market";
 import { logGasUsage } from "../../utils/gas";
+import { getMarketCount, getMarketKeys } from "../../utils/market";
+import { grantRole } from "../../utils/role";
 
 describe("MarketStoreUtils", () => {
   let fixture;
@@ -28,7 +28,6 @@ describe("MarketStoreUtils", () => {
   it("get, set, remove", async () => {
     const sampleItem = {};
     const itemKey = accountList[accountList.length - 1].address;
-    const marketType = DEFAULT_MARKET_TYPE;
 
     const getEmptyItem = marketStoreUtilsTest.getEmptyMarket;
     const getItem = async (dataStore, key) => {
@@ -37,7 +36,7 @@ describe("MarketStoreUtils", () => {
     const getItemCount = getMarketCount;
     const getItemKeys = getMarketKeys;
     const setItem = async (dataStore, key, sampleItem) => {
-      return await marketStoreUtilsTest.setMarket(dataStore.address, key, marketType, sampleItem);
+      return await marketStoreUtilsTest.setMarket(dataStore.address, key, sampleItem);
     };
     const removeItem = async (dataStore, itemKey) => {
       return await marketStoreUtilsTest.removeMarket(dataStore.address, itemKey);
