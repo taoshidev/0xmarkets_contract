@@ -67,7 +67,7 @@ library BaseOrderUtils {
     }
 
     function isSupportedOrder(Order.OrderType orderType) internal pure returns (bool) {
-               orderType == Order.OrderType.MarketIncrease ||
+        return orderType == Order.OrderType.MarketIncrease ||
                orderType == Order.OrderType.MarketDecrease ||
                orderType == Order.OrderType.LimitIncrease ||
                orderType == Order.OrderType.LimitDecrease ||
@@ -81,7 +81,7 @@ library BaseOrderUtils {
     // @return whether an orderType is a market order
     function isMarketOrder(Order.OrderType orderType) internal pure returns (bool) {
         // a liquidation order is not considered as a market order
-               orderType == Order.OrderType.MarketIncrease ||
+        return orderType == Order.OrderType.MarketIncrease ||
                orderType == Order.OrderType.MarketDecrease;
     }
 

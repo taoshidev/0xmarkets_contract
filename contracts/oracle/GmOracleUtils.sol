@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts-v4/utils/cryptography/ECDSA.sol";
 import "../error/Errors.sol";
 
 // @title GmOracleUtils

@@ -7,9 +7,9 @@ pragma solidity ^0.8.0;
 // due to this, either prb-math v2.x or v4.x versions should be used instead
 import "prb-math/contracts/PRBMathUD60x18.sol";
 
-import "@openzeppelin/contracts/utils/math/SafeCast.sol";
-import "@openzeppelin/contracts/utils/math/SignedMath.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts-v4/utils/math/SafeCast.sol";
+import "@openzeppelin/contracts-v4/utils/math/SignedMath.sol";
+import "@openzeppelin/contracts-v4/utils/math/Math.sol";
 
 /**
  * @title Precision

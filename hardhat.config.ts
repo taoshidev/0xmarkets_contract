@@ -17,6 +17,8 @@ import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
 
+import "@nomicfoundation/hardhat-foundry";
+
 // extends hre with gmx domain data
 import "./config";
 
@@ -103,7 +105,7 @@ const getEnvAccounts = (chainName?: string) => {
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.18",
+    version: "0.8.22",
     settings: {
       optimizer: {
         enabled: true,

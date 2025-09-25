@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "./BaseHandler.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "@openzeppelin/contracts-v4/token/ERC20/extensions/IERC20Metadata.sol";
 
 import "../market/Market.sol";
 
