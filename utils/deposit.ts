@@ -36,8 +36,6 @@ export async function createDeposit(fixture, overrides: any = {}) {
   const market = overrides.market || ethUsdMarket;
   const initialLongToken = overrides.initialLongToken || market.longToken;
   const initialShortToken = overrides.initialShortToken || market.shortToken;
-  const longTokenSwapPath = overrides.longTokenSwapPath || [];
-  const shortTokenSwapPath = overrides.shortTokenSwapPath || [];
   const minMarketTokens = overrides.minMarketTokens || bigNumberify(0);
   const shouldUnwrapNativeToken = overrides.shouldUnwrapNativeToken || false;
   const executionFee = overrides.executionFee || "1000000000000000";
@@ -65,8 +63,6 @@ export async function createDeposit(fixture, overrides: any = {}) {
     market: market.marketToken,
     initialLongToken,
     initialShortToken,
-    longTokenSwapPath,
-    shortTokenSwapPath,
     minMarketTokens,
     shouldUnwrapNativeToken,
     executionFee,

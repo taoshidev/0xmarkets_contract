@@ -21,12 +21,6 @@ export const OrderType = {
   StopIncrease: 6,
 };
 
-export const DecreasePositionSwapType = {
-  NoSwap: 0,
-  SwapPnlTokenToCollateralToken: 1,
-  SwapCollateralTokenToPnlToken: 2,
-};
-
 export function getOrderCount(dataStore: Contract): Promise<number> {
   return dataStore.getBytes32Count(keys.ORDER_LIST);
 }

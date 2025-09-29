@@ -33,8 +33,6 @@ export async function createWithdrawal(fixture, overrides: any = {}) {
   const callbackContract = overrides.callbackContract || { address: ethers.constants.AddressZero };
   const uiFeeReceiver = overrides.uiFeeReceiver || { address: ethers.constants.AddressZero };
   const market = overrides.market || ethUsdMarket;
-  const longTokenSwapPath = overrides.longTokenSwapPath || [];
-  const shortTokenSwapPath = overrides.shortTokenSwapPath || [];
   const marketTokenAmount = overrides.marketTokenAmount || bigNumberify(0);
   const minLongTokenAmount = overrides.minLongTokenAmount || bigNumberify(0);
   const minShortTokenAmount = overrides.minShortTokenAmount || bigNumberify(0);
@@ -52,8 +50,6 @@ export async function createWithdrawal(fixture, overrides: any = {}) {
     callbackContract: callbackContract.address,
     uiFeeReceiver: uiFeeReceiver.address,
     market: market.marketToken,
-    longTokenSwapPath,
-    shortTokenSwapPath,
     marketTokenAmount,
     minLongTokenAmount,
     minShortTokenAmount,
@@ -129,8 +125,6 @@ export async function executeAtomicWithdrawal(fixture, overrides: any = {}) {
   const callbackContract = overrides.callbackContract || { address: ethers.constants.AddressZero };
   const uiFeeReceiver = overrides.uiFeeReceiver || { address: ethers.constants.AddressZero };
   const market = overrides.market || ethUsdMarket;
-  const longTokenSwapPath = overrides.longTokenSwapPath || [];
-  const shortTokenSwapPath = overrides.shortTokenSwapPath || [];
   const marketTokenAmount = overrides.marketTokenAmount || bigNumberify(0);
   const minLongTokenAmount = overrides.minLongTokenAmount || bigNumberify(0);
   const minShortTokenAmount = overrides.minShortTokenAmount || bigNumberify(0);
@@ -148,8 +142,6 @@ export async function executeAtomicWithdrawal(fixture, overrides: any = {}) {
     callbackContract: callbackContract.address,
     uiFeeReceiver: uiFeeReceiver.address,
     market: market.marketToken,
-    longTokenSwapPath,
-    shortTokenSwapPath,
     marketTokenAmount,
     minLongTokenAmount,
     minShortTokenAmount,

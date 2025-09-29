@@ -1,7 +1,7 @@
 import { calculateCreate2 } from "eth-create2-calculator";
 import { expandDecimals } from "./math";
 import { hashData, hashString } from "./hash";
-import { poolAmountKey, swapImpactPoolAmountKey } from "./keys";
+import { poolAmountKey } from "./keys";
 import * as keys from "./keys";
 
 import { ethers } from "ethers";
@@ -18,11 +18,6 @@ export function getMarketKeys(dataStore, start, end) {
 
 export async function getPoolAmount(dataStore, market, token) {
   const key = poolAmountKey(market, token);
-  return await dataStore.getUint(key);
-}
-
-export async function getSwapImpactPoolAmount(dataStore, market, token) {
-  const key = swapImpactPoolAmountKey(market, token);
   return await dataStore.getUint(key);
 }
 

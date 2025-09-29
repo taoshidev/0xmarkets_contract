@@ -251,9 +251,10 @@ export async function getOracleParams({
   const signerInfo = getSignerInfo(signerIndexes);
 
   const dataStore = await hre.ethers.getContract("DataStore");
-  const gmOracleProvider = await hre.ethers.getContract("GmOracleProvider");
-  const chainlinkPriceFeedProvider = await hre.ethers.getContract("ChainlinkPriceFeedProvider");
-  const chainlinkDataStreamFeedProvider = await hre.ethers.getContract("ChainlinkDataStreamProvider");
+  // 0xMarket: Use ChainlinkPriceFeedAdapter and ChainlinkDataStreamAdapter instead of GMX providers
+  // const gmOracleProvider = await hre.ethers.getContract("GmOracleProvider"); // 0xMarket: Not used
+  const chainlinkPriceFeedProvider = await hre.ethers.getContract("ChainlinkPriceFeedAdapter");
+  const chainlinkDataStreamFeedProvider = await hre.ethers.getContract("ChainlinkDataStreamAdapter");
 
   const params = {
     tokens: [],
@@ -316,7 +317,8 @@ export async function getOracleParams({
     );
 
     params.tokens.push(token);
-    params.providers.push(gmOracleProvider.address);
+    // 0xMarket: Use mock address since GmOracleProvider doesn't exist in 0xMarket
+    params.providers.push(ethers.constants.AddressZero);
     params.data.push(data);
   }
 
@@ -365,13 +367,14 @@ export async function getOracleProviderKey(oracleProviderAddress: string) {
 let _oracleProviderMap: Record<string, string>;
 async function getOracleProviderMap() {
   if (!_oracleProviderMap) {
-    const chainlinkPriceFeedProvider = await hre.ethers.getContract("ChainlinkPriceFeedProvider");
-    const chainlinkDataStreamProvider = await hre.ethers.getContract("ChainlinkDataStreamProvider");
-    const gmOracleProvider = await hre.ethers.getContract("GmOracleProvider");
+    // 0xMarket: Use ChainlinkPriceFeedAdapter and ChainlinkDataStreamAdapter
+    const chainlinkPriceFeedProvider = await hre.ethers.getContract("ChainlinkPriceFeedAdapter");
+    const chainlinkDataStreamProvider = await hre.ethers.getContract("ChainlinkDataStreamAdapter");
+    // const gmOracleProvider = await hre.ethers.getContract("GmOracleProvider"); // 0xMarket: Not used
     _oracleProviderMap = {
       chainlinkPriceFeed: chainlinkPriceFeedProvider.address,
       chainlinkDataStream: chainlinkDataStreamProvider.address,
-      gmOracle: gmOracleProvider.address,
+      gmOracle: ethers.constants.AddressZero, // 0xMarket: Mock address since GmOracleProvider doesn't exist
     };
   }
 
