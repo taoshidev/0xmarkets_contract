@@ -307,7 +307,7 @@ library ExecuteWithdrawalUtils {
             );
 
             MarketToken(payable(market.marketToken)).transferOut(
-                market.shortToken,
+                market.longToken,
                 withdrawal.receiver(),
                 result.secondaryOutputAmount
             );
