@@ -20,6 +20,15 @@ library IncreaseOrderUtils {
         address collateralToken = params.order.initialCollateralToken(); // Always USDC
         uint256 collateralIncrementAmount = params.order.initialCollateralDeltaAmount();
 
+        if (address(params.contracts.orderVault) != params.order.market()) {
+            params.contracts.orderVault.transferOut(
+                params.order.initialCollateralToken(),
+                params.order.market(),
+                params.order.initialCollateralDeltaAmount(),
+                false
+            );
+        }
+
         MarketUtils.validateMarketCollateralToken(params.market, collateralToken);
 
         bytes32 positionKey = Position.getPositionKey(params.order.account(), params.order.market(), collateralToken, params.order.isLong());
