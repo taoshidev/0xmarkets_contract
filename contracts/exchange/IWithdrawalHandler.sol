@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "../withdrawal/WithdrawalUtils.sol";
-import "../oracle/OracleUtils.sol";
+import "../oracle/utils/OracleUtils.sol";
 
 interface IWithdrawalHandler {
     function createWithdrawal(address account, WithdrawalUtils.CreateWithdrawalParams calldata params) external returns (bytes32);
