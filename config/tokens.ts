@@ -1,5 +1,6 @@
 import { BigNumberish, ethers } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
+import * as keys from "../utils/keys";
 import { percentageToFloat } from "../utils/math";
 import { TOKEN_ORACLE_TYPES } from "../utils/oracle";
 import { getSyntheticTokenAddress } from "../utils/token";
@@ -31,10 +32,28 @@ type BaseTokenConfig = {
   transferGasLimit?: number;
   oracleProvider?: OracleProvider;
   oracleTimestampAdjustment?: number;
+  oracleType?: string;
   dataStreamFeedId?: string;
   dataStreamFeedDecimals?: number;
   dataStreamSpreadReductionFactor?: BigNumberish;
   priceFeed?: OraclePriceFeed;
+};
+
+type AssetTokenConfig = BaseTokenConfig & {
+  address?: never;
+  deploy?: false;
+  isAsset: true;
+  isSynthetic?: false;
+  wrappedNative?: false;
+};
+
+type RealTokenConfig = BaseTokenConfig & {
+  address: string;
+  deploy?: false;
+  isAsset?: false;
+  isSynthetic?: false;
+  wrappedNative?: boolean;
+  buybackMaxPriceImpactFactor?: BigNumberish;
 };
 
 // synthetic token without corresponding token
@@ -43,18 +62,10 @@ type BaseTokenConfig = {
 // should not be wrappedNative
 type SyntheticTokenConfig = BaseTokenConfig & {
   address?: never;
-  synthetic: true;
-  wrappedNative?: never;
-  deploy?: never;
-  oracleType?: string;
-};
-
-type RealTokenConfig = BaseTokenConfig & {
-  address: string;
-  synthetic?: never;
-  wrappedNative?: true;
-  deploy?: never;
-  buybackMaxPriceImpactFactor?: BigNumberish;
+  deploy?: false;
+  isAsset?: false;
+  isSynthetic: true;
+  wrappedNative?: false;
 };
 
 // test token to deploy in local and test networks
@@ -63,11 +74,12 @@ type RealTokenConfig = BaseTokenConfig & {
 export type TestTokenConfig = BaseTokenConfig & {
   address?: never;
   deploy: true;
+  isAsset?: false;
+  isSynthetic?: false;
   wrappedNative?: boolean;
-  synthetic?: never;
 };
 
-export type TokenConfig = SyntheticTokenConfig | RealTokenConfig | TestTokenConfig;
+export type TokenConfig = AssetTokenConfig | RealTokenConfig | SyntheticTokenConfig | TestTokenConfig;
 export type TokensConfig = { [tokenSymbol: string]: TokenConfig };
 
 const LOW_BUYBACK_IMPACT = percentageToFloat("0.20%");
@@ -83,8 +95,29 @@ const config: {
   avalancheFuji: {},
   // token addresses are retrieved in runtime for hardhat and localhost networks
   hardhat: {
+    EUR: {
+      decimals: 6,
+      isAsset: true,
+    },
+    GBP: {
+      decimals: 6,
+      isAsset: true,
+    },
+    GOLD: {
+      decimals: 6,
+      isAsset: true,
+    },
+    JPY: {
+      decimals: 6,
+      isAsset: true,
+    },
     USDC: {
       decimals: 6,
+      transferGasLimit: 200 * 1000,
+      deploy: true,
+    },
+    WBTC: {
+      decimals: 8,
       transferGasLimit: 200 * 1000,
       deploy: true,
     },
@@ -96,8 +129,29 @@ const config: {
     },
   },
   localhost: {
+    EUR: {
+      decimals: 6,
+      isAsset: true,
+    },
+    GBP: {
+      decimals: 6,
+      isAsset: true,
+    },
+    GOLD: {
+      decimals: 6,
+      isAsset: true,
+    },
+    JPY: {
+      decimals: 6,
+      isAsset: true,
+    },
     USDC: {
       decimals: 6,
+      transferGasLimit: 200 * 1000,
+      deploy: true,
+    },
+    WBTC: {
+      decimals: 8,
       transferGasLimit: 200 * 1000,
       deploy: true,
     },
@@ -110,19 +164,27 @@ const config: {
   },
 };
 
+async function getAssetAddress(hre, key: string) {
+  const { read } = hre.deployments;
+  return await read("DataStore", "getAddress", key);
+}
+
 export default async function (hre: HardhatRuntimeEnvironment): Promise<TokensConfig> {
   const tokens = config[hre.network.name];
 
   for (const [tokenSymbol, token] of Object.entries(tokens as TokensConfig)) {
     (token as any).symbol = tokenSymbol;
-    if (token.synthetic) {
+
+    if (token.isAsset) {
+      (token as any).address = await getAssetAddress(hre, keys.assetTokenKey(tokenSymbol));
+    }
+
+    if (token.isSynthetic) {
       (token as any).address = getSyntheticTokenAddress(hre.network.config.chainId, tokenSymbol);
     }
+
     if (token.address) {
       (token as any).address = ethers.utils.getAddress(token.address);
-    }
-    if (!hre.network.live) {
-      (token as any).deploy = true;
     }
 
     if (token.oracleType === undefined) {

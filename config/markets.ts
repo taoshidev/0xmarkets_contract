@@ -338,8 +338,58 @@ const config: {
   arbitrumSepolia: [],
   arbitrumGoerli: [],
   avalancheFuji: [],
-  hardhat: [],
-  localhost: [],
+  hardhat: [
+    {
+      tokens: { indexToken: "EUR", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "GBP", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "GOLD", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
+      reversed: true,
+    },
+    {
+      tokens: { indexToken: "WBTC", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "WETH", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+  ],
+  localhost: [
+    {
+      tokens: { indexToken: "EUR", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "GBP", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "GOLD", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
+      reversed: true,
+    },
+    {
+      tokens: { indexToken: "WBTC", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "WETH", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+  ],
 };
 
 function fillLongShortValues(market, key, longKey, shortKey) {

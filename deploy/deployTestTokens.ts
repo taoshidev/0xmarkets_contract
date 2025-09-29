@@ -1,9 +1,8 @@
 import { setBalance } from "@nomicfoundation/hardhat-network-helpers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { TokenConfig } from "../config/tokens";
-
-import * as keys from "../utils/keys";
 import { setAddressIfDifferent, setUintIfDifferent } from "../utils/dataStore";
+import * as keys from "../utils/keys";
 import { expandDecimals } from "../utils/math";
 
 const func = async (hre: HardhatRuntimeEnvironment) => {
@@ -91,5 +90,5 @@ const func = async (hre: HardhatRuntimeEnvironment) => {
 };
 
 func.tags = ["Tokens"];
-func.dependencies = ["DataStore"];
+func.dependencies = ["Assets", "DataStore"];
 export default func;
