@@ -6,7 +6,7 @@ import { createDeployFunction } from "../utils/deploy";
 const constructorContracts = ["RoleStore", "DataStore", "EventEmitter"];
 
 const func = createDeployFunction({
-  contractName: "Oracle",
+  contractName: "Oracle", // 0xMarket: Use enhanced Oracle with dual-oracle validation
   dependencyNames: constructorContracts,
   getDeployArgs: async ({ dependencyContracts, gmx }) => {
     const generalConfig = await gmx.getGeneral();
@@ -16,6 +16,7 @@ const func = createDeployFunction({
   },
   afterDeploy: async ({ deployedContract, gmx }) => {
     const oracleConfig = await gmx.getOracle();
+    const dualOracleConfig = oracleConfig.dualOracle;
     await setUintIfDifferent(
       keys.MIN_ORACLE_BLOCK_CONFIRMATIONS,
       oracleConfig.minOracleBlockConfirmations,
@@ -38,12 +39,22 @@ const func = createDeployFunction({
       "chainlinkPaymentToken"
     );
 
+    // 0xMarket: Configure dual-oracle system
+    if (dualOracleConfig?.pythOracleProvider) {
+      await setAddressIfDifferent(keys.PYTH_ORACLE_PROVIDER, dualOracleConfig.pythOracleProvider, "pythOracleProvider");
+    }
+
+    // Note: Individual token configurations (TTLs, time skew, confidence multipliers)
+    // should be set via Config.setPythFeed() or Timelock.setPythFeedAfterSignal()
+    // after deployment based on specific FX pair requirements
+
     // the Oracle contract requires the CONTROLLER to emit events
     await grantRoleIfNotGranted(deployedContract.address, "CONTROLLER", "oracle");
   },
-  id: "Oracle_5",
+  id: "Oracle_0xMarket_1", // 0xMarket enhanced Oracle with dual-oracle validation
 });
 
-func.dependencies = func.dependencies.concat(["Tokens", "MockDataStreamVerifier", "ChainlinkPriceFeedProvider"]);
+// 0xMarket: Updated dependencies for dual-oracle system
+func.dependencies = func.dependencies.concat(["Tokens", "MockDataStreamVerifier"]);
 
 export default func;
