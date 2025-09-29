@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import "../deposit/DepositUtils.sol";
 import "../withdrawal/WithdrawalUtils.sol";
-import "../oracle/OracleUtils.sol";
+import "../oracle/utils/OracleUtils.sol";
 import "../order/IBaseOrderUtils.sol";
 
 interface IExchangeRouter {
