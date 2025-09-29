@@ -1996,5 +1996,44 @@ library Keys {
         ));
     }
     
+    // =============== DUAL ORACLE KEYS ===============
+    
+    function chainlinkOracleTTLKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            "CHAINLINK_ORACLE_TTL",
+            token
+        ));
+    }
+    
+    function pythOracleTTLKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            "PYTH_ORACLE_TTL", 
+            token
+        ));
+    }
+    
+    function maxOracleTimeSkewKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            "MAX_ORACLE_TIME_SKEW",
+            token
+        ));
+    }
+    
+    function pythConfidenceMultiplierKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            "PYTH_CONFIDENCE_MULTIPLIER",
+            token
+        ));
+    }
+
+    // ========== 0xMarket Oracle Provider Keys ==========
+    
+    // @dev key for the Pyth oracle provider address  
+    bytes32 public constant PYTH_ORACLE_PROVIDER = keccak256(abi.encode("PYTH_ORACLE_PROVIDER"));
+    
+    // @dev Get key for the Pyth oracle provider address
+    function pythOracleProviderKey() internal pure returns (bytes32) {
+        return PYTH_ORACLE_PROVIDER;
+    }
     
 }

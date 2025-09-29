@@ -547,6 +547,15 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         allowedBaseKeys[Keys.BUYBACK_MAX_PRICE_AGE] = true;
 
         allowedBaseKeys[Keys.DATA_STREAM_SPREAD_REDUCTION_FACTOR] = true;
+
+        allowedBaseKeys[Keys.PYTH_FEED_ID] = true;
+        allowedBaseKeys[Keys.PYTH_CONFIDENCE_INTERVAL] = true;
+        
+        // 0xMarket dual-oracle keys
+        allowedBaseKeys[keccak256(abi.encode("CHAINLINK_ORACLE_TTL"))] = true;
+        allowedBaseKeys[keccak256(abi.encode("PYTH_ORACLE_TTL"))] = true;
+        allowedBaseKeys[keccak256(abi.encode("MAX_ORACLE_TIME_SKEW"))] = true;
+        allowedBaseKeys[keccak256(abi.encode("PYTH_CONFIDENCE_MULTIPLIER"))] = true;
     }
 
     function _initAllowedLimitedBaseKeys() internal {
@@ -571,6 +580,9 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         allowedLimitedBaseKeys[Keys.GLV_MAX_MARKET_TOKEN_BALANCE_AMOUNT] = true;
 
         allowedLimitedBaseKeys[Keys.PRO_TRADER_TIER] = true;
+
+        allowedLimitedBaseKeys[Keys.PYTH_FEED_ID] = true;
+        allowedLimitedBaseKeys[Keys.PYTH_CONFIDENCE_INTERVAL] = true;
     }
 
     // @dev validate that the baseKey is allowed to be used

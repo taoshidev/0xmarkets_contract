@@ -141,6 +141,9 @@ contract ConfigSyncer is ReentrancyGuard, RoleModule {
 
         allowedBaseKeys[Keys.RESERVE_FACTOR] = true;
         allowedBaseKeys[Keys.OPEN_INTEREST_RESERVE_FACTOR] = true;
+
+        allowedBaseKeys[Keys.PYTH_FEED_ID] = true;
+        allowedBaseKeys[Keys.PYTH_CONFIDENCE_INTERVAL] = true;
     }
 
     // @dev validate that the baseKey is allowed to be used

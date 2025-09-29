@@ -6,28 +6,40 @@ import "@openzeppelin/contracts-v4/utils/structs/EnumerableSet.sol";
 import { AggregatorV2V3Interface } from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV2V3Interface.sol";
 
 import "../role/RoleModule.sol";
-
-import "./OracleUtils.sol";
-import "./IOracleProvider.sol";
-import "./ChainlinkPriceFeedUtils.sol";
-import "../price/Price.sol";
-
-import "../chain/Chain.sol";
 import "../data/DataStore.sol";
 import "../data/Keys.sol";
+import "../chain/Chain.sol";
+import "../error/Errors.sol";
+import "../utils/Precision.sol";
+import "../utils/Calc.sol";
+import "../utils/Cast.sol";
+import "../utils/Uint256Mask.sol";
+import "../utils/EnumerableValues.sol";
+import "../price/Price.sol";
 import "../event/EventEmitter.sol";
 import "../event/EventUtils.sol";
 
-import "../utils/Precision.sol";
-import "../utils/Cast.sol";
-import "../utils/Uint256Mask.sol";
+import "./interfaces/IOracleProvider.sol";
+import "./utils/OracleUtils.sol";
+import "./utils/PythUtils.sol";
 
-// @title Oracle
-// @dev Contract to validate and store signed values
-// Some calculations e.g. calculating the size in tokens for a position
-// may not work with zero / negative prices
-// as a result, zero / negative prices are considered empty / invalid
-// A market may need to be manually settled in this case
+/**
+ * @title Oracle
+ * @dev Enhanced Oracle contract combining GMX v2 functionality with dual-oracle validation system
+ * 
+ * Features:
+ * 1. Original GMX v2 Oracle functionality for compatibility
+ * 2. Dual-oracle validation system for FX derivatives (0xMarkets)
+ * 3. Support for both signed price feeds and real-time oracle adapters
+ * 
+ * Dual-Oracle Logic:
+ * 1. Call ChainlinkAdapter to get Index Price (idx_price) and update time (idx_publish_time)
+ * 2. Call PythAdapter to get Reference Price (pyth_price), confidence (pyth_conf), and update time (pyth_publish_time)
+ * 3. Check if both Chainlink and Pyth data are fresh (within TTLs, e.g., 2 seconds)
+ * 4. Check if time difference between oracles is within tolerance (e.g., 600ms)
+ * 5. Check if idx_price is within pyth_price ± K * pyth_conf
+ * 6. If all checks pass, return idx_price as the verified final price
+ */
 contract Oracle is RoleModule {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableValues for EnumerableSet.AddressSet;
@@ -46,6 +58,7 @@ contract Oracle is RoleModule {
     EventEmitter public immutable eventEmitter;
     AggregatorV2V3Interface public immutable sequencerUptimeFeed;
 
+    // GMX v2 Oracle functionality
     // tokensWithPrices stores the tokens with prices that have been set
     // this is used in clearAllPrices to help ensure that all token prices
     // set in setPrices are cleared after use
@@ -54,6 +67,23 @@ contract Oracle is RoleModule {
 
     uint256 public minTimestamp;
     uint256 public maxTimestamp;
+
+    // Dual-Oracle system for FX derivatives
+    // Note: Oracle adapters are configured via the standard GMX v2 system:
+    // - dataStore.setBool(Keys.isOracleProviderEnabledKey(provider), true)
+    // - dataStore.setAddress(Keys.oracleProviderForTokenKey(token), provider)
+    // - Dual-oracle validation is automatically applied when multiple providers support a token
+
+    // Events for GMX v2 compatibility
+    event OraclePriceUpdate(
+        address indexed token,
+        uint256 minPrice,
+        uint256 maxPrice,
+        uint256 timestamp,
+        address provider
+    );
+
+
 
     constructor(
         RoleStore _roleStore,
@@ -65,6 +95,8 @@ contract Oracle is RoleModule {
         eventEmitter = _eventEmitter;
         sequencerUptimeFeed = _sequencerUptimeFeed;
     }
+
+    // ========== GMX v2 ORACLE FUNCTIONALITY ==========
 
     // this can be used to help ensure that on-chain prices are updated
     // before actions dependent on those on-chain prices are allowed
@@ -175,6 +207,8 @@ contract Oracle is RoleModule {
         return _validatePrices(params, forAtomicAction);
     }
 
+    // ========== INTERNAL FUNCTIONS ==========
+
     // @dev validate and set prices
     // @param params OracleUtils.SetPricesParams
     function _setPrices(
@@ -245,7 +279,7 @@ contract Oracle is RoleModule {
         }
 
         uint256 maxPriceAge = dataStore.getUint(Keys.MAX_ORACLE_PRICE_AGE);
-        uint256 maxRefPriceDeviationFactor = dataStore.getUint(Keys.MAX_ORACLE_REF_PRICE_DEVIATION_FACTOR);
+        // Note: maxRefPriceDeviationFactor removed as we use Pyth confidence-based validation instead
 
         for (uint256 i; i < params.tokens.length; i++) {
             address provider = params.providers[i];
@@ -297,26 +331,16 @@ contract Oracle is RoleModule {
                 revert Errors.MaxPriceAgeExceeded(validatedPrice.timestamp, Chain.currentTimestamp());
             }
 
-            // for atomic providers, assume that Chainlink would be the main provider
-            // so it would be redundant to re-fetch the Chainlink price for validation
+            // 0xMarket Enhancement: Dual-oracle validation for FX derivatives
+            // Following GMX pattern: validate against Pyth reference price if configured
             if (!isAtomicProvider) {
-                (bool hasRefPrice, uint256 refPrice) = ChainlinkPriceFeedUtils.getPriceFeedPrice(dataStore, token);
-
-                if (hasRefPrice) {
-                    _validateRefPrice(
-                        token,
-                        validatedPrice.min,
-                        refPrice,
-                        maxRefPriceDeviationFactor
-                    );
-
-                    _validateRefPrice(
-                        token,
-                        validatedPrice.max,
-                        refPrice,
-                        maxRefPriceDeviationFactor
-                    );
-                }
+                PythUtils.validateDualOracle(
+                    dataStore,
+                    token,
+                    validatedPrice.min, // Use min as primary price
+                    validatedPrice.timestamp,
+                    provider
+                );
             }
 
             prices[i] = validatedPrice;
@@ -388,4 +412,5 @@ contract Oracle is RoleModule {
             eventData
         );
     }
+
 }
