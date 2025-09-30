@@ -1,9 +1,9 @@
 import hre from "hardhat";
-import { DEFAULT_MARKET_TYPE, createMarketConfigByKey, getMarketKey, getMarketTokenAddresses } from "../utils/market";
 import prompts from "prompts";
-import * as keys from "../utils/keys";
+import { getEventData, parseLogs } from "../utils/event";
 import { encodeData } from "../utils/hash";
-import { parseLogs, getEventData } from "../utils/event";
+import * as keys from "../utils/keys";
+import { createMarketConfigByKey, getMarketKey, getMarketTokenAddresses } from "../utils/market";
 
 let write = process.env.WRITE === "true";
 
@@ -14,31 +14,19 @@ async function main() {
   const eventEmitter = await hre.ethers.getContract("EventEmitter");
   const tokens = await hre.gmx.getTokens();
 
-  // marketKey should be of the form indexToken:longToken:shortToken
-  // or if SWAP_ONLY=true, then marketKey should be in the form longToken:shortToken
+  // marketKey should be of the form indexToken:longToken:shortToken:normal or reversed
   const marketKey = process.env.MARKET_KEY;
 
   if (!marketKey) {
     throw new Error("MARKET_KEY is empty");
   }
 
-  const swapOnly = process.env.SWAP_ONLY === "true";
-
   const tokenSymbols = marketKey.split(":");
 
-  if (swapOnly) {
-    if (tokenSymbols.length !== 2) {
-      throw new Error("Invalid MARKET_KEY");
-    }
-  } else {
-    if (tokenSymbols.length !== 3) {
-      throw new Error("Invalid MARKET_KEY");
-    }
-  }
-
-  const indexTokenSymbol = swapOnly ? undefined : tokenSymbols[0];
-  const longTokenSymbol = swapOnly ? tokenSymbols[0] : tokenSymbols[1];
-  const shortTokenSymbol = swapOnly ? tokenSymbols[1] : tokenSymbols[2];
+  const indexTokenSymbol = tokenSymbols[0];
+  const longTokenSymbol = tokenSymbols[1];
+  const shortTokenSymbol = tokenSymbols[2];
+  const reversed = tokenSymbols[3] == "reversed" ? true : false;
 
   const [indexTokenAddress, longTokenAddress, shortTokenAddress] = getMarketTokenAddresses(
     {
@@ -47,13 +35,12 @@ async function main() {
         longToken: longTokenSymbol,
         shortToken: shortTokenSymbol,
       },
-      swapOnly: swapOnly,
     },
     tokens
   );
 
   const marketConfigs = await hre.gmx.getMarkets();
-  const marketConfigKey = getMarketKey(indexTokenAddress, longTokenAddress, shortTokenAddress);
+  const marketConfigKey = getMarketKey(indexTokenAddress, longTokenAddress, shortTokenAddress, reversed);
   const marketConfigByKey = createMarketConfigByKey({ marketConfigs, tokens });
   const marketConfig = marketConfigByKey[marketConfigKey];
 
@@ -62,7 +49,7 @@ async function main() {
   }
 
   console.info(
-    `creating market: indexToken: ${indexTokenAddress}, longToken: ${longTokenAddress}, shortToken: ${shortTokenAddress}`
+    `creating market: indexToken: ${indexTokenAddress}, longToken: ${longTokenAddress}, shortToken: ${shortTokenAddress}, reversed: ${reversed}`
   );
 
   if (!write) {
@@ -74,12 +61,7 @@ async function main() {
   }
 
   if (write) {
-    const tx0 = await marketFactory.createMarket(
-      indexTokenAddress,
-      longTokenAddress,
-      shortTokenAddress,
-      DEFAULT_MARKET_TYPE
-    );
+    const tx0 = await marketFactory.createMarket(indexTokenAddress, longTokenAddress, shortTokenAddress, reversed);
     console.log(`create market tx sent: ${tx0.hash}`);
 
     const receipt = await hre.ethers.provider.getTransactionReceipt(tx0.hash);
@@ -133,7 +115,7 @@ async function main() {
       indexTokenAddress,
       longTokenAddress,
       shortTokenAddress,
-      DEFAULT_MARKET_TYPE
+      reversed
     );
 
     console.log("NOTE: executed in read-only mode, no transactions were sent, marketToken would be %s", marketToken);

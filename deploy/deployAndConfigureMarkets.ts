@@ -1,8 +1,8 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import * as keys from "../utils/keys";
-import { setBoolIfDifferent, setBytes32IfDifferent, setUintIfDifferent } from "../utils/dataStore";
-import { DEFAULT_MARKET_TYPE, getMarketTokenAddresses, getMarketKey, getOnchainMarkets } from "../utils/market";
 import { updateMarketConfig } from "../scripts/updateMarketConfigUtils";
+import { setBoolIfDifferent, setBytes32IfDifferent, setUintIfDifferent } from "../utils/dataStore";
+import * as keys from "../utils/keys";
+import { getMarketKey, getMarketTokenAddresses, getOnchainMarkets } from "../utils/market";
 
 const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnvironment) => {
   const { execute, get, read, log } = deployments;
@@ -23,20 +23,19 @@ const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnviro
   for (const marketConfig of markets) {
     const [indexToken, longToken, shortToken] = getMarketTokenAddresses(marketConfig, tokens);
 
-    const marketKey = getMarketKey(indexToken, longToken, shortToken);
+    const marketKey = getMarketKey(indexToken, longToken, shortToken, marketConfig.reversed);
     const onchainMarket = onchainMarketsByTokens[marketKey];
     if (onchainMarket) {
-      log("market %s:%s:%s already exists at %s", indexToken, longToken, shortToken, onchainMarket.marketToken);
+      log("market %s already exists at %s", marketKey, onchainMarket.marketToken);
       continue;
     }
 
     if (process.env.SKIP_NEW_MARKETS) {
-      log("WARN: new market %s:%s:%s skipped", indexToken, longToken, shortToken);
+      log("WARN: new market %s skipped", marketKey);
       continue;
     }
 
-    const marketType = DEFAULT_MARKET_TYPE;
-    log("creating market %s:%s:%s:%s", indexToken, longToken, shortToken, marketType);
+    log("creating market %s", marketKey);
     await execute(
       "MarketFactory",
       { from: deployer, log: true },
@@ -44,7 +43,7 @@ const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnviro
       indexToken,
       longToken,
       shortToken,
-      marketType
+      marketConfig.reversed
     );
   }
 
@@ -52,7 +51,7 @@ const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnviro
 
   for (const marketConfig of markets) {
     const [indexToken, longToken, shortToken] = getMarketTokenAddresses(marketConfig, tokens);
-    const marketKey = getMarketKey(indexToken, longToken, shortToken);
+    const marketKey = getMarketKey(indexToken, longToken, shortToken, marketConfig.reversed);
     const onchainMarket = onchainMarketsByTokens[marketKey];
     const marketToken = onchainMarket.marketToken;
 
@@ -88,11 +87,6 @@ const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnviro
       await setBoolIfDifferent(key, marketConfig.isDisabled, `isDisabled for ${marketToken}`);
     }
 
-    // the rest of the params are not used for swap-only markets
-    if (marketConfig.swapOnly !== undefined) {
-      continue;
-    }
-
     for (const name of ["positionImpactPoolDistributionRate", "minPositionImpactPoolAmount"]) {
       if (marketConfig[name]) {
         const value = marketConfig[name];
@@ -119,5 +113,5 @@ func.skip = async ({ gmx, network }) => {
 };
 func.runAtTheEnd = true;
 func.tags = ["Markets"];
-func.dependencies = ["MarketFactory", "Tokens", "DataStore", "Config", "Multicall", "Roles"];
+func.dependencies = ["Assets", "MarketFactory", "Tokens", "DataStore", "Config", "Multicall", "Roles"];
 export default func;

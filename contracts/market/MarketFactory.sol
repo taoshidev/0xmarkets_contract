@@ -24,11 +24,7 @@ contract MarketFactory is RoleModule {
     DataStore public immutable dataStore;
     EventEmitter public immutable eventEmitter;
 
-    constructor(
-        RoleStore _roleStore,
-        DataStore _dataStore,
-        EventEmitter _eventEmitter
-    ) RoleModule(_roleStore) {
+    constructor(RoleStore _roleStore, DataStore _dataStore, EventEmitter _eventEmitter) RoleModule(_roleStore) {
         dataStore = _dataStore;
         eventEmitter = _eventEmitter;
     }
@@ -38,19 +34,24 @@ contract MarketFactory is RoleModule {
     // @param longToken address of the long token for the market
     // @param shortToken address of the short token for the market
     // @param marketType the type of the market
-    function createMarket(
-        address indexToken,
-        address longToken,
-        address shortToken,
-        bytes32 marketType
-    ) external onlyMarketKeeper returns (Market.Props memory) {
-        bytes32 salt = keccak256(abi.encode(
-            "GMX_MARKET",
-            indexToken,
-            longToken,
-            shortToken,
-            marketType
-        ));
+    function createMarket(address indexToken, address longToken, address shortToken, bool reversed)
+        external
+        onlyMarketKeeper
+        returns (Market.Props memory)
+    {
+        // Enforce USDC-only deposits
+        address usdc = dataStore.getAddress(Keys.USDC);
+        if (usdc == address(0)) {
+            revert Errors.EmptyHoldingAddress();
+        }
+        if (longToken != usdc) {
+            revert Errors.InvalidDepositToken(longToken, usdc);
+        }
+        if (shortToken != usdc) {
+            revert Errors.InvalidDepositToken(shortToken, usdc);
+        }
+
+        bytes32 salt = keccak256(abi.encode("0XMARKETS", indexToken, longToken, shortToken, reversed));
 
         address existingMarketAddress = dataStore.getAddress(MarketStoreUtils.getMarketSaltHash(salt));
         if (existingMarketAddress != address(0)) {
@@ -61,16 +62,11 @@ contract MarketFactory is RoleModule {
 
         // the marketType is not stored with the market, it is mainly used to ensure
         // markets with the same indexToken, longToken and shortToken can be created if needed
-        Market.Props memory market = Market.Props(
-            address(marketToken),
-            indexToken,
-            longToken,
-            shortToken
-        );
+        Market.Props memory market = Market.Props(address(marketToken), indexToken, longToken, shortToken, reversed);
 
         MarketStoreUtils.set(dataStore, address(marketToken), salt, market);
 
-        emitMarketCreated(address(marketToken), salt, indexToken, longToken, shortToken, marketType);
+        emitMarketCreated(address(marketToken), salt, indexToken, longToken, shortToken, reversed);
 
         return market;
     }
@@ -81,7 +77,7 @@ contract MarketFactory is RoleModule {
         address indexToken,
         address longToken,
         address shortToken,
-        bytes32 marketType
+        bool reversed
     ) internal {
         EventUtils.EventLogData memory eventData;
 
@@ -91,14 +87,12 @@ contract MarketFactory is RoleModule {
         eventData.addressItems.setItem(2, "longToken", longToken);
         eventData.addressItems.setItem(3, "shortToken", shortToken);
 
-        eventData.bytes32Items.initItems(2);
-        eventData.bytes32Items.setItem(0, "salt", salt);
-        eventData.bytes32Items.setItem(1, "marketType", marketType);
+        eventData.boolItems.initItems(1);
+        eventData.boolItems.setItem(0, "reversed", reversed);
 
-        eventEmitter.emitEventLog1(
-            "MarketCreated",
-            Cast.toBytes32(marketToken),
-            eventData
-        );
+        eventData.bytes32Items.initItems(1);
+        eventData.bytes32Items.setItem(0, "salt", salt);
+
+        eventEmitter.emitEventLog1("MarketCreated", Cast.toBytes32(marketToken), eventData);
     }
 }

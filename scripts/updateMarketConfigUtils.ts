@@ -1,6 +1,5 @@
 import prompts from "prompts";
 
-import fetch from "node-fetch";
 import { handleInBatches } from "../utils/batch";
 import { appendUintConfigIfDifferent, getFullKey } from "../utils/config";
 import { encodeData } from "../utils/hash";
@@ -95,7 +94,7 @@ const processMarkets = async ({
 
   for (const marketConfig of markets) {
     const [indexToken, longToken, shortToken] = getMarketTokenAddresses(marketConfig, tokens);
-    const marketKey = getMarketKey(indexToken, longToken, shortToken);
+    const marketKey = getMarketKey(indexToken, longToken, shortToken, marketConfig.reversed);
     const onchainMarket = onchainMarketsByTokens[marketKey];
 
     if (!onchainMarket) {
@@ -747,8 +746,7 @@ export async function updateMarketConfig({
 
   const configKeys = [];
   const multicallReadParams = [];
-
-  const supportedRiskOracleMarkets = await getSupportedRiskOracleMarkets(markets, tokens, onchainMarketsByTokens);
+  const supportedRiskOracleMarkets = new Set();
 
   await processMarkets({
     markets,
@@ -889,51 +887,51 @@ function getIgnoredParameterNames(ignoredParams) {
   return ignoredParameterNames;
 }
 
-async function getSupportedRiskOracleMarkets(markets, tokens, onchainMarketsByTokens) {
-  const supported = new Set();
+// async function getSupportedRiskOracleMarkets(markets, tokens, onchainMarketsByTokens) {
+//   const supported = new Set();
 
-  if (!RISK_ORACLE_SUPPORTED_NETWORKS.includes(hre.network.name)) {
-    return supported;
-  }
+//   if (!RISK_ORACLE_SUPPORTED_NETWORKS.includes(hre.network.name)) {
+//     return supported;
+//   }
 
-  // Chaos API does not support fuji
-  if (hre.network.name === "avalancheFuji") {
-    return supported;
-  }
+//   // Chaos API does not support fuji
+//   if (hre.network.name === "avalancheFuji") {
+//     return supported;
+//   }
 
-  const response = await fetch("https://cloud.chaoslabs.co/query/ccar-perpetuals", {
-    method: "POST",
-    headers: {
-      protocol: `gmx-v2-${hre.network.name}`,
-      "content-type": "application/json",
-    },
-    body: `{
-      "query": "{ markets { id } }"
-    }`,
-  });
+//   const response = await fetch("https://cloud.chaoslabs.co/query/ccar-perpetuals", {
+//     method: "POST",
+//     headers: {
+//       protocol: `gmx-v2-${hre.network.name}`,
+//       "content-type": "application/json",
+//     },
+//     body: `{
+//       "query": "{ markets { id } }"
+//     }`,
+//   });
 
-  const { data } = await response.json();
-  const supportedMarketTokens = data.markets.map((market) => market.id);
+//   const { data } = await response.json();
+//   const supportedMarketTokens = data.markets.map((market) => market.id);
 
-  supportedMarketTokens.forEach((supportedMarketToken) => {
-    const market = markets.find((market) => {
-      const marketToken = getMarketToken(market, tokens, onchainMarketsByTokens);
-      return marketToken.toLowerCase() === supportedMarketToken.toLowerCase();
-    });
+//   supportedMarketTokens.forEach((supportedMarketToken) => {
+//     const market = markets.find((market) => {
+//       const marketToken = getMarketToken(market, tokens, onchainMarketsByTokens);
+//       return marketToken.toLowerCase() === supportedMarketToken.toLowerCase();
+//     });
 
-    if (!market) {
-      throw new Error(`Market with id ${supportedMarketToken} not found`);
-    }
+//     if (!market) {
+//       throw new Error(`Market with id ${supportedMarketToken} not found`);
+//     }
 
-    supported.add(market);
-  });
+//     supported.add(market);
+//   });
 
-  return supported;
-}
+//   return supported;
+// }
 
-function getMarketToken(market, tokens, onchainMarketsByTokens) {
-  const [indexToken, longToken, shortToken] = getMarketTokenAddresses(market, tokens);
-  const marketKey = getMarketKey(indexToken, longToken, shortToken);
-  const onchainMarket = onchainMarketsByTokens[marketKey];
-  return onchainMarket.marketToken;
-}
+// function getMarketToken(market, tokens, onchainMarketsByTokens) {
+//   const [indexToken, longToken, shortToken] = getMarketTokenAddresses(market, tokens);
+//   const marketKey = getMarketKey(indexToken, longToken, shortToken);
+//   const onchainMarket = onchainMarketsByTokens[marketKey];
+//   return onchainMarket.marketToken;
+// }
