@@ -1,12 +1,8 @@
 import { calculateCreate2 } from "eth-create2-calculator";
-import { expandDecimals } from "./math";
-import { hashData, hashString } from "./hash";
-import { poolAmountKey } from "./keys";
+import { hashData } from "./hash";
 import * as keys from "./keys";
-
-import { ethers } from "ethers";
-
-export const DEFAULT_MARKET_TYPE = hashString("basic-v1");
+import { poolAmountKey } from "./keys";
+import { expandDecimals } from "./math";
 
 export function getMarketCount(dataStore) {
   return dataStore.getAddressCount(keys.MARKET_LIST);
@@ -82,8 +78,8 @@ export function getMarketTokenAddress(
   });
 }
 
-export function getMarketKey(indexToken: string, longToken: string, shortToken: string) {
-  return [indexToken, longToken, shortToken].join(":");
+export function getMarketKey(indexToken: string, longToken: string, shortToken: string, reversed: boolean) {
+  return [indexToken, longToken, shortToken].join(":") + (reversed ? ":reversed" : ":normal");
 }
 
 export function createMarketConfigByKey({ marketConfigs, tokens }) {
@@ -91,7 +87,7 @@ export function createMarketConfigByKey({ marketConfigs, tokens }) {
 
   for (const marketConfig of marketConfigs) {
     const [indexToken, longToken, shortToken] = getMarketTokenAddresses(marketConfig, tokens);
-    const marketKey = getMarketKey(indexToken, longToken, shortToken);
+    const marketKey = getMarketKey(indexToken, longToken, shortToken, marketConfig.reversed);
     marketConfigByKey[marketKey] = marketConfig;
   }
 
@@ -109,21 +105,22 @@ export async function getOnchainMarkets(
       longToken: string;
       shortToken: string;
       marketToken: string;
+      reversed: boolean;
     }
   >
 > {
   const onchainMarkets = await read("Reader", "getMarkets", dataStoreAddress, 0, 1000);
   return Object.fromEntries(
     onchainMarkets.map((market) => {
-      const { indexToken, longToken, shortToken } = market;
-      const marketKey = getMarketKey(indexToken, longToken, shortToken);
+      const { indexToken, longToken, shortToken, reversed } = market;
+      const marketKey = getMarketKey(indexToken, longToken, shortToken, reversed);
       return [marketKey, market];
     })
   );
 }
 
 export function getMarketTokenAddresses(marketConfig, tokens) {
-  if (!marketConfig.swapOnly && !tokens[marketConfig.tokens.indexToken]) {
+  if (!tokens[marketConfig.tokens.indexToken]) {
     throw new Error("invalid indexToken");
   }
 
@@ -135,9 +132,7 @@ export function getMarketTokenAddresses(marketConfig, tokens) {
     throw new Error("invalid shortToken");
   }
 
-  const indexToken = marketConfig.swapOnly
-    ? ethers.constants.AddressZero
-    : tokens[marketConfig.tokens.indexToken].address;
+  const indexToken = tokens[marketConfig.tokens.indexToken].address;
   const longToken = tokens[marketConfig.tokens.longToken].address;
   const shortToken = tokens[marketConfig.tokens.shortToken].address;
   return [indexToken, longToken, shortToken];
