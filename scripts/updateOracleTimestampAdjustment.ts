@@ -11,27 +11,21 @@ async function main() {
 
   const tokens = await hre.gmx.getTokens();
 
-  const gmOracleProvider = await hre.ethers.getContract("GmOracleProvider");
-  const chainlinkDataStreamProvider = await hre.ethers.getContract("ChainlinkDataStreamProvider");
-  const chainlinkPriceFeedProvider = await hre.ethers.getContract("ChainlinkPriceFeedProvider");
+  const ChainlinkAdapter = await hre.ethers.getContract("ChainlinkAdapter");
+  const PythAdapter = await hre.ethers.getContract("PythAdapter");
 
   await setUintIfDifferent(
-    keys.oracleTimestampAdjustmentKey(gmOracleProvider.address, tokens.WETH.address),
-    1,
-    "gm oracle"
-  );
-  await setUintIfDifferent(
-    keys.oracleTimestampAdjustmentKey(chainlinkDataStreamProvider.address, tokens.WETH.address),
+    keys.oracleTimestampAdjustmentKey(ChainlinkAdapter.address, tokens.USDC.address),
     2,
     "chainlink data stream provider"
   );
   await setUintIfDifferent(
-    keys.oracleTimestampAdjustmentKey(chainlinkPriceFeedProvider.address, tokens.WETH.address),
+    keys.oracleTimestampAdjustmentKey(PythAdapter.address, tokens.USDC.address),
     3,
     "chainlink price feed provider"
   );
   await setUintIfDifferent(
-    keys.oracleTimestampAdjustmentKey(chainlinkDataStreamProvider.address, tokens.LINK.address),
+    keys.oracleTimestampAdjustmentKey(ChainlinkAdapter.address, tokens.USDC.address),
     10,
     "chainlink data stream provider"
   );

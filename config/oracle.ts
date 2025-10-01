@@ -2,6 +2,14 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { decimalToFloat } from "../utils/math";
 import { BigNumberish } from "ethers";
 
+export type DualOracleConfig = {
+  pythOracleProvider?: string;
+  defaultChainlinkTtl?: number;
+  defaultPythTtl?: number;
+  defaultMaxTimeSkew?: number;
+  defaultConfidenceMultiplier?: BigNumberish;
+};
+
 export type OracleConfig = {
   signers: string[];
   dataStreamFeedVerifier?: string;
@@ -11,6 +19,8 @@ export type OracleConfig = {
   maxOracleTimestampRange: number;
   maxRefPriceDeviationFactor: BigNumberish;
   chainlinkPaymentToken?: string;
+  // 0xMarket: Dual-oracle configuration
+  dualOracle?: DualOracleConfig;
 };
 
 export default async function (hre: HardhatRuntimeEnvironment): Promise<OracleConfig> {

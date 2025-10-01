@@ -33,6 +33,7 @@ library Errors {
     error OracleProviderAlreadyExistsForToken(address token);
     error PriceFeedAlreadyExistsForToken(address token);
     error DataStreamIdAlreadyExistsForToken(address token);
+    error PythFeedAlreadyExistsForToken(address token);
     error MaxFundingFactorPerSecondLimitExceeded(uint256 maxFundingFactorPerSecond, uint256 limit);
 
     // ContributorHandler errors
@@ -422,4 +423,10 @@ library Errors {
     error InvalidSubaccountApprovalSubaccount();
     error NonEmptyExternalCallsForSubaccountOrder();
     error InvalidRelayParams();
+    
+    // =============== DUAL ORACLE ERRORS ===============
+    
+    error OraclePriceNotFresh(address token, address provider, uint256 timestamp, uint256 currentTime);
+    error OracleTimeSkewExceeded(address token, uint256 chainlinkTimestamp, uint256 pythTimestamp, uint256 timeDiff, uint256 maxTimeSkew);
+    error OraclePriceBandViolation(address token, uint256 chainlinkPrice, uint256 pythPrice, uint256 adjustedConfidence, uint256 lowerBand, uint256 upperBand);
 }

@@ -86,7 +86,6 @@ export const MAX_TOTAL_CALLBACK_GAS_LIMIT_FOR_AUTO_CANCEL_ORDERS = hashString(
 );
 
 export const IS_MARKET_DISABLED = hashString("IS_MARKET_DISABLED");
-export const MAX_SWAP_PATH_LENGTH = hashString("MAX_SWAP_PATH_LENGTH");
 export const MIN_MARKET_TOKENS_FOR_FIRST_DEPOSIT = hashString("MIN_MARKET_TOKENS_FOR_FIRST_DEPOSIT");
 
 export const MIN_ORACLE_BLOCK_CONFIRMATIONS = hashString("MIN_ORACLE_BLOCK_CONFIRMATIONS");
@@ -101,6 +100,7 @@ export const CHAINLINK_PAYMENT_TOKEN = hashString("CHAINLINK_PAYMENT_TOKEN");
 // Pyth-specific constants
 export const PYTH_FEED_ID = hashString("PYTH_FEED_ID");
 export const PYTH_CONFIDENCE_INTERVAL = hashString("PYTH_CONFIDENCE_INTERVAL");
+export const PYTH_ORACLE_PROVIDER = hashString("PYTH_ORACLE_PROVIDER");
 
 export const MIN_COLLATERAL_FACTOR = hashString("MIN_COLLATERAL_FACTOR");
 export const MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER = hashString(
@@ -109,8 +109,6 @@ export const MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER = hashString(
 export const MIN_COLLATERAL_USD = hashString("MIN_COLLATERAL_USD");
 export const MIN_POSITION_SIZE_USD = hashString("MIN_POSITION_SIZE_USD");
 
-export const SWAP_FEE_RECEIVER_FACTOR = hashString("SWAP_FEE_RECEIVER_FACTOR");
-export const ATOMIC_SWAP_FEE_TYPE = hashString("ATOMIC_SWAP_FEE_TYPE");
 export const TOKEN_TRANSFER_GAS_LIMIT = hashString("TOKEN_TRANSFER_GAS_LIMIT");
 export const NATIVE_TOKEN_TRANSFER_GAS_LIMIT = hashString("NATIVE_TOKEN_TRANSFER_GAS_LIMIT");
 
@@ -144,19 +142,13 @@ export const MIN_POSITION_IMPACT_POOL_AMOUNT = hashString("MIN_POSITION_IMPACT_P
 export const POSITION_IMPACT_POOL_DISTRIBUTION_RATE = hashString("POSITION_IMPACT_POOL_DISTRIBUTION_RATE");
 export const POSITION_IMPACT_POOL_DISTRIBUTED_AT = hashString("POSITION_IMPACT_POOL_DISTRIBUTED_AT");
 
-export const SWAP_IMPACT_POOL_AMOUNT = hashString("SWAP_IMPACT_POOL_AMOUNT");
-
 export const POSITION_FEE_RECEIVER_FACTOR = hashString("POSITION_FEE_RECEIVER_FACTOR");
 export const LIQUIDATION_FEE_RECEIVER_FACTOR = hashString("LIQUIDATION_FEE_RECEIVER_FACTOR");
 export const BORROWING_FEE_RECEIVER_FACTOR = hashString("BORROWING_FEE_RECEIVER_FACTOR");
 
-export const SWAP_FEE_FACTOR = hashString("SWAP_FEE_FACTOR");
 export const DEPOSIT_FEE_FACTOR = hashString("DEPOSIT_FEE_FACTOR");
 export const WITHDRAWAL_FEE_FACTOR = hashString("WITHDRAWAL_FEE_FACTOR");
-export const ATOMIC_SWAP_FEE_FACTOR = hashString("ATOMIC_SWAP_FEE_FACTOR");
 export const ATOMIC_WITHDRAWAL_FEE_FACTOR = hashString("ATOMIC_WITHDRAWAL_FEE_FACTOR");
-export const SWAP_IMPACT_FACTOR = hashString("SWAP_IMPACT_FACTOR");
-export const SWAP_IMPACT_EXPONENT_FACTOR = hashString("SWAP_IMPACT_EXPONENT_FACTOR");
 
 export const POSITION_IMPACT_FACTOR = hashString("POSITION_IMPACT_FACTOR");
 export const POSITION_IMPACT_EXPONENT_FACTOR = hashString("POSITION_IMPACT_EXPONENT_FACTOR");
@@ -217,10 +209,8 @@ export const EXECUTION_GAS_FEE_MULTIPLIER_FACTOR = hashString("EXECUTION_GAS_FEE
 export const DEPOSIT_GAS_LIMIT = hashString("DEPOSIT_GAS_LIMIT");
 export const WITHDRAWAL_GAS_LIMIT = hashString("WITHDRAWAL_GAS_LIMIT");
 export const SHIFT_GAS_LIMIT = hashString("SHIFT_GAS_LIMIT");
-export const SINGLE_SWAP_GAS_LIMIT = hashString("SINGLE_SWAP_GAS_LIMIT");
 export const INCREASE_ORDER_GAS_LIMIT = hashString("INCREASE_ORDER_GAS_LIMIT");
 export const DECREASE_ORDER_GAS_LIMIT = hashString("DECREASE_ORDER_GAS_LIMIT");
-export const SWAP_ORDER_GAS_LIMIT = hashString("SWAP_ORDER_GAS_LIMIT");
 export const GLV_DEPOSIT_GAS_LIMIT = hashString("GLV_DEPOSIT_GAS_LIMIT");
 export const GLV_WITHDRAWAL_GAS_LIMIT = hashString("GLV_WITHDRAWAL_GAS_LIMIT");
 export const GLV_SHIFT_GAS_LIMIT = hashString("GLV_SHIFT_GAS_LIMIT");
@@ -232,7 +222,6 @@ export const CUMULATIVE_BORROWING_FACTOR_UPDATED_AT = hashString("CUMULATIVE_BOR
 export const VIRTUAL_TOKEN_ID = hashString("VIRTUAL_TOKEN_ID");
 export const VIRTUAL_MARKET_ID = hashString("VIRTUAL_MARKET_ID");
 
-export const VIRTUAL_INVENTORY_FOR_SWAPS = hashString("VIRTUAL_INVENTORY_FOR_SWAPS");
 export const VIRTUAL_INVENTORY_FOR_POSITIONS = hashString("VIRTUAL_INVENTORY_FOR_POSITIONS");
 
 export const MAX_ALLOWED_SUBACCOUNT_ACTION_COUNT = hashString("MAX_ALLOWED_SUBACCOUNT_ACTION_COUNT");
@@ -509,32 +498,12 @@ export function positionImpactPoolDistributedAtKey(market: string) {
   return hashData(["bytes32", "address"], [POSITION_IMPACT_POOL_DISTRIBUTED_AT, market]);
 }
 
-export function swapImpactPoolAmountKey(market: string, token: string) {
-  return hashData(["bytes32", "address", "address"], [SWAP_IMPACT_POOL_AMOUNT, market, token]);
-}
-
-export function swapFeeFactorKey(market: string, forPositiveImpact: boolean) {
-  return hashData(["bytes32", "address", "bool"], [SWAP_FEE_FACTOR, market, forPositiveImpact]);
-}
-
 export function depositFeeFactorKey(market: string, forPositiveImpact: boolean) {
   return hashData(["bytes32", "address", "bool"], [DEPOSIT_FEE_FACTOR, market, forPositiveImpact]);
 }
 
 export function withdrawalFeeFactorKey(market: string, forPositiveImpact: boolean) {
   return hashData(["bytes32", "address", "bool"], [WITHDRAWAL_FEE_FACTOR, market, forPositiveImpact]);
-}
-
-export function atomicSwapFeeFactorKey(market: string) {
-  return hashData(["bytes32", "address"], [ATOMIC_SWAP_FEE_FACTOR, market]);
-}
-
-export function swapImpactFactorKey(market: string, isPositive: boolean) {
-  return hashData(["bytes32", "address", "bool"], [SWAP_IMPACT_FACTOR, market, isPositive]);
-}
-
-export function swapImpactExponentFactorKey(market: string) {
-  return hashData(["bytes32", "address"], [SWAP_IMPACT_EXPONENT_FACTOR, market]);
 }
 
 export function positionImpactFactorKey(market: string, isPositive: boolean) {
@@ -651,20 +620,12 @@ export function shiftGasLimitKey() {
   return SHIFT_GAS_LIMIT;
 }
 
-export function singleSwapGasLimitKey() {
-  return SINGLE_SWAP_GAS_LIMIT;
-}
-
 export function increaseOrderGasLimitKey() {
   return INCREASE_ORDER_GAS_LIMIT;
 }
 
 export function decreaseOrderGasLimitKey() {
   return DECREASE_ORDER_GAS_LIMIT;
-}
-
-export function swapOrderGasLimitKey() {
-  return SWAP_ORDER_GAS_LIMIT;
 }
 
 export function glvDepositGasLimitKey() {
@@ -697,10 +658,6 @@ export function virtualTokenIdKey(token: string) {
 
 export function virtualMarketIdKey(market: string) {
   return hashData(["bytes32", "address"], [VIRTUAL_MARKET_ID, market]);
-}
-
-export function virtualInventoryForSwapsKey(virtualMarketId: string, isLongToken: boolean) {
-  return hashData(["bytes32", "bytes32", "bool"], [VIRTUAL_INVENTORY_FOR_SWAPS, virtualMarketId, isLongToken]);
 }
 
 export function virtualInventoryForPositionsKey(virtualTokenId: string) {
@@ -822,4 +779,22 @@ export function pythConfidenceIntervalKey(token: string) {
 
 export function assetTokenKey(asset: string) {
   return hashData(["bytes32", "string"], [ASSET_TOKEN, asset]);
+}
+
+// =============== DUAL ORACLE KEYS ===============
+
+export function chainlinkOracleTTLKey(token: string) {
+  return hashData(["string", "address"], ["CHAINLINK_ORACLE_TTL", token]);
+}
+
+export function pythOracleTTLKey(token: string) {
+  return hashData(["string", "address"], ["PYTH_ORACLE_TTL", token]);
+}
+
+export function maxOracleTimeSkewKey(token: string) {
+  return hashData(["string", "address"], ["MAX_ORACLE_TIME_SKEW", token]);
+}
+
+export function pythConfidenceMultiplierKey(token: string) {
+  return hashData(["string", "address"], ["PYTH_CONFIDENCE_MULTIPLIER", token]);
 }

@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../oracle/IPriceFeed.sol";
+import "../oracle/interfaces/IPriceFeed.sol";
 
 // @title MockPriceFeed
 // @dev Mock price feed for testing and testnets

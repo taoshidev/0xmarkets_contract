@@ -27,15 +27,6 @@ const maxShortTokenPoolAmount: ParameterDetails = {
   isLongToken: false,
 };
 
-const swapImpactExponentFactor: ParameterDetails = {
-  parameterName: "swapImpactExponentFactor",
-  parameterFormat: "parameterFormat2",
-  baseKey: hashString("SWAP_IMPACT_EXPONENT_FACTOR"),
-  extKey: null,
-  isLong: false,
-  isLongToken: false,
-};
-
 const maxOpenInterestForLongs: ParameterDetails = {
   parameterName: "maxOpenInterestForLongs",
   parameterFormat: "parameterFormat3",
@@ -57,9 +48,8 @@ const maxOpenInterestForShorts: ParameterDetails = {
 export const parametersList: ParameterDetails[] = [
   maxLongTokenPoolAmount,
   maxShortTokenPoolAmount,
-  swapImpactExponentFactor,
   maxOpenInterestForLongs,
-  maxOpenInterestForShorts
+  maxOpenInterestForShorts,
 ];
 
 export const maxPnlFactorForTradersLongs: ParameterDetails = {
@@ -75,7 +65,7 @@ export function getDataForKey(
   parameterDetails: ParameterDetails,
   marketAddress: string,
   longToken: string,
-  shortToken: string,
+  shortToken: string
 ) {
   if (parameterDetails.parameterFormat === "parameterFormat1") {
     if (parameterDetails.isLongToken) {
@@ -88,7 +78,10 @@ export function getDataForKey(
   } else if (parameterDetails.parameterFormat === "parameterFormat3") {
     return encodeData(["address", "bool"], [marketAddress, parameterDetails.isLong]);
   } else if (parameterDetails.parameterFormat === "parameterFormat4") {
-    return encodeData(["bytes32", "address", "bool"], [parameterDetails.extKey, marketAddress, parameterDetails.isLong]);
+    return encodeData(
+      ["bytes32", "address", "bool"],
+      [parameterDetails.extKey, marketAddress, parameterDetails.isLong]
+    );
   } else {
     throw new Error(`Unsupported parameterFormat: ${parameterDetails.parameterFormat}`);
   }

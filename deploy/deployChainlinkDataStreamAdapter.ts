@@ -5,7 +5,7 @@ import * as keys from "../utils/keys";
 const constructorContracts = ["DataStore", "Oracle"];
 
 const func = createDeployFunction({
-  contractName: "ChainlinkDataStreamProvider",
+  contractName: "ChainlinkDataStreamAdapter",
   dependencyNames: constructorContracts,
   getDeployArgs: async ({ dependencyContracts, gmx, network, get }) => {
     const oracleConfig = await gmx.getOracle();

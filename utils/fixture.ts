@@ -71,7 +71,7 @@ export async function deployFixture() {
   const withdrawalVault = await hre.ethers.getContract("WithdrawalVault");
   // const shiftVault = await hre.ethers.getContract("ShiftVault"); // Shift disabled
   const eventEmitter = await hre.ethers.getContract("EventEmitter");
-  const oracleStore = await hre.ethers.getContract("OracleStore");
+  // const oracleStore = await hre.ethers.getContract("OracleStore"); // 0xMarket: OracleStore removed
   const orderVault = await hre.ethers.getContract("OrderVault");
   // const glvVault = await hre.ethers.getContract("GlvVault");
   const marketFactory = await hre.ethers.getContract("MarketFactory");
@@ -98,9 +98,9 @@ export async function deployFixture() {
   const subaccountGelatoRelayRouter = await hre.ethers.getContract("SubaccountGelatoRelayRouter");
   const subaccountRouter = await hre.ethers.getContract("SubaccountRouter");
   const oracle = await hre.ethers.getContract("Oracle");
-  const gmOracleProvider = await hre.ethers.getContract("GmOracleProvider");
-  const chainlinkPriceFeedProvider = await hre.ethers.getContract("ChainlinkPriceFeedProvider");
-  const chainlinkDataStreamProvider = await hre.ethers.getContract("ChainlinkDataStreamProvider");
+  // const gmOracleProvider = await hre.ethers.getContract("GmOracleProvider"); // 0xMarket: GmOracleProvider removed
+  const chainlinkPriceFeedProvider = await hre.ethers.getContract("ChainlinkPriceFeedAdapter");
+  const chainlinkDataStreamProvider = await hre.ethers.getContract("ChainlinkDataStreamAdapter");
   const marketUtils = await hre.ethers.getContract("MarketUtils");
   const marketStoreUtils = await hre.ethers.getContract("MarketStoreUtils");
   const depositStoreUtils = await hre.ethers.getContract("DepositStoreUtils");
@@ -283,7 +283,7 @@ export async function deployFixture() {
       eventEmitter,
       withdrawalVault,
       // shiftVault,
-      oracleStore,
+      // oracleStore, // 0xMarket: OracleStore removed
       orderVault,
       marketFactory,
       depositHandler,
@@ -302,7 +302,7 @@ export async function deployFixture() {
       subaccountGelatoRelayRouter,
       subaccountRouter,
       oracle,
-      gmOracleProvider,
+      // gmOracleProvider, // 0xMarket: GmOracleProvider removed
       chainlinkPriceFeedProvider,
       chainlinkDataStreamProvider,
       marketUtils,
@@ -366,6 +366,7 @@ export async function deployUsdcOnlyFixture() {
     btcUsdSingleTokenMarket,
     solUsdMarket,
     reader,
+    referralStorage,
     depositVault,
     withdrawalVault,
     depositHandler,
@@ -395,6 +396,7 @@ export async function deployUsdcOnlyFixture() {
   const allowedContracts = {
     reader,
     dataStore,
+    referralStorage,
     depositVault,
     withdrawalVault,
     depositHandler,

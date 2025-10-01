@@ -5,7 +5,7 @@ import * as keys from "../utils/keys";
 const constructorContracts = ["DataStore"];
 
 const func = createDeployFunction({
-  contractName: "ChainlinkPriceFeedProvider",
+  contractName: "ChainlinkPriceFeedAdapter",
   dependencyNames: constructorContracts,
   getDeployArgs: async ({ dependencyContracts }) => {
     return constructorContracts.map((dependencyName) => dependencyContracts[dependencyName].address);
