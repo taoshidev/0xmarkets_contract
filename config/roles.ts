@@ -15,14 +15,12 @@ const requiredRolesForContracts = {
   CONTROLLER: [
     "Config",
     "MarketFactory",
-    "GlvFactory",
     "Timelock",
     "Oracle",
     "ConfigSyncer",
 
     "ExchangeRouter",
     "SubaccountRouter",
-    "GlvRouter",
     "GelatoRelayRouter",
     "SubaccountGelatoRelayRouter",
 
@@ -31,18 +29,9 @@ const requiredRolesForContracts = {
     "WithdrawalHandler",
     "AdlHandler",
     "LiquidationHandler",
-    "ShiftHandler",
-    "GlvHandler",
     "FeeHandler",
-    "SwapHandler",
   ],
-  ROUTER_PLUGIN: [
-    "ExchangeRouter",
-    "SubaccountRouter",
-    "GlvRouter",
-    "GelatoRelayRouter",
-    "SubaccountGelatoRelayRouter",
-  ],
+  ROUTER_PLUGIN: ["ExchangeRouter", "SubaccountRouter", "GelatoRelayRouter", "SubaccountGelatoRelayRouter"],
   ROLE_ADMIN: ["Timelock"],
   CONFIG_KEEPER: ["ConfigSyncer"],
 };

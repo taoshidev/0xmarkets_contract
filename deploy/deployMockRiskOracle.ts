@@ -3,16 +3,18 @@ import { createDeployFunction } from "../utils/deploy";
 
 const func = createDeployFunction({
   contractName: "MockRiskOracle",
-  getDeployArgs: async () => {
-    const [wallet] = await ethers.getSigners();
-    const initialSenders = [wallet.address];
-    const initialUpdateTypes = ["maxLongTokenPoolAmount", "maxShortTokenPoolAmount", "maxLongTokenPoolUsdForDeposit", "maxShortTokenPoolUsdForDeposit", "maxOpenInterestForLongs", "maxOpenInterestForShorts", "positivePositionImpactFactor", "negativePositionImpactFactor", "positionImpactExponentFactor", "positiveSwapImpactFactor", "negativeSwapImpactFactor", "swapImpactExponentFactor", "fundingIncreaseFactorPerSecond", "fundingDecreaseFactorPerSecond", "minFundingFactorPerSecond", "maxFundingFactorPerSecond", "borrowingFactorForLongs", "borrowingFactorForShorts", "borrowingExponentFactorForLongs", "borrowingExponentFactorForShorts", "reserveFactorLongs", "reserveFactorShorts", "openInterestReserveFactorLongs", "openInterestReserveFactorShorts", "optimalUsageFactor", "baseBorrowingFactor", "aboveOptimalUsageBorrowingFactor", "maxPnlFactorForTradersLongs"];
+  getDeployArgs: async ({ getNamedAccounts }) => {
+    const { deployer } = await getNamedAccounts();
+    // Constructor args: initialSenders, initialUpdateTypes
+    const initialSenders = [deployer]; // Authorize the deployer
+    const initialUpdateTypes = ["RISK_PARAM_UPDATE", "LIQUIDATION_THRESHOLD"]; // Some default update types
     return [initialSenders, initialUpdateTypes];
   },
 });
 
 func.skip = async ({ network }: HardhatRuntimeEnvironment) => {
-  const shouldDeployForNetwork = ["hardhat"];
+  // Only deploy on test networks
+  const shouldDeployForNetwork = ["hardhat", "localhost"];
   return !shouldDeployForNetwork.includes(network.name);
 };
 

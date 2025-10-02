@@ -15,6 +15,7 @@ const func = createDeployFunction({
   afterDeploy: async ({ deployedContract }) => {
     await grantRoleIfNotGranted(deployedContract.address, "CONTROLLER");
     await grantRoleIfNotGranted(deployedContract.address, "ROLE_ADMIN");
+    await grantRoleIfNotGranted(deployedContract.address, "CONFIG_KEEPER");
   },
 });
 

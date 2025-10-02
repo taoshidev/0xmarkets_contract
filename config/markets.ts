@@ -68,14 +68,7 @@ export type BaseMarketConfig = {
   positiveMaxPositionImpactFactor: BigNumberish;
   maxPositionImpactFactorForLiquidations: BigNumberish;
 
-  swapFeeFactorForPositiveImpact: BigNumberish;
-  swapFeeFactorForNegativeImpact: BigNumberish;
-  atomicSwapFeeFactor: BigNumberish;
   atomicWithdrawalFeeFactor: BigNumberish;
-
-  negativeSwapImpactFactor: BigNumberish;
-  positiveSwapImpactFactor: BigNumberish;
-  swapImpactExponentFactor: BigNumberish;
 
   minCollateralUsd: BigNumberish;
 
@@ -266,14 +259,7 @@ const baseMarketConfig: Partial<BaseMarketConfig> = {
   positiveMaxPositionImpactFactor: percentageToFloat("0.5%"),
   maxPositionImpactFactorForLiquidations: bigNumberify(0), // 0%
 
-  swapFeeFactorForPositiveImpact: percentageToFloat("0.05%"),
-  swapFeeFactorForNegativeImpact: percentageToFloat("0.07%"),
-  atomicSwapFeeFactor: percentageToFloat("0.5%"),
   atomicWithdrawalFeeFactor: percentageToFloat("0.5%"),
-
-  negativeSwapImpactFactor: percentageToFloat("0.001%"),
-  positiveSwapImpactFactor: percentageToFloat("0.0005%"),
-  swapImpactExponentFactor: exponentToFloat("2e0"), // 2
 
   minCollateralUsd: decimalToFloat(1, 0), // 1 USD
 
@@ -323,11 +309,43 @@ const hardhatBaseMarketConfig: Partial<BaseMarketConfig> = {
   maxPnlFactorForDeposits: decimalToFloat(6, 1), // 60%
   maxPnlFactorForWithdrawals: decimalToFloat(3, 1), // 30%
 
+  // Position impact factors (required for validation)
+  negativePositionImpactFactor: percentageToFloat("0.00001%"),
+  positivePositionImpactFactor: percentageToFloat("0.000005%"),
+  positionImpactExponentFactor: exponentToFloat("2e0"), // 2
+
   positiveMaxPositionImpactFactor: decimalToFloat(2, 2), // 2%
   negativeMaxPositionImpactFactor: decimalToFloat(2, 2), // 2%
   maxPositionImpactFactorForLiquidations: percentageToFloat("1%"), // 1%
 
+  // Additional required fields for validation
+  positionFeeFactorForPositiveImpact: percentageToFloat("0.04%"),
+  positionFeeFactorForNegativeImpact: percentageToFloat("0.06%"),
+
+  atomicWithdrawalFeeFactor: percentageToFloat("0.5%"),
+
+  minCollateralUsd: decimalToFloat(1, 0), // 1 USD
+
+  borrowingFactor: decimalToFloat(625, 11),
+  optimalUsageFactor: 0,
+  baseBorrowingFactor: 0,
+  aboveOptimalUsageBorrowingFactor: 0,
+  borrowingExponentFactor: decimalToFloat(1),
+
+  fundingFactor: exponentToFloat("2e-8"),
+  fundingExponentFactor: decimalToFloat(1),
+  minFundingFactorPerSecond: percentageToFloat("1%").div(SECONDS_PER_YEAR),
   maxFundingFactorPerSecond: "100000000000000000000000",
+  fundingIncreaseFactorPerSecond: percentageToFloat("90%")
+    .div(SECONDS_PER_YEAR)
+    .div(SECONDS_PER_HOUR * 3),
+  fundingDecreaseFactorPerSecond: decimalToFloat(0),
+  thresholdForDecreaseFunding: decimalToFloat(0),
+
+  positionImpactPoolDistributionRate: bigNumberify(0),
+  minPositionImpactPoolAmount: 0,
+
+  liquidationFeeFactor: percentageToFloat("0.20%"),
 };
 
 const config: {
@@ -405,7 +423,8 @@ function fillLongShortValues(market, key, longKey, shortKey) {
 export default async function (hre: HardhatRuntimeEnvironment) {
   const markets = config[hre.network.name];
   const tokens = await hre.gmx.getTokens();
-  const defaultMarketConfig = hre.network.name === "hardhat" ? hardhatBaseMarketConfig : baseMarketConfig;
+  const defaultMarketConfig =
+    hre.network.name === "hardhat" || hre.network.name === "localhost" ? hardhatBaseMarketConfig : baseMarketConfig;
   if (markets) {
     const seen = new Set<string>();
     for (const market of markets) {

@@ -1,10 +1,14 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { setAddressIfDifferent } from "../utils/dataStore";
+import { grantRoleIfNotGranted } from "../utils/role";
 import * as keys from "../utils/keys";
 
 const func = async ({ deployments, getNamedAccounts }: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
+
+  // Grant deployer CONTROLLER role to set addresses in DataStore
+  await grantRoleIfNotGranted(deployer, "CONTROLLER");
 
   for (const [name, symbol] of [
     ["British Pound", "GBP"],
@@ -24,6 +28,6 @@ const func = async ({ deployments, getNamedAccounts }: HardhatRuntimeEnvironment
 };
 
 func.tags = ["Assets"];
-func.dependencies = ["DataStore"];
+func.dependencies = ["DataStore", "RoleStore"];
 
 export default func;
