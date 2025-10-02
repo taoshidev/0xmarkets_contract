@@ -98,24 +98,46 @@ library PythUtils {
         }
         
         // 3. Check if primary price is within Pyth confidence bands
+        // Handle inverted oracle feeds (e.g., Chainlink JPY/USD vs Pyth USD/JPY)
         {
             uint256 k = dataStore.getUint(Keys.pythConfidenceMultiplierKey(token));
             if (k == 0) k = 3; // Default K=3
             
             uint256 pythMid = pythPrice.min;        // Pyth price
             uint256 pythConf = pythPrice.max;       // Pyth confidence
-            uint256 bandWidth = (pythConf * k) / 1e18; // K * confidence
             
-            // Inline the band calculations to reduce variables
-            if (primaryPrice < (pythMid > bandWidth ? pythMid - bandWidth : 0) || 
-                primaryPrice > pythMid + bandWidth) {
+            // Check if oracles have different formats based on global provider configuration
+            bool chainlinkInverted = dataStore.getBool(Keys.chainlinkOracleInvertedKey(token));
+            bool pythInverted = dataStore.getBool(Keys.pythOracleInvertedKey(token));
+            
+            uint256 normalizedPrimaryPrice = primaryPrice;
+            uint256 normalizedPythPrice = pythMid;
+            uint256 normalizedPythConf = pythConf;
+            
+            // If formats differ, invert one to match the other
+            if (chainlinkInverted != pythInverted) {
+                if (chainlinkInverted) {
+                    // Chainlink is inverted (JPY/USD), invert it to match Pyth (USD/JPY)
+                    normalizedPrimaryPrice = (1e60) / primaryPrice; // 1e60 for precision
+                } else {
+                    // Pyth is inverted (JPY/USD), invert it to match Chainlink (USD/JPY)
+                    normalizedPythPrice = (1e60) / pythMid;
+                    normalizedPythConf = (pythConf * 1e60) / (pythMid * pythMid); // Adjust confidence for inverted price
+                }
+            }
+            
+            uint256 bandWidth = (normalizedPythConf * k) / 1e18; // K * confidence
+            
+            // Compare normalized prices
+            if (normalizedPrimaryPrice < (normalizedPythPrice > bandWidth ? normalizedPythPrice - bandWidth : 0) || 
+                normalizedPrimaryPrice > normalizedPythPrice + bandWidth) {
                 revert Errors.OraclePriceBandViolation(
                     token, 
-                    primaryPrice, 
-                    pythMid, 
+                    normalizedPrimaryPrice, 
+                    normalizedPythPrice, 
                     bandWidth, 
-                    pythMid > bandWidth ? pythMid - bandWidth : 0,
-                    pythMid + bandWidth
+                    normalizedPythPrice > bandWidth ? normalizedPythPrice - bandWidth : 0,
+                    normalizedPythPrice + bandWidth
                 );
             }
         }

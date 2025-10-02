@@ -556,6 +556,8 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         allowedBaseKeys[keccak256(abi.encode("PYTH_ORACLE_TTL"))] = true;
         allowedBaseKeys[keccak256(abi.encode("MAX_ORACLE_TIME_SKEW"))] = true;
         allowedBaseKeys[keccak256(abi.encode("PYTH_CONFIDENCE_MULTIPLIER"))] = true;
+        allowedBaseKeys[keccak256(abi.encode("CHAINLINK_ORACLE_INVERTED"))] = true;
+        allowedBaseKeys[keccak256(abi.encode("PYTH_ORACLE_INVERTED"))] = true;
     }
 
     function _initAllowedLimitedBaseKeys() internal {
