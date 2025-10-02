@@ -96,7 +96,7 @@ contract ChainlinkPriceFeedAdapter is IOracleProvider {
         // Convert price to correct precision (30 decimals)
         uint256 price = uint256(answer);
         uint256 precision = _getPriceFeedMultiplier(token);
-        uint256 adjustedPrice = price * precision;
+        uint256 adjustedPrice = Precision.mulDiv(price, precision, Precision.FLOAT_PRECISION);
 
         // Apply stable price logic if configured (matching GMX pattern)
         uint256 stablePrice = dataStore.getUint(Keys.stablePriceKey(token));
