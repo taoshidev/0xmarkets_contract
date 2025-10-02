@@ -20,6 +20,8 @@ const BASIS_POINTS_DIVISOR = 10_000;
 const recommendedMarketConfig = {
   arbitrum: {},
   avalanche: {},
+  hardhat: {},
+  localhost: {},
 };
 
 function getTradeSizeForImpact({ priceImpactBps, impactExponentFactor, impactFactor }) {
@@ -54,11 +56,15 @@ async function validatePerpConfig({
   const marketLabel = `${indexTokenSymbol} [${longTokenSymbol}-${shortTokenSymbol}]`;
 
   console.log("validatePerpConfig", indexTokenSymbol);
-  const recommendedPerpConfig =
-    recommendedMarketConfig[hre.network.name][`${indexTokenSymbol}:${longTokenSymbol}:${shortTokenSymbol}`] ??
-    recommendedMarketConfig[hre.network.name][indexTokenSymbol];
 
-  if (!recommendedPerpConfig || recommendedPerpConfig.negativePositionImpactFactor === undefined) {
+  // Skip strict validation for test networks
+  const isTestNetwork = hre.network.name === "hardhat" || hre.network.name === "localhost";
+
+  const recommendedPerpConfig =
+    recommendedMarketConfig[hre.network.name]?.[`${indexTokenSymbol}:${longTokenSymbol}:${shortTokenSymbol}`] ??
+    recommendedMarketConfig[hre.network.name]?.[indexTokenSymbol];
+
+  if (!isTestNetwork && (!recommendedPerpConfig || recommendedPerpConfig.negativePositionImpactFactor === undefined)) {
     throw new Error(`Empty recommendedPerpConfig for ${indexTokenSymbol}`);
   }
 
@@ -202,7 +208,11 @@ async function validatePerpConfig({
     } = bigNumberResults);
   }
 
-  if (bigNumberify(recommendedPerpConfig.negativePositionImpactFactor).gt(0)) {
+  if (
+    !isTestNetwork &&
+    recommendedPerpConfig &&
+    bigNumberify(recommendedPerpConfig.negativePositionImpactFactor).gt(0)
+  ) {
     const percentageOfPerpImpactRecommendation = bigNumberify(negativePositionImpactFactor)
       .mul(100)
       .div(recommendedPerpConfig.negativePositionImpactFactor);
@@ -242,7 +252,12 @@ async function validatePerpConfig({
     console.warn(`Position price impact for ${marketLabel} is zero`);
   }
 
-  if (negativePositionImpactFactor.gt(0) && positivePositionImpactFactor.gt(0)) {
+  if (
+    !isTestNetwork &&
+    recommendedPerpConfig &&
+    negativePositionImpactFactor.gt(0) &&
+    positivePositionImpactFactor.gt(0)
+  ) {
     const impactRatio = negativePositionImpactFactor.mul(BASIS_POINTS_DIVISOR).div(positivePositionImpactFactor);
     if (impactRatio.lt(recommendedPerpConfig.expectedPositionImpactRatio)) {
       console.error(
@@ -254,7 +269,11 @@ async function validatePerpConfig({
     }
   }
 
-  if (negativePositionImpactFactor.lt(recommendedPerpConfig.negativePositionImpactFactor)) {
+  if (
+    !isTestNetwork &&
+    recommendedPerpConfig &&
+    negativePositionImpactFactor.lt(recommendedPerpConfig.negativePositionImpactFactor)
+  ) {
     errors.push({
       message: `Invalid negativePositionImpactFactor for ${marketLabel}`,
       expected: recommendedPerpConfig.negativePositionImpactFactor,
