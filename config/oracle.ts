@@ -9,13 +9,16 @@ export type DualOracleConfig = {
   maxTimeSkew?: number;
   confidenceMultiplier?: BigNumberish;
   // Global oracle provider configurations
+  // These flags indicate when oracle data format differs from market expectation
   oracleProviderConfigs?: {
     chainlink?: {
-      // Tokens where Chainlink provides inverted pairs (e.g., JPY/USD instead of USD/JPY)
+      // Tokens where Chainlink format differs from market expectation
+      // e.g., JPY market (reversed=true) expects USD/JPY, but Chainlink provides JPY/USD
       invertedTokens?: string[];
     };
     pyth?: {
-      // Tokens where Pyth provides inverted pairs (e.g., JPY/USD instead of USD/JPY)
+      // Tokens where Pyth format differs from market expectation
+      // e.g., if market expects USD/JPY but Pyth provides JPY/USD
       invertedTokens?: string[];
     };
   };
@@ -62,12 +65,14 @@ export default async function (hre: HardhatRuntimeEnvironment): Promise<OracleCo
         confidenceMultiplier: decimalToFloat(3), // K=3
         oracleProviderConfigs: {
           chainlink: {
-            // Chainlink provides these tokens in inverted format (e.g., JPY/USD instead of USD/JPY)
-            invertedTokens: ["JPY"],
+            // Chainlink provides JPY/USD (normal Asset/USD format)
+            // JPY market is NOT reversed from Chainlink's perspective
+            invertedTokens: [],
           },
           pyth: {
-            // Pyth provides these tokens in standard format (e.g., USD/JPY)
-            invertedTokens: [],
+            // Pyth provides USD/JPY (FX convention, matches market reversed=true)
+            // JPY token is inverted/reversed, so Pyth should be marked as inverted
+            invertedTokens: ["JPY"],
           },
         },
       },
@@ -88,10 +93,14 @@ export default async function (hre: HardhatRuntimeEnvironment): Promise<OracleCo
         confidenceMultiplier: decimalToFloat(3),
         oracleProviderConfigs: {
           chainlink: {
-            invertedTokens: ["JPY"],
+            // Chainlink provides JPY/USD (normal Asset/USD format)
+            // JPY market is NOT reversed from Chainlink's perspective
+            invertedTokens: [],
           },
           pyth: {
-            invertedTokens: [],
+            // Pyth provides USD/JPY (FX convention, matches market reversed=true)
+            // JPY token is inverted/reversed, so Pyth should be marked as inverted
+            invertedTokens: ["JPY"],
           },
         },
       },

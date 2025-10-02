@@ -98,7 +98,7 @@ library PythUtils {
         }
         
         // 3. Check if primary price is within Pyth confidence bands
-        // Handle inverted oracle feeds (e.g., Chainlink JPY/USD vs Pyth USD/JPY)
+        // Normalize both oracle prices based on their individual inversion flags
         {
             uint256 k = dataStore.getUint(Keys.pythConfidenceMultiplierKey(token));
             if (k == 0) k = 3; // Default K=3
@@ -106,7 +106,7 @@ library PythUtils {
             uint256 pythMid = pythPrice.min;        // Pyth price
             uint256 pythConf = pythPrice.max;       // Pyth confidence
             
-            // Check if oracles have different formats based on global provider configuration
+            // Get inversion flags for each oracle provider
             bool chainlinkInverted = dataStore.getBool(Keys.chainlinkOracleInvertedKey(token));
             bool pythInverted = dataStore.getBool(Keys.pythOracleInvertedKey(token));
             
@@ -114,16 +114,17 @@ library PythUtils {
             uint256 normalizedPythPrice = pythMid;
             uint256 normalizedPythConf = pythConf;
             
-            // If formats differ, invert one to match the other
-            if (chainlinkInverted != pythInverted) {
-                if (chainlinkInverted) {
-                    // Chainlink is inverted (JPY/USD), invert it to match Pyth (USD/JPY)
-                    normalizedPrimaryPrice = (1e60) / primaryPrice; // 1e60 for precision
-                } else {
-                    // Pyth is inverted (JPY/USD), invert it to match Chainlink (USD/JPY)
-                    normalizedPythPrice = (1e60) / pythMid;
-                    normalizedPythConf = (pythConf * 1e60) / (pythMid * pythMid); // Adjust confidence for inverted price
-                }
+            // Normalize prices based on their inversion flags
+            // Both oracles should be normalized to the same format for comparison
+            if (chainlinkInverted) {
+                // Chainlink provides inverted format, normalize it
+                normalizedPrimaryPrice = (1e60) / primaryPrice; // 1e60 for precision
+            }
+            
+            if (pythInverted) {
+                // Pyth provides inverted format, normalize it
+                normalizedPythPrice = (1e60) / pythMid;
+                normalizedPythConf = (pythConf * 1e60) / (pythMid * pythMid); // Adjust confidence for inverted price
             }
             
             uint256 bandWidth = (normalizedPythConf * k) / 1e18; // K * confidence
