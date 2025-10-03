@@ -290,13 +290,13 @@ contract PythAdapter is IOracleProvider {
         
         if (exponent < 0) {
             uint256 decimals = uint256(uint16(-exponent));
-            if (decimals < 30) {
-                adjustedPrice = adjustedPrice * (10 ** (30 - decimals));
-            } else if (decimals > 30) {
-                adjustedPrice = adjustedPrice / (10 ** (decimals - 30));
+            if (decimals < Precision.FLOAT_PRECISION) {
+                adjustedPrice = adjustedPrice * (10 ** (Precision.FLOAT_PRECISION - decimals));
+            } else if (decimals > Precision.FLOAT_PRECISION) {
+                adjustedPrice = adjustedPrice / (10 ** (decimals - Precision.FLOAT_PRECISION));
             }
         } else {
-            adjustedPrice = adjustedPrice * (10 ** (uint256(uint16(exponent)) + 30));
+            adjustedPrice = adjustedPrice * (10 ** (uint256(uint16(exponent)) + Precision.FLOAT_PRECISION));
         }
         
         return adjustedPrice;
