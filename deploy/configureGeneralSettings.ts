@@ -2,10 +2,14 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import * as keys from "../utils/keys";
 import { setAddressIfDifferent, setUintIfDifferent, setBoolIfDifferent } from "../utils/dataStore";
 import { updateGeneralConfig } from "../scripts/updateGeneralConfigUtils";
+import { grantRoleIfNotGranted } from "../utils/role";
 
 const func = async ({ gmx, getNamedAccounts }: HardhatRuntimeEnvironment) => {
   const generalConfig = await gmx.getGeneral();
   const { deployer } = await getNamedAccounts();
+
+  // Grant deployer CONFIG_KEEPER role to configure general settings
+  await grantRoleIfNotGranted(deployer, "CONFIG_KEEPER");
 
   const feeReceiver = generalConfig.feeReceiver || deployer;
   const holdingAddress = generalConfig.holdingAddress || deployer;

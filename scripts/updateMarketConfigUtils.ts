@@ -163,86 +163,6 @@ const processMarkets = async ({
       );
     }
 
-    if (marketConfig.swapImpactExponentFactor) {
-      await handleConfig(
-        "uint",
-        keys.SWAP_IMPACT_EXPONENT_FACTOR,
-        encodeData(["address"], [marketToken]),
-        marketConfig.swapImpactExponentFactor,
-        `swapImpactExponentFactor ${marketLabel} (${marketToken})`
-      );
-    }
-
-    if (marketConfig.swapFeeFactorForPositiveImpact) {
-      await handleConfig(
-        "uint",
-        keys.SWAP_FEE_FACTOR,
-        encodeData(["address", "bool"], [marketToken, true]),
-        marketConfig.swapFeeFactorForPositiveImpact,
-        `swapFeeFactorForPositiveImpact ${marketLabel} (${marketToken})`
-      );
-    }
-
-    if (marketConfig.swapFeeFactorForNegativeImpact) {
-      await handleConfig(
-        "uint",
-        keys.SWAP_FEE_FACTOR,
-        encodeData(["address", "bool"], [marketToken, false]),
-        marketConfig.swapFeeFactorForNegativeImpact,
-        `swapFeeFactorForNegativeImpact ${marketLabel} (${marketToken})`
-      );
-    }
-
-    if (marketConfig.depositFeeFactorForPositiveImpact || marketConfig.swapFeeFactorForPositiveImpact) {
-      await handleConfig(
-        "uint",
-        keys.DEPOSIT_FEE_FACTOR,
-        encodeData(["address", "bool"], [marketToken, true]),
-        marketConfig.depositFeeFactorForPositiveImpact ?? marketConfig.swapFeeFactorForPositiveImpact,
-        `depositFeeFactorForPositiveImpact ${marketLabel} (${marketToken})`
-      );
-    }
-
-    if (marketConfig.depositFeeFactorForNegativeImpact || marketConfig.swapFeeFactorForNegativeImpact) {
-      await handleConfig(
-        "uint",
-        keys.DEPOSIT_FEE_FACTOR,
-        encodeData(["address", "bool"], [marketToken, false]),
-        marketConfig.depositFeeFactorForNegativeImpact ?? marketConfig.swapFeeFactorForNegativeImpact,
-        `depositFeeFactorForNegativeImpact ${marketLabel} (${marketToken})`
-      );
-    }
-
-    if (marketConfig.withdrawalFeeFactorForPositiveImpact || marketConfig.swapFeeFactorForPositiveImpact) {
-      await handleConfig(
-        "uint",
-        keys.WITHDRAWAL_FEE_FACTOR,
-        encodeData(["address", "bool"], [marketToken, true]),
-        marketConfig.withdrawalFeeFactorForPositiveImpact ?? marketConfig.swapFeeFactorForPositiveImpact,
-        `withdrawalFeeFactorForPositiveImpact ${marketLabel} (${marketToken})`
-      );
-    }
-
-    if (marketConfig.withdrawalFeeFactorForNegativeImpact || marketConfig.swapFeeFactorForNegativeImpact) {
-      await handleConfig(
-        "uint",
-        keys.WITHDRAWAL_FEE_FACTOR,
-        encodeData(["address", "bool"], [marketToken, false]),
-        marketConfig.withdrawalFeeFactorForNegativeImpact ?? marketConfig.swapFeeFactorForNegativeImpact,
-        `withdrawalFeeFactorForNegativeImpact ${marketLabel} (${marketToken})`
-      );
-    }
-
-    if (marketConfig.atomicSwapFeeFactor) {
-      await handleConfig(
-        "uint",
-        keys.ATOMIC_SWAP_FEE_FACTOR,
-        encodeData(["address"], [marketToken]),
-        marketConfig.atomicSwapFeeFactor,
-        `atomicSwapFeeFactor ${marketToken}`
-      );
-    }
-
     if (marketConfig.atomicWithdrawalFeeFactor) {
       await handleConfig(
         "uint",
@@ -250,26 +170,6 @@ const processMarkets = async ({
         encodeData(["address"], [marketToken]),
         marketConfig.atomicWithdrawalFeeFactor,
         `atomicWithdrawalFeeFactor ${marketToken}`
-      );
-    }
-
-    if (marketConfig.positiveSwapImpactFactor) {
-      await handleConfig(
-        "uint",
-        keys.SWAP_IMPACT_FACTOR,
-        encodeData(["address", "bool"], [marketToken, true]),
-        marketConfig.positiveSwapImpactFactor,
-        `positiveSwapImpactFactor ${marketLabel} (${marketToken})`
-      );
-    }
-
-    if (marketConfig.negativeSwapImpactFactor) {
-      await handleConfig(
-        "uint",
-        keys.SWAP_IMPACT_FACTOR,
-        encodeData(["address", "bool"], [marketToken, false]),
-        marketConfig.negativeSwapImpactFactor,
-        `negativeSwapImpactFactor ${marketLabel} (${marketToken})`
       );
     }
 
@@ -760,7 +660,7 @@ export async function updateMarketConfig({
     includeMaxOpenInterest,
     includePositionImpact,
     includeFunding,
-    handleConfig: async (type, baseKey, keyData) => {
+    handleConfig: async (type, baseKey, keyData, value, label) => {
       if (type !== "uint") {
         throw new Error("Unsupported type");
       }
@@ -833,7 +733,7 @@ export async function updateMarketConfig({
   console.info("multicallWriteParams", multicallWriteParams);
 
   console.log("running simulation");
-  if (!["hardhat"].includes(hre.network.name)) {
+  if (!["hardhat", "localhost"].includes(hre.network.name)) {
     await handleInBatches(multicallWriteParams, 100, async (batch) => {
       await read(
         "Config",

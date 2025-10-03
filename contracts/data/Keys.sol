@@ -2025,6 +2025,20 @@ library Keys {
             token
         ));
     }
+    
+    function chainlinkOracleInvertedKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            "CHAINLINK_ORACLE_INVERTED",
+            token
+        ));
+    }
+    
+    function pythOracleInvertedKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            "PYTH_ORACLE_INVERTED",
+            token
+        ));
+    }
 
     // ========== 0xMarket Oracle Provider Keys ==========
     

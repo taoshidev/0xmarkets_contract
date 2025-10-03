@@ -23,10 +23,8 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
       withdrawalGasLimit: 0,
       shiftGasLimit: 2_500_000,
 
-      singleSwapGasLimit: 0,
       increaseOrderGasLimit: 0,
       decreaseOrderGasLimit: 0,
-      swapOrderGasLimit: 0,
 
       glvPerMarketGasLimit: 0,
       glvDepositGasLimit: 0,
@@ -46,7 +44,6 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
 
       requestExpirationTime: 300,
 
-      maxSwapPathLength: 5,
       maxCallbackGasLimit: 2_000_000,
       minCollateralUsd: decimalToFloat(1),
 
@@ -54,7 +51,6 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
       claimableCollateralTimeDivisor: 60 * 60,
 
       positionFeeReceiverFactor: 0,
-      swapFeeReceiverFactor: 0,
       borrowingFeeReceiverFactor: 0,
       liquidationFeeReceiverFactor: 0,
 
@@ -83,10 +79,8 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
     withdrawalGasLimit: 1_500_000,
     shiftGasLimit: 2_500_000,
 
-    singleSwapGasLimit: 1_000_000, // measured gas required for a swap in a market increase order: ~600,000
     increaseOrderGasLimit: 4_000_000,
     decreaseOrderGasLimit: 4_000_000,
-    swapOrderGasLimit: 3_000_000,
 
     glvPerMarketGasLimit: 100_000,
     glvDepositGasLimit: 2_000_000,
@@ -106,7 +100,6 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
 
     requestExpirationTime: 300,
 
-    maxSwapPathLength: 3,
     maxCallbackGasLimit: 2_000_000,
     minCollateralUsd: decimalToFloat(1),
 
@@ -114,7 +107,6 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
     claimableCollateralTimeDivisor: 60 * 60,
 
     positionFeeReceiverFactor: decimalToFloat(37, 2), // 37%
-    swapFeeReceiverFactor: decimalToFloat(37, 2), // 37%
     borrowingFeeReceiverFactor: decimalToFloat(37, 2), // 37%
     liquidationFeeReceiverFactor: decimalToFloat(37, 2), // 37%
 
@@ -144,13 +136,16 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
 
       increaseOrderGasLimit: 3_000_000,
       decreaseOrderGasLimit: 3_000_000,
-      swapOrderGasLimit: 2_500_000,
       ignoreOpenInterestForUsageFactor: true,
     },
     avalanche: {
       increaseOrderGasLimit: 3_500_000,
       decreaseOrderGasLimit: 3_500_000,
       ignoreOpenInterestForUsageFactor: true,
+    },
+    localhost: {
+      maxAutoCancelOrders: 6,
+      maxTotalCallbackGasLimitForAutoCancelOrders: 3_000_000,
     },
   }[network.name];
 

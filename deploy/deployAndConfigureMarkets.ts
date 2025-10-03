@@ -3,6 +3,7 @@ import { updateMarketConfig } from "../scripts/updateMarketConfigUtils";
 import { setBoolIfDifferent, setBytes32IfDifferent, setUintIfDifferent } from "../utils/dataStore";
 import * as keys from "../utils/keys";
 import { getMarketKey, getMarketTokenAddresses, getOnchainMarkets } from "../utils/market";
+import { grantRoleIfNotGranted } from "../utils/role";
 
 const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnvironment) => {
   const { execute, get, read, log } = deployments;
@@ -12,6 +13,9 @@ const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnviro
   }
 
   const { deployer } = await getNamedAccounts();
+
+  // Grant deployer MARKET_KEEPER role to create markets
+  await grantRoleIfNotGranted(deployer, "MARKET_KEEPER");
 
   const tokens = await gmx.getTokens();
   const markets = await gmx.getMarkets();

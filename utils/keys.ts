@@ -798,3 +798,11 @@ export function maxOracleTimeSkewKey(token: string) {
 export function pythConfidenceMultiplierKey(token: string) {
   return hashData(["string", "address"], ["PYTH_CONFIDENCE_MULTIPLIER", token]);
 }
+
+export function chainlinkOracleInvertedKey(token: string) {
+  return hashData(["string", "address"], ["CHAINLINK_ORACLE_INVERTED", token]);
+}
+
+export function pythOracleInvertedKey(token: string) {
+  return hashData(["string", "address"], ["PYTH_ORACLE_INVERTED", token]);
+}

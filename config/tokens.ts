@@ -1,7 +1,7 @@
 import { BigNumberish, ethers } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import * as keys from "../utils/keys";
-import { percentageToFloat } from "../utils/math";
+import { percentageToFloat, decimalToFloat } from "../utils/math";
 import { TOKEN_ORACLE_TYPES } from "../utils/oracle";
 import { getSyntheticTokenAddress } from "../utils/token";
 
@@ -37,6 +37,9 @@ type BaseTokenConfig = {
   dataStreamFeedDecimals?: number;
   dataStreamSpreadReductionFactor?: BigNumberish;
   priceFeed?: OraclePriceFeed;
+  pythFeedId?: string;
+  // Note: Dual oracle configuration is handled globally in oracle.ts
+  // Oracle inversion per token is configured in oracle.ts oracleProviderConfigs
 };
 
 type AssetTokenConfig = BaseTokenConfig & {
