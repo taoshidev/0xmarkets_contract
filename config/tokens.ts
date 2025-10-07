@@ -118,17 +118,46 @@ const config: {
       decimals: 6,
       transferGasLimit: 200 * 1000,
       deploy: true,
+      priceFeed: {
+        decimals: 8,
+        heartbeatDuration: 86400,
+        deploy: true,
+        initPrice: "100000000", // $1.00 with 8 decimals
+      },
+    },
+    USDT: {
+      decimals: 6,
+      transferGasLimit: 200 * 1000,
+      deploy: true,
+      priceFeed: {
+        decimals: 8,
+        heartbeatDuration: 86400,
+        deploy: true,
+        initPrice: "100000000", // $1.00 with 8 decimals
+      },
     },
     WBTC: {
       decimals: 8,
       transferGasLimit: 200 * 1000,
       deploy: true,
+      priceFeed: {
+        decimals: 8,
+        heartbeatDuration: 86400,
+        deploy: true,
+        initPrice: "5000000000000", // $50,000 with 8 decimals
+      },
     },
     WETH: {
       decimals: 18,
       transferGasLimit: 200 * 1000,
       wrappedNative: true,
       deploy: true,
+      priceFeed: {
+        decimals: 8,
+        heartbeatDuration: 86400,
+        deploy: true,
+        initPrice: "500000000000", // $5,000 with 8 decimals
+      },
     },
   },
   localhost: {
@@ -152,17 +181,46 @@ const config: {
       decimals: 6,
       transferGasLimit: 200 * 1000,
       deploy: true,
+      priceFeed: {
+        decimals: 8,
+        heartbeatDuration: 86400,
+        deploy: true,
+        initPrice: "100000000", // $1.00 with 8 decimals
+      },
+    },
+    USDT: {
+      decimals: 6,
+      transferGasLimit: 200 * 1000,
+      deploy: true,
+      priceFeed: {
+        decimals: 8,
+        heartbeatDuration: 86400,
+        deploy: true,
+        initPrice: "100000000", // $1.00 with 8 decimals
+      },
     },
     WBTC: {
       decimals: 8,
       transferGasLimit: 200 * 1000,
       deploy: true,
+      priceFeed: {
+        decimals: 8,
+        heartbeatDuration: 86400,
+        deploy: true,
+        initPrice: "5000000000000", // $50,000 with 8 decimals
+      },
     },
     WETH: {
       decimals: 18,
       transferGasLimit: 200 * 1000,
       wrappedNative: true,
       deploy: true,
+      priceFeed: {
+        decimals: 8,
+        heartbeatDuration: 86400,
+        deploy: true,
+        initPrice: "500000000000", // $5,000 with 8 decimals
+      },
     },
   },
 };

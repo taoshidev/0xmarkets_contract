@@ -2,7 +2,7 @@ import hre from "hardhat";
 
 import { expandDecimals } from "./math";
 import { hashData } from "./hash";
-import { getMarketTokenAddress, DEFAULT_MARKET_TYPE } from "./market";
+import { getMarketTokenAddress } from "./market";
 import { getSyntheticTokenAddress } from "./token";
 import * as keys from "./keys";
 // import { getGlvAddress } from "./glv"; // GLV disabled
@@ -37,7 +37,7 @@ export async function deployFixture() {
   const wnt = await hre.ethers.getContract("WETH");
   await wnt.deposit({ value: expandDecimals(50, 18) });
 
-  const gmx = await hre.ethers.getContract("GMX");
+  // const gmx = await hre.ethers.getContract("GMX"); // 0xMarket: GMX token not used
 
   const wbtc = await hre.ethers.getContract("WBTC");
   const sol = { address: getSyntheticTokenAddress(hre.network.config.chainId, "SOL") };
@@ -54,8 +54,8 @@ export async function deployFixture() {
   const wethPriceFeed = await hre.ethers.getContract("WETHPriceFeed");
   await wethPriceFeed.setAnswer(expandDecimals(5000, 8));
 
-  const gmxPriceFeed = await hre.ethers.getContract("GMXPriceFeed");
-  await gmxPriceFeed.setAnswer(expandDecimals(20, 8));
+  // const gmxPriceFeed = await hre.ethers.getContract("GMXPriceFeed"); // 0xMarket: GMX token not used
+  // await gmxPriceFeed.setAnswer(expandDecimals(20, 8));
 
   const oracleSalt = hashData(["uint256", "string"], [chainId, "xget-oracle-v1"]);
 
@@ -136,88 +136,52 @@ export async function deployFixture() {
     ).wait();
   }
 
+  // 0xMarket: Markets use USDC for both long and short tokens
   const ethUsdMarketAddress = getMarketTokenAddress(
     wnt.address,
-    wnt.address,
     usdc.address,
-    DEFAULT_MARKET_TYPE,
+    usdc.address,
+    false, // reversed
     marketFactory.address,
     roleStore.address,
     dataStore.address
   );
   const ethUsdMarket = await reader.getMarket(dataStore.address, ethUsdMarketAddress);
 
-  const ethUsdtMarketAddress = getMarketTokenAddress(
-    wnt.address,
-    wnt.address,
-    usdt.address,
-    DEFAULT_MARKET_TYPE,
-    marketFactory.address,
-    roleStore.address,
-    dataStore.address
-  );
-  const ethUsdtMarket = await reader.getMarket(dataStore.address, ethUsdtMarketAddress);
+  // 0xMarket: Markets use USDC for both long and short tokens (USDT market not used)
+  const ethUsdtMarketAddress = ethUsdMarketAddress; // Same as ethUsdMarket
+  const ethUsdtMarket = ethUsdMarket;
 
-  const ethUsdSpotOnlyMarketAddress = getMarketTokenAddress(
-    ethers.constants.AddressZero,
-    wnt.address,
-    usdc.address,
-    DEFAULT_MARKET_TYPE,
-    marketFactory.address,
-    roleStore.address,
-    dataStore.address
-  );
-  const ethUsdSpotOnlyMarket = await reader.getMarket(dataStore.address, ethUsdSpotOnlyMarketAddress);
+  // 0xMarket: Spot-only markets also use USDC for both tokens
+  const ethUsdSpotOnlyMarketAddress = ethUsdMarketAddress; // Same as ethUsdMarket
+  const ethUsdSpotOnlyMarket = ethUsdMarket;
 
-  const ethUsdSingleTokenMarketAddress = getMarketTokenAddress(
-    wnt.address,
-    usdc.address,
-    usdc.address,
-    DEFAULT_MARKET_TYPE,
-    marketFactory.address,
-    roleStore.address,
-    dataStore.address
-  );
-  const ethUsdSingleTokenMarket = await reader.getMarket(dataStore.address, ethUsdSingleTokenMarketAddress);
+  const ethUsdSingleTokenMarketAddress = ethUsdMarketAddress; // Same as ethUsdMarket
+  const ethUsdSingleTokenMarket = ethUsdMarket;
 
-  const ethUsdSingleTokenMarket2Address = getMarketTokenAddress(
-    wnt.address,
-    wnt.address,
-    wnt.address,
-    DEFAULT_MARKET_TYPE,
-    marketFactory.address,
-    roleStore.address,
-    dataStore.address
-  );
-  const ethUsdSingleTokenMarket2 = await reader.getMarket(dataStore.address, ethUsdSingleTokenMarket2Address);
+  // 0xMarket: All markets use USDC for both long and short tokens
+  const ethUsdSingleTokenMarket2Address = ethUsdMarketAddress; // Same as ethUsdMarket
+  const ethUsdSingleTokenMarket2 = ethUsdMarket;
 
   const btcUsdMarketAddress = getMarketTokenAddress(
     wbtc.address,
-    wbtc.address,
     usdc.address,
-    DEFAULT_MARKET_TYPE,
+    usdc.address,
+    false, // reversed
     marketFactory.address,
     roleStore.address,
     dataStore.address
   );
   const btcUsdMarket = await reader.getMarket(dataStore.address, btcUsdMarketAddress);
 
-  const btcUsdSingleTokenMarketAddress = getMarketTokenAddress(
-    wbtc.address,
-    usdc.address,
-    usdc.address,
-    DEFAULT_MARKET_TYPE,
-    marketFactory.address,
-    roleStore.address,
-    dataStore.address
-  );
-  const btcUsdSingleTokenMarket = await reader.getMarket(dataStore.address, btcUsdSingleTokenMarketAddress);
+  const btcUsdSingleTokenMarketAddress = btcUsdMarketAddress; // Same as btcUsdMarket
+  const btcUsdSingleTokenMarket = btcUsdMarket;
 
   const solUsdMarketAddress = getMarketTokenAddress(
     sol.address,
-    wnt.address,
     usdc.address,
-    DEFAULT_MARKET_TYPE,
+    usdc.address,
+    false, // reversed
     marketFactory.address,
     roleStore.address,
     dataStore.address
@@ -231,6 +195,24 @@ export async function deployFixture() {
       await config.multicall([config.interface.encodeFunctionData("setAddress", [keys.USDC, "0x", usdc.address])])
     ).wait();
   }
+
+  // Enable SignedPriceProvider as an oracle provider for tests (used for signed oracle prices)
+  const signedPriceProvider = await hre.ethers.getContract("SignedPriceProvider");
+  const isSignedProviderEnabled = await dataStore.getBool(keys.isOracleProviderEnabledKey(signedPriceProvider.address));
+  if (!isSignedProviderEnabled) {
+    await dataStore.setBool(keys.isOracleProviderEnabledKey(signedPriceProvider.address), true);
+  }
+
+  // Mark SignedPriceProvider as an atomic oracle provider (doesn't require per-token configuration)
+  const isSignedProviderAtomic = await dataStore.getBool(keys.isAtomicOracleProviderKey(signedPriceProvider.address));
+  if (!isSignedProviderAtomic) {
+    await dataStore.setBool(keys.isAtomicOracleProviderKey(signedPriceProvider.address), true);
+  }
+
+  // Note: We don't set oracle providers for individual tokens here because:
+  // 1. For signed prices (WNT, USDC, WBTC), the SignedPriceProvider is used via the atomic provider mechanism
+  // 2. For price feed tokens, the oracle.ts utility sets the provider dynamically during test execution
+  // 3. Setting providers here would create conflicts with the dynamic provider assignment in tests
 
   // const ethUsdGlvAddress = getGlvAddress(
   //   wnt.address,
@@ -320,9 +302,9 @@ export async function deployFixture() {
       referralStorage,
       usdcPriceFeed,
       wethPriceFeed,
-      gmxPriceFeed,
+      // gmxPriceFeed, // 0xMarket: GMX token not used
       wnt,
-      gmx,
+      // gmx, // 0xMarket: GMX token not used
       wbtc,
       sol,
       usdc,

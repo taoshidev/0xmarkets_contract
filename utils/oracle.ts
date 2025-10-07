@@ -317,8 +317,10 @@ export async function getOracleParams({
     );
 
     params.tokens.push(token);
-    // 0xMarket: Use mock address since GmOracleProvider doesn't exist in 0xMarket
-    params.providers.push(ethers.constants.AddressZero);
+    // 0xMarket: Use SignedPriceProvider for test signed prices
+    const signedPriceProvider = await hre.ethers.getContract("SignedPriceProvider");
+    await dataStore.setAddress(keys.oracleProviderForTokenKey(token), signedPriceProvider.address);
+    params.providers.push(signedPriceProvider.address);
     params.data.push(data);
   }
 

@@ -2469,10 +2469,100 @@ library MarketUtils {
         }
     }
 
+    // @dev check if a market is currently open for trading based on market hours configuration
+    // @param dataStore DataStore
+    // @param market the market address to check
+    // @return true if market is open, false if closed
+    function isMarketOpen(DataStore dataStore, address market) internal view returns (bool) {
+        // Check if market hours feature is enabled for this market
+        bool isMarketHoursEnabled = dataStore.getBool(Keys.isMarketHoursEnabledKey(market));
+        
+        // If market hours not enabled, market is always open (e.g., crypto markets)
+        if (!isMarketHoursEnabled) {
+            return true;
+        }
+
+        // Get current timestamp and calculate time of day and day of week
+        uint256 currentTimestamp = Chain.currentTimestamp();
+        uint256 secondsInDay = 86400; // 24 * 60 * 60
+        uint256 timeOfDay = currentTimestamp % secondsInDay; // seconds since midnight UTC
+        uint256 dayOfWeek = ((currentTimestamp / secondsInDay) + 4) % 7; // 0=Sunday, 1=Monday, ..., 6=Saturday
+        // Note: +4 offset because Unix epoch (Jan 1, 1970) was a Thursday
+
+        // Check if current day is a trading day
+        uint256 tradingDaysBitmap = dataStore.getUint(Keys.marketTradingDaysKey(market));
+        bool isDayAllowed = (tradingDaysBitmap & (1 << dayOfWeek)) != 0;
+        
+        if (!isDayAllowed) {
+            return false;
+        }
+
+        // Check if current time is within trading hours
+        uint256 openTime = dataStore.getUint(Keys.marketOpenTimeKey(market));
+        uint256 closeTime = dataStore.getUint(Keys.marketCloseTimeKey(market));
+
+        // Handle markets that close before they open (e.g., open at 22:00, close at 02:00 next day)
+        if (closeTime < openTime) {
+            // Market is open if time is after open OR before close
+            return timeOfDay >= openTime || timeOfDay < closeTime;
+        } else {
+            // Normal case: market is open if time is between open and close
+            return timeOfDay >= openTime && timeOfDay < closeTime;
+        }
+    }
+
+    // @dev validate that a market is currently open for trading
+    // Reverts with detailed error if market is closed
+    // @param dataStore DataStore
+    // @param market the market address to check
+    function validateMarketHours(DataStore dataStore, address market) internal view {
+        // Check if market hours feature is enabled
+        bool isMarketHoursEnabled = dataStore.getBool(Keys.isMarketHoursEnabledKey(market));
+        
+        // If not enabled, no validation needed
+        if (!isMarketHoursEnabled) {
+            return;
+        }
+
+        // Get current time information
+        uint256 currentTimestamp = Chain.currentTimestamp();
+        uint256 secondsInDay = 86400;
+        uint256 timeOfDay = currentTimestamp % secondsInDay;
+        uint256 dayOfWeek = ((currentTimestamp / secondsInDay) + 4) % 7;
+
+        // Check trading days
+        uint256 tradingDaysBitmap = dataStore.getUint(Keys.marketTradingDaysKey(market));
+        bool isDayAllowed = (tradingDaysBitmap & (1 << dayOfWeek)) != 0;
+        
+        if (!isDayAllowed) {
+            revert Errors.MarketClosedForDay(market, dayOfWeek, tradingDaysBitmap);
+        }
+
+        // Check trading hours
+        uint256 openTime = dataStore.getUint(Keys.marketOpenTimeKey(market));
+        uint256 closeTime = dataStore.getUint(Keys.marketCloseTimeKey(market));
+
+        bool isOpen;
+        if (closeTime < openTime) {
+            isOpen = timeOfDay >= openTime || timeOfDay < closeTime;
+        } else {
+            isOpen = timeOfDay >= openTime && timeOfDay < closeTime;
+        }
+
+        if (!isOpen) {
+            if (timeOfDay < openTime) {
+                revert Errors.MarketNotOpenYet(market, timeOfDay, openTime);
+            } else {
+                revert Errors.MarketAlreadyClosed(market, timeOfDay, closeTime);
+            }
+        }
+    }
+
     // @dev validate that the positions can be opened in the given market
     // @param market the market to check
     function validatePositionMarket(DataStore dataStore, Market.Props memory market) internal view {
         validateEnabledMarket(dataStore, market);
+        validateMarketHours(dataStore, market.marketToken);
     }
 
     function validatePositionMarket(DataStore dataStore, address marketAddress) internal view {
