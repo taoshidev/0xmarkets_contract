@@ -108,6 +108,16 @@ library Keys {
     // @dev key used to store the min market tokens for the first deposit for a market
     bytes32 public constant MIN_MARKET_TOKENS_FOR_FIRST_DEPOSIT = keccak256(abi.encode("MIN_MARKET_TOKENS_FOR_FIRST_DEPOSIT"));
 
+    // @dev key for market hours feature - whether market hours restrictions are enabled for a market
+    bytes32 public constant IS_MARKET_HOURS_ENABLED = keccak256(abi.encode("IS_MARKET_HOURS_ENABLED"));
+    // @dev key for market open time in seconds since midnight UTC (0-86399)
+    bytes32 public constant MARKET_OPEN_TIME = keccak256(abi.encode("MARKET_OPEN_TIME"));
+    // @dev key for market close time in seconds since midnight UTC (0-86399)
+    bytes32 public constant MARKET_CLOSE_TIME = keccak256(abi.encode("MARKET_CLOSE_TIME"));
+    // @dev key for market trading days bitmap (bit 0=Sunday, bit 1=Monday, ..., bit 6=Saturday)
+    // Example: 0b01111110 (0x7E) = Monday-Friday only, 0b11111111 (0xFF) = all days
+    bytes32 public constant MARKET_TRADING_DAYS = keccak256(abi.encode("MARKET_TRADING_DAYS"));
+
     bytes32 public constant CREATE_GLV_DEPOSIT_FEATURE_DISABLED = keccak256(abi.encode("CREATE_GLV_DEPOSIT_FEATURE_DISABLED"));
     bytes32 public constant CANCEL_GLV_DEPOSIT_FEATURE_DISABLED = keccak256(abi.encode("CANCEL_GLV_DEPOSIT_FEATURE_DISABLED"));
     bytes32 public constant EXECUTE_GLV_DEPOSIT_FEATURE_DISABLED = keccak256(abi.encode("EXECUTE_GLV_DEPOSIT_FEATURE_DISABLED"));
@@ -2048,6 +2058,53 @@ library Keys {
     // @dev Get key for the Pyth oracle provider address
     function pythOracleProviderKey() internal pure returns (bytes32) {
         return PYTH_ORACLE_PROVIDER;
+    }
+
+    // ========== Market Hours Keys ==========
+
+    // @dev key for whether market hours restrictions are enabled for a specific market
+    // @param market the market address
+    // @return key for market hours enabled flag
+    function isMarketHoursEnabledKey(address market) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            IS_MARKET_HOURS_ENABLED,
+            market
+        ));
+    }
+
+    // @dev key for market open time in seconds since midnight UTC (0-86399)
+    // @param market the market address
+    // @return key for market open time
+    function marketOpenTimeKey(address market) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            MARKET_OPEN_TIME,
+            market
+        ));
+    }
+
+    // @dev key for market close time in seconds since midnight UTC (0-86399)
+    // @param market the market address
+    // @return key for market close time
+    function marketCloseTimeKey(address market) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            MARKET_CLOSE_TIME,
+            market
+        ));
+    }
+
+    // @dev key for market trading days bitmap
+    // Bitmap format: bit 0=Sunday, bit 1=Monday, ..., bit 6=Saturday
+    // Examples:
+    //   - 0b01111110 (0x7E or 126) = Monday-Friday only (typical FX/commodity markets)
+    //   - 0b11111111 (0xFF or 255) = all days (crypto markets)
+    //   - 0b00111110 (0x3E or 62) = Monday-Thursday only
+    // @param market the market address
+    // @return key for market trading days bitmap
+    function marketTradingDaysKey(address market) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            MARKET_TRADING_DAYS,
+            market
+        ));
     }
     
 }
