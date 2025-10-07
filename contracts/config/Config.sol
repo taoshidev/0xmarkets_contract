@@ -558,6 +558,12 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         allowedBaseKeys[keccak256(abi.encode("PYTH_CONFIDENCE_MULTIPLIER"))] = true;
         allowedBaseKeys[keccak256(abi.encode("CHAINLINK_ORACLE_INVERTED"))] = true;
         allowedBaseKeys[keccak256(abi.encode("PYTH_ORACLE_INVERTED"))] = true;
+
+        // Market hours keys
+        allowedBaseKeys[Keys.IS_MARKET_HOURS_ENABLED] = true;
+        allowedBaseKeys[Keys.MARKET_OPEN_TIME] = true;
+        allowedBaseKeys[Keys.MARKET_CLOSE_TIME] = true;
+        allowedBaseKeys[Keys.MARKET_TRADING_DAYS] = true;
     }
 
     function _initAllowedLimitedBaseKeys() internal {
@@ -758,6 +764,21 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
 
         if (baseKey == Keys.MAX_EXECUTION_FEE_MULTIPLIER_FACTOR) {
             if (value < Precision.FLOAT_PRECISION * 10 || value > Precision.FLOAT_PRECISION * 100_000) {
+                revert Errors.ConfigValueExceedsAllowedRange(baseKey, value);
+            }
+        }
+
+        // Market hours validation
+        if (baseKey == Keys.MARKET_OPEN_TIME || baseKey == Keys.MARKET_CLOSE_TIME) {
+            // Must be less than 86400 seconds (24 hours)
+            if (value >= 86400) {
+                revert Errors.ConfigValueExceedsAllowedRange(baseKey, value);
+            }
+        }
+
+        if (baseKey == Keys.MARKET_TRADING_DAYS) {
+            // Must be <= 0x7F (7 bits for days of week)
+            if (value > 0x7F) {
                 revert Errors.ConfigValueExceedsAllowedRange(baseKey, value);
             }
         }

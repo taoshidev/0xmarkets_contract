@@ -190,6 +190,10 @@ library Errors {
     error InvalidMarketTokenBalanceForCollateralAmount(address market, address token, uint256 balance, uint256 collateralAmount);
     error InvalidMarketTokenBalanceForClaimableFunding(address market, address token, uint256 balance, uint256 claimableFundingFeeAmount);
     error UnexpectedPoolValue(int256 poolValue);
+    error MarketClosed(address market, uint256 currentTime, uint256 currentDayOfWeek);
+    error MarketNotOpenYet(address market, uint256 currentTime, uint256 marketOpenTime);
+    error MarketAlreadyClosed(address market, uint256 currentTime, uint256 marketCloseTime);
+    error MarketClosedForDay(address market, uint256 dayOfWeek, uint256 tradingDaysBitmap);
 
     // Oracle errors
     error SequencerDown();
