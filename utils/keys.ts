@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import { hashData, hashString } from "./hash";
 
 export const WNT = hashString("WNT");
@@ -87,6 +88,12 @@ export const MAX_TOTAL_CALLBACK_GAS_LIMIT_FOR_AUTO_CANCEL_ORDERS = hashString(
 
 export const IS_MARKET_DISABLED = hashString("IS_MARKET_DISABLED");
 export const MIN_MARKET_TOKENS_FOR_FIRST_DEPOSIT = hashString("MIN_MARKET_TOKENS_FOR_FIRST_DEPOSIT");
+
+// Market hours constants
+export const IS_MARKET_HOURS_ENABLED = hashString("IS_MARKET_HOURS_ENABLED");
+export const MARKET_OPEN_TIME = hashString("MARKET_OPEN_TIME");
+export const MARKET_CLOSE_TIME = hashString("MARKET_CLOSE_TIME");
+export const MARKET_TRADING_DAYS = hashString("MARKET_TRADING_DAYS");
 
 export const MIN_ORACLE_BLOCK_CONFIRMATIONS = hashString("MIN_ORACLE_BLOCK_CONFIRMATIONS");
 export const MAX_ORACLE_PRICE_AGE = hashString("MAX_ORACLE_PRICE_AGE");
@@ -805,4 +812,26 @@ export function chainlinkOracleInvertedKey(token: string) {
 
 export function pythOracleInvertedKey(token: string) {
   return hashData(["string", "address"], ["PYTH_ORACLE_INVERTED", token]);
+}
+
+// Market Hours Keys
+export function isMarketHoursEnabledKey(market: string) {
+  return hashData(["bytes32", "address"], [hashString("IS_MARKET_HOURS_ENABLED"), market]);
+}
+
+export function marketOpenTimeKey(market: string) {
+  return hashData(["bytes32", "address"], [hashString("MARKET_OPEN_TIME"), market]);
+}
+
+export function marketCloseTimeKey(market: string) {
+  return hashData(["bytes32", "address"], [hashString("MARKET_CLOSE_TIME"), market]);
+}
+
+export function marketTradingDaysKey(market: string) {
+  return hashData(["bytes32", "address"], [hashString("MARKET_TRADING_DAYS"), market]);
+}
+
+// Helper function to encode data for Config.setUint/setBool calls
+export function encodeData(types: string[], values: any[]): string {
+  return ethers.utils.defaultAbiCoder.encode(types, values);
 }

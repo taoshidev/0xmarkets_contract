@@ -60,14 +60,15 @@ export function getMarketTokenAddress(
   indexToken: string,
   longToken: string,
   shortToken: string,
-  marketType: string,
+  reversed: boolean,
   marketFactoryAddress: string,
   roleStoreAddress: string,
   dataStoreAddress: string
 ): string {
+  // 0xMarket uses "0XMARKETS" as the salt prefix and includes reversed flag
   const salt = hashData(
-    ["string", "address", "address", "address", "bytes32"],
-    ["GMX_MARKET", indexToken, longToken, shortToken, marketType]
+    ["string", "address", "address", "address", "bool"],
+    ["0XMARKETS", indexToken, longToken, shortToken, reversed]
   );
   // eslint-disable-next-line
   const MarketTokenArtifact = require("../artifacts/contracts/market/MarketToken.sol/MarketToken.json");
