@@ -7,6 +7,7 @@ import "../error/ErrorUtils.sol";
 import "./IOrderHandler.sol";
 import "../order/OrderUtils.sol";
 import "../order/ExecuteOrderUtils.sol";
+import "../utils/Precision.sol";
 
 // @title OrderHandler
 // @dev Contract to handle creation, execution and cancellation of orders
@@ -36,10 +37,26 @@ contract OrderHandler is IOrderHandler, BaseOrderHandler {
     // @param params BaseOrderUtils.CreateOrderParams
     function createOrder(
         address account,
-        IBaseOrderUtils.CreateOrderParams calldata params,
+        IBaseOrderUtils.CreateOrderParams memory params,
         bool shouldCapMaxExecutionFee
     ) external override globalNonReentrant onlyController returns (bytes32) {
         FeatureUtils.validateFeature(dataStore, Keys.createOrderFeatureDisabledKey(address(this), uint256(params.orderType)));
+
+        address usdc = dataStore.getAddress(Keys.USDC);
+        if (usdc == address(0)) {
+            revert Errors.EmptyHoldingAddress();
+        }
+        if (params.addresses.initialCollateralToken != usdc) {
+            revert Errors.InvalidCollateralToken(params.addresses.initialCollateralToken, usdc);
+        }
+
+        Market.Props memory market = MarketUtils.getEnabledMarket(dataStore, params.addresses.market);
+
+        if (market.reversed) {
+            params.numbers.triggerPrice = Precision.mulDiv(Precision.FLOAT_PRECISION, Precision.FLOAT_PRECISION, params.numbers.triggerPrice);
+            params.numbers.acceptablePrice = Precision.mulDiv(Precision.FLOAT_PRECISION, Precision.FLOAT_PRECISION, params.numbers.acceptablePrice);
+            params.isLong = !params.isLong;
+        }
 
         return OrderUtils.createOrder(
             dataStore,

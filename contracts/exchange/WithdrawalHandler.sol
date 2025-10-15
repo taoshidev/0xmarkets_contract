@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 
 import "./BaseHandler.sol";
 import "../error/ErrorUtils.sol";
-import "@openzeppelin/contracts-v4/token/ERC20/extensions/IERC20Metadata.sol";
 
 import "../market/Market.sol";
 import "../market/MarketUtils.sol";
@@ -39,7 +38,7 @@ contract WithdrawalHandler is IWithdrawalHandler, BaseHandler {
     // @param params WithdrawalUtils.CreateWithdrawalParams
     function createWithdrawal(
         address account,
-        WithdrawalUtils.CreateWithdrawalParams calldata params
+        WithdrawalUtils.CreateWithdrawalParams memory params
     ) external override globalNonReentrant onlyController returns (bytes32) {
         FeatureUtils.validateFeature(dataStore, Keys.createWithdrawalFeatureDisabledKey(address(this)));
 
@@ -50,14 +49,14 @@ contract WithdrawalHandler is IWithdrawalHandler, BaseHandler {
         }
         Market.Props memory m = MarketUtils.getEnabledMarket(dataStore, params.market);
         if (m.longToken != usdc || m.shortToken != usdc) {
-            revert Errors.InvalidWithdrawalMarketTokens(m.longToken, m.shortToken, usdc);
+            revert Errors.InvalidWithdrawalTokens(m.longToken, m.shortToken, usdc);
         }
-        try IERC20Metadata(usdc).decimals() returns (uint8 d) {
-            if (d != 6) {
-                revert Errors.InvalidUsdcDecimals(d, 6);
-            }
-        } catch {
-            revert Errors.InvalidUsdcDecimals(0, 6);
+
+        Market.Props memory market = MarketUtils.getEnabledMarket(dataStore, params.market);
+
+        if (market.reversed) {
+            (params.minLongTokenAmount, params.minShortTokenAmount) =
+                (params.minShortTokenAmount, params.minLongTokenAmount);
         }
 
         return WithdrawalUtils.createWithdrawal(
@@ -203,23 +202,6 @@ contract WithdrawalHandler is IWithdrawalHandler, BaseHandler {
         uint256 startingGas = gasleft();
 
         FeatureUtils.validateFeature(dataStore, Keys.executeWithdrawalFeatureDisabledKey(address(this)));
-
-        // Enforce USDC-only withdrawals: market's long/short tokens must be USDC (6 decimals)
-        address usdc = dataStore.getAddress(Keys.USDC);
-        if (usdc == address(0)) {
-            revert Errors.EmptyHoldingAddress(); // reuse generic empty address error
-        }
-        Market.Props memory m = MarketUtils.getEnabledMarket(dataStore, withdrawal.market());
-        if (m.longToken != usdc || m.shortToken != usdc) {
-            revert Errors.InvalidWithdrawalMarketTokens(m.longToken, m.shortToken, usdc);
-        }
-        try IERC20Metadata(usdc).decimals() returns (uint8 d) {
-            if (d != 6) {
-                revert Errors.InvalidUsdcDecimals(d, 6);
-            }
-        } catch {
-            revert Errors.InvalidUsdcDecimals(0, 6);
-        }
 
         ExecuteWithdrawalUtils.ExecuteWithdrawalParams memory params = ExecuteWithdrawalUtils.ExecuteWithdrawalParams(
             dataStore,

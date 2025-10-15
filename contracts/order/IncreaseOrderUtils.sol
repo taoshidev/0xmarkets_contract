@@ -14,10 +14,12 @@ library IncreaseOrderUtils {
 
     // @dev process an increase order
     // @param params BaseOrderUtils.ExecuteOrderParams
-    function processOrder(BaseOrderUtils.ExecuteOrderParams memory params) external returns (EventUtils.EventLogData memory) {
+    function processOrder(
+        BaseOrderUtils.ExecuteOrderParams memory params
+    ) external returns (EventUtils.EventLogData memory) {
         MarketUtils.validatePositionMarket(params.contracts.dataStore, params.market);
 
-        address collateralToken = params.order.initialCollateralToken(); // Always USDC
+        address collateralToken = params.order.initialCollateralToken();
         uint256 collateralIncrementAmount = params.order.initialCollateralDeltaAmount();
 
         if (address(params.contracts.orderVault) != params.order.market()) {
@@ -31,7 +33,12 @@ library IncreaseOrderUtils {
 
         MarketUtils.validateMarketCollateralToken(params.market, collateralToken);
 
-        bytes32 positionKey = Position.getPositionKey(params.order.account(), params.order.market(), collateralToken, params.order.isLong());
+        bytes32 positionKey = Position.getPositionKey(
+            params.order.account(),
+            params.order.market(),
+            collateralToken,
+            params.order.isLong()
+        );
         Position.Props memory position = PositionStoreUtils.get(params.contracts.dataStore, positionKey);
 
         // initialize position
@@ -44,6 +51,7 @@ library IncreaseOrderUtils {
             position.setMarket(params.order.market());
             position.setCollateralToken(collateralToken);
             position.setIsLong(params.order.isLong());
+            position.setReversed(params.market.reversed);
         }
 
         if (params.minOracleTimestamp < params.order.updatedAtTime()) {

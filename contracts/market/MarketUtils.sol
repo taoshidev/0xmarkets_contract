@@ -651,6 +651,14 @@ library MarketUtils {
         address account,
         address receiver
     ) internal returns (uint256) {
+        address usdc = dataStore.getAddress(Keys.USDC);
+        if (usdc == address(0)) {
+            revert Errors.EmptyHoldingAddress();
+        }
+        if (token != usdc) {
+            revert Errors.InvalidCollateralToken(token, usdc);
+        }
+
         uint256 claimableAmount = dataStore.getUint(Keys.claimableCollateralAmountKey(market, token, timeKey, account));
 
         uint256 claimableFactor;
@@ -2476,7 +2484,7 @@ library MarketUtils {
     function isMarketOpen(DataStore dataStore, address market) internal view returns (bool) {
         // Check if market hours feature is enabled for this market
         bool isMarketHoursEnabled = dataStore.getBool(Keys.isMarketHoursEnabledKey(market));
-        
+
         // If market hours not enabled, market is always open (e.g., crypto markets)
         if (!isMarketHoursEnabled) {
             return true;
@@ -2492,7 +2500,7 @@ library MarketUtils {
         // Check if current day is a trading day
         uint256 tradingDaysBitmap = dataStore.getUint(Keys.marketTradingDaysKey(market));
         bool isDayAllowed = (tradingDaysBitmap & (1 << dayOfWeek)) != 0;
-        
+
         if (!isDayAllowed) {
             return false;
         }
@@ -2518,7 +2526,7 @@ library MarketUtils {
     function validateMarketHours(DataStore dataStore, address market) internal view {
         // Check if market hours feature is enabled
         bool isMarketHoursEnabled = dataStore.getBool(Keys.isMarketHoursEnabledKey(market));
-        
+
         // If not enabled, no validation needed
         if (!isMarketHoursEnabled) {
             return;
@@ -2533,7 +2541,7 @@ library MarketUtils {
         // Check trading days
         uint256 tradingDaysBitmap = dataStore.getUint(Keys.marketTradingDaysKey(market));
         bool isDayAllowed = (tradingDaysBitmap & (1 << dayOfWeek)) != 0;
-        
+
         if (!isDayAllowed) {
             revert Errors.MarketClosedForDay(market, dayOfWeek, tradingDaysBitmap);
         }

@@ -1,11 +1,11 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { deployUsdcOnlyFixture } from "../../utils/fixture";
 import { createDeposit, executeDeposit, handleDeposit } from "../../utils/deposit";
-import { createWithdrawal, executeWithdrawal } from "../../utils/withdrawal";
-import { expandDecimals } from "../../utils/math";
 import { errorsContract } from "../../utils/error";
+import { deployUsdcOnlyFixture } from "../../utils/fixture";
 import * as keys from "../../utils/keys";
+import { expandDecimals } from "../../utils/math";
+import { createWithdrawal, executeWithdrawal } from "../../utils/withdrawal";
 
 describe("USDC-only Deposits/Withdrawals", () => {
   let fixture: any;
@@ -102,6 +102,6 @@ describe("USDC-only Deposits/Withdrawals", () => {
         executionFee: 0,
         callbackGasLimit: 0,
       })
-    ).to.be.revertedWithCustomError(errorsContract, "InvalidWithdrawalMarketTokens");
+    ).to.be.revertedWithCustomError(errorsContract, "InvalidWithdrawalTokens");
   });
 });
