@@ -99,10 +99,10 @@ library Errors {
     // DepositUtils errors
     error EmptyDeposit();
     error EmptyDepositAmounts();
-    // USDC-only deposits / withdrawals
+    // USDC-only collateral / deposits / withdrawals
+    error InvalidCollateralToken(address provided, address expected);
     error InvalidDepositToken(address provided, address expected);
-    error InvalidWithdrawalMarketTokens(address longToken, address shortToken, address expected);
-    error InvalidUsdcDecimals(uint8 actual, uint8 expected);
+    error InvalidWithdrawalTokens(address longToken, address shortToken, address expected);
 
     // ExecuteDepositUtils errors
     error MinMarketTokens(uint256 received, uint256 expected);
@@ -427,9 +427,9 @@ library Errors {
     error InvalidSubaccountApprovalSubaccount();
     error NonEmptyExternalCallsForSubaccountOrder();
     error InvalidRelayParams();
-    
+
     // =============== DUAL ORACLE ERRORS ===============
-    
+
     error OraclePriceNotFresh(address token, address provider, uint256 timestamp, uint256 currentTime);
     error OracleTimeSkewExceeded(address token, uint256 chainlinkTimestamp, uint256 pythTimestamp, uint256 timeDiff, uint256 maxTimeSkew);
     error OraclePriceBandViolation(address token, uint256 chainlinkPrice, uint256 pythPrice, uint256 adjustedConfidence, uint256 lowerBand, uint256 upperBand);

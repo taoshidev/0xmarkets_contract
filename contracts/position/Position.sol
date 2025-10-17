@@ -76,6 +76,7 @@ library Position {
     // @param isLong whether the position is a long or short
     struct Flags {
         bool isLong;
+        bool reversed;
     }
 
     function account(Props memory props) internal pure returns (address) {
@@ -178,8 +179,16 @@ library Position {
         return props.flags.isLong;
     }
 
+    function isReversed(Props memory props) internal pure returns (bool) {
+        return props.flags.reversed;
+    }
+
     function setIsLong(Props memory props, bool value) internal pure {
         props.flags.isLong = value;
+    }
+
+    function setReversed(Props memory props, bool value) internal pure {
+        props.flags.reversed = value;
     }
 
     // @dev get the key for a position

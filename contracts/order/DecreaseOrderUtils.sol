@@ -55,7 +55,6 @@ library DecreaseOrderUtils {
             )
         );
 
-        // only use USDC transfer
         _validateOutputAmount(
             params.contracts.oracle,
             result.outputToken,
@@ -166,7 +165,7 @@ library DecreaseOrderUtils {
             revert Errors.InsufficientOutputAmount(outputUsd, minOutputAmount);
         }
     }
-    
+
     function getOutputEventData(
         address outputToken,
         uint256 outputAmount,
