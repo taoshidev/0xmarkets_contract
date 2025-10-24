@@ -161,20 +161,31 @@ library OrderUtils {
 
         CallbackUtils.validateCallbackGasLimit(dataStore, order.callbackGasLimit());
 
-        cache.estimatedGasLimit = GasUtils.estimateExecuteOrderGasLimit(dataStore, order);
-        cache.oraclePriceCount = GasUtils.estimateOrderOraclePriceCount(params.addresses.swapPath.length);
+        // ! EXECUTION FEE EXEMPTION
+        // cache.estimatedGasLimit = GasUtils.estimateExecuteOrderGasLimit(dataStore, order);
+        // cache.oraclePriceCount = GasUtils.estimateOrderOraclePriceCount(params.addresses.swapPath.length);
+        // uint256 executionFee;
+        // (executionFee, cache.executionFeeDiff) = GasUtils.validateAndCapExecutionFee(
+        //     dataStore,
+        //     cache.estimatedGasLimit,
+        //     params.numbers.executionFee,
+        //     cache.oraclePriceCount,
+        //     shouldCapMaxExecutionFee
+        // );
+        // order.setExecutionFee(executionFee);
+
         uint256 executionFee;
-        (executionFee, cache.executionFeeDiff) = GasUtils.validateAndCapExecutionFee(
-            dataStore,
-            cache.estimatedGasLimit,
-            params.numbers.executionFee,
-            cache.oraclePriceCount,
-            shouldCapMaxExecutionFee
-        );
+        (executionFee, cache.executionFeeDiff) = (params.numbers.executionFee, 0);
         order.setExecutionFee(executionFee);
 
         if (cache.executionFeeDiff != 0) {
-            GasUtils.transferExcessiveExecutionFee(dataStore, eventEmitter, orderVault, order.account(), cache.executionFeeDiff);
+            GasUtils.transferExcessiveExecutionFee(
+                dataStore,
+                eventEmitter,
+                orderVault,
+                order.account(),
+                cache.executionFeeDiff
+            );
         }
 
         bytes32 key = NonceUtils.getNextKey(dataStore);

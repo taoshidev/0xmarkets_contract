@@ -6,6 +6,8 @@ import "./BaseHandler.sol";
 import "../error/ErrorUtils.sol";
 
 import "../market/Market.sol";
+import "../market/MarketUtils.sol";
+
 
 import "../withdrawal/Withdrawal.sol";
 import "../withdrawal/WithdrawalVault.sol";
@@ -37,9 +39,16 @@ contract WithdrawalHandler is IWithdrawalHandler, BaseHandler {
     // @param params WithdrawalUtils.CreateWithdrawalParams
     function createWithdrawal(
         address account,
-        WithdrawalUtils.CreateWithdrawalParams calldata params
+        WithdrawalUtils.CreateWithdrawalParams memory params
     ) external override globalNonReentrant onlyController returns (bytes32) {
         FeatureUtils.validateFeature(dataStore, Keys.createWithdrawalFeatureDisabledKey(address(this)));
+
+        Market.Props memory market = MarketUtils.getEnabledMarket(dataStore, params.market);
+
+        if (market.reversed) {
+            (params.minLongTokenAmount, params.minShortTokenAmount) =
+                (params.minShortTokenAmount, params.minLongTokenAmount);
+        }
 
         return WithdrawalUtils.createWithdrawal(
             dataStore,

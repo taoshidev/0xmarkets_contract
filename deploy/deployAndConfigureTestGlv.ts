@@ -50,6 +50,7 @@ const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnviro
     weth.address,
     usdc.address,
     DEFAULT_MARKET_TYPE,
+    false,
     marketFactory.address,
     roleStore.address,
     dataStore.address
@@ -59,6 +60,7 @@ const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnviro
     weth.address,
     usdc.address,
     DEFAULT_MARKET_TYPE,
+    false,
     marketFactory.address,
     roleStore.address,
     dataStore.address

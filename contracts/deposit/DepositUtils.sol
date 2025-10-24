@@ -118,18 +118,17 @@ library DepositUtils {
                 params.executionFee,
                 params.callbackGasLimit
             ),
-            Deposit.Flags(
-                params.shouldUnwrapNativeToken
-            )
+            Deposit.Flags(params.shouldUnwrapNativeToken)
         );
 
         CallbackUtils.validateCallbackGasLimit(dataStore, deposit.callbackGasLimit());
 
-        uint256 estimatedGasLimit = GasUtils.estimateExecuteDepositGasLimit(dataStore, deposit);
-        uint256 oraclePriceCount = GasUtils.estimateDepositOraclePriceCount(
-            deposit.longTokenSwapPath().length + deposit.shortTokenSwapPath().length
-        );
-        GasUtils.validateExecutionFee(dataStore, estimatedGasLimit, params.executionFee, oraclePriceCount);
+        // ! EXECUTION FEE EXEMPTION
+        // uint256 estimatedGasLimit = GasUtils.estimateExecuteDepositGasLimit(dataStore, deposit);
+        // uint256 oraclePriceCount = GasUtils.estimateDepositOraclePriceCount(
+        //     deposit.longTokenSwapPath().length + deposit.shortTokenSwapPath().length
+        // );
+        // GasUtils.validateExecutionFee(dataStore, estimatedGasLimit, params.executionFee, oraclePriceCount);
 
         bytes32 key = NonceUtils.getNextKey(dataStore);
 
@@ -166,10 +165,7 @@ library DepositUtils {
             revert Errors.EmptyDeposit();
         }
 
-        if (
-            deposit.initialLongTokenAmount() == 0 &&
-            deposit.initialShortTokenAmount() == 0
-        ) {
+        if (deposit.initialLongTokenAmount() == 0 && deposit.initialShortTokenAmount() == 0) {
             revert Errors.EmptyDepositAmounts();
         }
 
@@ -193,13 +189,7 @@ library DepositUtils {
             );
         }
 
-        DepositEventUtils.emitDepositCancelled(
-            eventEmitter,
-            key,
-            deposit.account(),
-            reason,
-            reasonBytes
-        );
+        DepositEventUtils.emitDepositCancelled(eventEmitter, key, deposit.account(), reason, reasonBytes);
 
         EventUtils.EventLogData memory eventData;
         CallbackUtils.afterDepositCancellation(key, deposit, eventData);
@@ -212,7 +202,9 @@ library DepositUtils {
             deposit.callbackContract(),
             deposit.executionFee(),
             startingGas,
-            GasUtils.estimateDepositOraclePriceCount(deposit.longTokenSwapPath().length + deposit.shortTokenSwapPath().length),
+            GasUtils.estimateDepositOraclePriceCount(
+                deposit.longTokenSwapPath().length + deposit.shortTokenSwapPath().length
+            ),
             keeper,
             deposit.receiver()
         );

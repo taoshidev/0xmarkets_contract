@@ -134,9 +134,10 @@ library ShiftUtils {
 
         CreateShiftCache memory cache;
 
-        cache.estimatedGasLimit = GasUtils.estimateExecuteShiftGasLimit(dataStore, shift);
-        cache.oraclePriceCount = GasUtils.estimateShiftOraclePriceCount();
-        GasUtils.validateExecutionFee(dataStore, cache.estimatedGasLimit, params.executionFee, cache.oraclePriceCount);
+        // ! EXECUTION FEE EXEMPTION
+        // cache.estimatedGasLimit = GasUtils.estimateExecuteShiftGasLimit(dataStore, shift);
+        // cache.oraclePriceCount = GasUtils.estimateShiftOraclePriceCount();
+        // GasUtils.validateExecutionFee(dataStore, cache.estimatedGasLimit, params.executionFee, cache.oraclePriceCount);
 
         cache.key = NonceUtils.getNextKey(dataStore);
 
@@ -302,18 +303,19 @@ library ShiftUtils {
         eventData.uintItems.setItem(0, "receivedMarketTokens", cache.receivedMarketTokens);
         CallbackUtils.afterShiftExecution(params.key, shift, eventData);
 
-        GasUtils.payExecutionFee(
-            params.dataStore,
-            params.eventEmitter,
-            params.shiftVault,
-            params.key,
-            shift.callbackContract(),
-            shift.executionFee(),
-            params.startingGas,
-            GasUtils.estimateShiftOraclePriceCount(),
-            params.keeper,
-            shift.receiver()
-        );
+        // ! EXECUTION FEE EXEMPTION
+        // GasUtils.payExecutionFee(
+        //     params.dataStore,
+        //     params.eventEmitter,
+        //     params.shiftVault,
+        //     params.key,
+        //     shift.callbackContract(),
+        //     shift.executionFee(),
+        //     params.startingGas,
+        //     GasUtils.estimateShiftOraclePriceCount(),
+        //     params.keeper,
+        //     shift.receiver()
+        // );
 
         return cache.receivedMarketTokens;
     }

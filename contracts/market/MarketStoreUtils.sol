@@ -20,6 +20,7 @@ library MarketStoreUtils {
     bytes32 public constant INDEX_TOKEN = keccak256(abi.encode("INDEX_TOKEN"));
     bytes32 public constant LONG_TOKEN = keccak256(abi.encode("LONG_TOKEN"));
     bytes32 public constant SHORT_TOKEN = keccak256(abi.encode("SHORT_TOKEN"));
+    bytes32 public constant REVERSED = keccak256(abi.encode("REVERSED"));
 
     function get(DataStore dataStore, address key) public view returns (Market.Props memory) {
         Market.Props memory market;
@@ -41,6 +42,10 @@ library MarketStoreUtils {
 
         market.shortToken = dataStore.getAddress(
             keccak256(abi.encode(key, SHORT_TOKEN))
+        );
+
+        market.reversed = dataStore.getBool(
+            keccak256(abi.encode(key, REVERSED))
         );
 
         return market;
@@ -84,6 +89,11 @@ library MarketStoreUtils {
             keccak256(abi.encode(key, SHORT_TOKEN)),
             market.shortToken
         );
+
+        dataStore.setBool(
+            keccak256(abi.encode(key, REVERSED)),
+            market.reversed
+        );
     }
 
     function remove(DataStore dataStore, address key) external {
@@ -110,6 +120,10 @@ library MarketStoreUtils {
 
         dataStore.removeAddress(
             keccak256(abi.encode(key, SHORT_TOKEN))
+        );
+
+        dataStore.removeBool(
+            keccak256(abi.encode(key, REVERSED))
         );
     }
 

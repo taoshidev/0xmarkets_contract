@@ -90,6 +90,7 @@ export const EXCLUDED_CONFIG_KEYS = {
   USER_INITIATED_CANCEL: true,
   WITHDRAWAL_FEE_TYPE: true,
   WITHDRAWAL_LIST: true,
+  USDC: true,
   WNT: true,
   GLV_LIST: true,
   GLV_SUPPORTED_MARKET_LIST: true,

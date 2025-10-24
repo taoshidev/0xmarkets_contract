@@ -3,6 +3,7 @@ import { expandDecimals } from "./math";
 import { hashData, hashString } from "./hash";
 import { poolAmountKey, swapImpactPoolAmountKey } from "./keys";
 import * as keys from "./keys";
+import { MarketConfig } from "../config/markets";
 
 import { ethers } from "ethers";
 
@@ -70,13 +71,14 @@ export function getMarketTokenAddress(
   longToken: string,
   shortToken: string,
   marketType: string,
+  reversed: boolean,
   marketFactoryAddress: string,
   roleStoreAddress: string,
   dataStoreAddress: string
 ): string {
   const salt = hashData(
-    ["string", "address", "address", "address", "bytes32"],
-    ["GMX_MARKET", indexToken, longToken, shortToken, marketType]
+    ["string", "address", "address", "address", "bytes32", "bool"],
+    ["0X_MARKET", indexToken, longToken, shortToken, marketType, reversed]
   );
   // eslint-disable-next-line
   const MarketTokenArtifact = require("../artifacts/contracts/market/MarketToken.sol/MarketToken.json");
@@ -87,8 +89,18 @@ export function getMarketTokenAddress(
   });
 }
 
-export function getMarketKey(indexToken: string, longToken: string, shortToken: string) {
-  return [indexToken, longToken, shortToken].join(":");
+export function getMarketKey(indexToken: string, longToken: string, shortToken: string, reversed: boolean) {
+  return [indexToken, longToken, shortToken].join(":") + (reversed ? ":reversed" : "");
+}
+
+export function getMarketName(market: MarketConfig) {
+  if (market.swapOnly) {
+    return `${market.tokens.longToken}/${market.tokens.shortToken}`;
+  } else {
+    return market.reversed
+      ? `USD/${market.tokens.indexToken}:${market.tokens.longToken}:${market.tokens.shortToken}`
+      : `${market.tokens.indexToken}/USD:${market.tokens.longToken}:${market.tokens.shortToken}`;
+  }
 }
 
 export function createMarketConfigByKey({ marketConfigs, tokens }) {
@@ -96,7 +108,7 @@ export function createMarketConfigByKey({ marketConfigs, tokens }) {
 
   for (const marketConfig of marketConfigs) {
     const [indexToken, longToken, shortToken] = getMarketTokenAddresses(marketConfig, tokens);
-    const marketKey = getMarketKey(indexToken, longToken, shortToken);
+    const marketKey = getMarketKey(indexToken, longToken, shortToken, marketConfig.reversed);
     marketConfigByKey[marketKey] = marketConfig;
   }
 
@@ -114,14 +126,15 @@ export async function getOnchainMarkets(
       longToken: string;
       shortToken: string;
       marketToken: string;
+      reversed: boolean;
     }
   >
 > {
   const onchainMarkets = await read("Reader", "getMarkets", dataStoreAddress, 0, 1000);
   return Object.fromEntries(
     onchainMarkets.map((market) => {
-      const { indexToken, longToken, shortToken } = market;
-      const marketKey = getMarketKey(indexToken, longToken, shortToken);
+      const { indexToken, longToken, shortToken, reversed } = market;
+      const marketKey = getMarketKey(indexToken, longToken, shortToken, reversed);
       return [marketKey, market];
     })
   );

@@ -34,6 +34,8 @@ const getRpcUrl = (network) => {
     avalancheFuji: "https://api.avax-test.network/ext/bc/C/rpc",
     snowtrace: "https://api.avax.network/ext/bc/C/rpc",
     arbitrumBlockscout: "https://arb1.arbitrum.io/rpc",
+    base: "https://mainnet.base.org",
+    baseSepolia: "https://sepolia.base.org",
   };
 
   let rpc = defaultRpcs[network];
@@ -58,6 +60,8 @@ export const getExplorerUrl = (network) => {
     arbitrumSepolia: "https://api-sepolia.arbiscan.io/",
     avalancheFuji: "https://api-testnet.snowtrace.io/",
     arbitrumBlockscout: "https://arbitrum.blockscout.com/api",
+    base: "https://api.etherscan.io/v2/api?chainid=8453",
+    baseSepolia: "https://api.etherscan.io/v2/api?chainid=84532",
   };
 
   const url = urls[network];
@@ -103,7 +107,7 @@ const getEnvAccounts = (chainName?: string) => {
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.18",
+    version: "0.8.24",
     settings: {
       optimizer: {
         enabled: true,
@@ -215,6 +219,30 @@ const config: HardhatUserConfig = {
       blockGasLimit: 2500000,
       // gasPrice: 50000000000,
     },
+    base: {
+      url: getRpcUrl("base"),
+      chainId: 8453,
+      accounts: getEnvAccounts(),
+      verify: {
+        etherscan: {
+          apiUrl: getExplorerUrl("base"),
+          apiKey: process.env.BASESCAN_API_KEY,
+        },
+      },
+      blockGasLimit: 25_000_000,
+    },
+    baseSepolia: {
+      url: getRpcUrl("baseSepolia"),
+      chainId: 84532,
+      accounts: getEnvAccounts(),
+      verify: {
+        etherscan: {
+          apiUrl: getExplorerUrl("baseSepolia"),
+          apiKey: process.env.BASESCAN_API_KEY,
+        },
+      },
+      blockGasLimit: 60_000_000,
+    },
   },
   // hardhat-deploy has issues with some contracts
   // https://github.com/wighawag/hardhat-deploy/issues/264
@@ -228,6 +256,8 @@ const config: HardhatUserConfig = {
       avalancheFujiTestnet: process.env.SNOWTRACE_API_KEY,
       snowtrace: "snowtrace", // apiKey is not required, just set a placeholder
       arbitrumBlockscout: "arbitrumBlockscout",
+      base: process.env.BASESCAN_API_KEY,
+      baseSepolia: process.env.BASESCAN_API_KEY,
     },
     customChains: [
       {

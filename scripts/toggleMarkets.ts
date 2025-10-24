@@ -1,14 +1,14 @@
 import hre from "hardhat";
 
 import { encodeData } from "../utils/hash";
-import { getMarketKey, getMarketTokenAddresses, getOnchainMarkets } from "../utils/market";
+import { getMarketKey, getMarketName, getMarketTokenAddresses, getOnchainMarkets } from "../utils/market";
 import * as keys from "../utils/keys";
 
-async function toggleMarket({ config, multicallWriteParams, marketToken, marketNameFull, isDisabled }) {
+async function toggleMarket({ config, multicallWriteParams, marketToken, marketName, isDisabled }) {
   if (isDisabled) {
-    console.log(`    disabling ${marketNameFull}`);
+    console.log(`    disabling ${marketName} [${marketToken}]`);
   } else {
-    console.log(`    enabling ${marketNameFull}`);
+    console.log(`    enabling ${marketName} [${marketToken}]`);
   }
 
   multicallWriteParams.push(
@@ -35,19 +35,18 @@ export async function main() {
 
   for (const marketConfig of markets) {
     const [indexToken, longToken, shortToken] = getMarketTokenAddresses(marketConfig, tokens);
-    const marketKey = getMarketKey(indexToken, longToken, shortToken);
+    const marketKey = getMarketKey(indexToken, longToken, shortToken, marketConfig.reversed);
     const onchainMarket = onchainMarketsByTokens[marketKey];
     const marketToken = onchainMarket.marketToken;
 
-    const marketName = marketConfig.tokens.indexToken ? `${marketConfig.tokens.indexToken}/USD` : "SWAP-ONLY";
-    const marketNameFull = `${marketName} [${marketConfig.tokens.longToken}-${marketConfig.tokens.shortToken}], ${marketToken}`;
-    console.log(`checking ${marketNameFull}`);
+    const marketName = getMarketName(marketConfig);
+    console.log(`checking ${marketName} [${marketToken}]`);
 
-    const toggleMarketParams = { config, multicallWriteParams, marketToken, marketNameFull };
+    const toggleMarketParams = { config, multicallWriteParams, marketToken, marketName };
 
     if (process.env.ENABLE_ALL) {
       if (marketConfig.isDisabled) {
-        console.warn(`    WARNING: ${marketNameFull} has isDisabled set to true, skipping market`);
+        console.warn(`    WARNING: ${marketName} [${marketToken}] has isDisabled set to true, skipping market`);
         continue;
       }
 
@@ -56,7 +55,7 @@ export async function main() {
     }
 
     if (process.env.DISABLE_ALL) {
-      console.log(`disabling ${marketNameFull}`);
+      console.log(`disabling ${marketName} [${marketToken}]`);
       await toggleMarket({ ...toggleMarketParams, isDisabled: true });
       continue;
     }

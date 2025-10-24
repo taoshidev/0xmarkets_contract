@@ -42,14 +42,16 @@ contract MarketFactory is RoleModule {
         address indexToken,
         address longToken,
         address shortToken,
-        bytes32 marketType
+        bytes32 marketType,
+        bool reversed
     ) external onlyMarketKeeper returns (Market.Props memory) {
         bytes32 salt = keccak256(abi.encode(
-            "GMX_MARKET",
+            "0X_MARKET",
             indexToken,
             longToken,
             shortToken,
-            marketType
+            marketType,
+            reversed
         ));
 
         address existingMarketAddress = dataStore.getAddress(MarketStoreUtils.getMarketSaltHash(salt));
@@ -65,12 +67,13 @@ contract MarketFactory is RoleModule {
             address(marketToken),
             indexToken,
             longToken,
-            shortToken
+            shortToken,
+            reversed
         );
 
         MarketStoreUtils.set(dataStore, address(marketToken), salt, market);
 
-        emitMarketCreated(address(marketToken), salt, indexToken, longToken, shortToken, marketType);
+        emitMarketCreated(address(marketToken), salt, indexToken, longToken, shortToken, marketType, reversed);
 
         return market;
     }
@@ -81,7 +84,8 @@ contract MarketFactory is RoleModule {
         address indexToken,
         address longToken,
         address shortToken,
-        bytes32 marketType
+        bytes32 marketType,
+        bool reversed
     ) internal {
         EventUtils.EventLogData memory eventData;
 
@@ -94,6 +98,9 @@ contract MarketFactory is RoleModule {
         eventData.bytes32Items.initItems(2);
         eventData.bytes32Items.setItem(0, "salt", salt);
         eventData.bytes32Items.setItem(1, "marketType", marketType);
+
+        eventData.boolItems.initItems(1);
+        eventData.boolItems.setItem(0, "reversed", reversed);
 
         eventEmitter.emitEventLog1(
             "MarketCreated",

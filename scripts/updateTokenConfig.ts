@@ -18,8 +18,12 @@ const processTokens = async ({ tokens, handleConfig }) => {
       );
     }
 
-    // the config below is for non-synthetic markets only
-    if (token.synthetic) {
+    // the config below is for non-assete, non-synthetic markets only
+    if (token.isAsset) {
+      continue;
+    }
+
+    if (token.isSynthetic) {
       continue;
     }
 

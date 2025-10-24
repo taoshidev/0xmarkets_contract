@@ -49,6 +49,7 @@ library IncreaseOrderUtils {
             position.setMarket(params.order.market());
             position.setCollateralToken(collateralToken);
             position.setIsLong(params.order.isLong());
+            position.setReversed(params.market.reversed);
         }
 
         if (params.minOracleTimestamp < params.order.updatedAtTime()) {

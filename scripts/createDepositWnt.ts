@@ -73,6 +73,7 @@ async function main() {
     wnt.address,
     usdc.address,
     DEFAULT_MARKET_TYPE,
+    false,
     marketFactory.address,
     roleStore.address,
     dataStore.address

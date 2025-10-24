@@ -185,13 +185,14 @@ library GlvDepositUtils {
 
         CallbackUtils.validateCallbackGasLimit(dataStore, params.callbackGasLimit);
 
-        uint256 marketCount = GlvUtils.getGlvMarketCount(dataStore, glvDeposit.glv());
-        uint256 estimatedGasLimit = GasUtils.estimateExecuteGlvDepositGasLimit(dataStore, glvDeposit, marketCount);
-        uint256 oraclePriceCount = GasUtils.estimateGlvDepositOraclePriceCount(
-            marketCount,
-            params.longTokenSwapPath.length + params.shortTokenSwapPath.length
-        );
-        GasUtils.validateExecutionFee(dataStore, estimatedGasLimit, params.executionFee, oraclePriceCount);
+        // ! EXECUTION FEE EXEMPTION
+        // uint256 marketCount = GlvUtils.getGlvMarketCount(dataStore, glvDeposit.glv());
+        // uint256 estimatedGasLimit = GasUtils.estimateExecuteGlvDepositGasLimit(dataStore, glvDeposit, marketCount);
+        // uint256 oraclePriceCount = GasUtils.estimateGlvDepositOraclePriceCount(
+        //     marketCount,
+        //     params.longTokenSwapPath.length + params.shortTokenSwapPath.length
+        // );
+        // GasUtils.validateExecutionFee(dataStore, estimatedGasLimit, params.executionFee, oraclePriceCount);
 
         bytes32 key = NonceUtils.getNextKey(dataStore);
 
@@ -285,23 +286,24 @@ library GlvDepositUtils {
         eventData.uintItems.setItem(0, "receivedGlvTokens", cache.mintAmount);
         CallbackUtils.afterGlvDepositExecution(params.key, glvDeposit, eventData);
 
-        cache.marketCount = GlvUtils.getGlvMarketCount(params.dataStore, glvDeposit.glv());
-        cache.oraclePriceCount = GasUtils.estimateGlvDepositOraclePriceCount(
-            cache.marketCount,
-            glvDeposit.longTokenSwapPath().length + glvDeposit.shortTokenSwapPath().length
-        );
-        GasUtils.payExecutionFee(
-            params.dataStore,
-            params.eventEmitter,
-            params.glvVault,
-            params.key,
-            glvDeposit.callbackContract(),
-            glvDeposit.executionFee(),
-            params.startingGas,
-            cache.oraclePriceCount,
-            params.keeper,
-            glvDeposit.receiver()
-        );
+        // ! EXECUTION FEE EXEMPTION
+        // cache.marketCount = GlvUtils.getGlvMarketCount(params.dataStore, glvDeposit.glv());
+        // cache.oraclePriceCount = GasUtils.estimateGlvDepositOraclePriceCount(
+        //     cache.marketCount,
+        //     glvDeposit.longTokenSwapPath().length + glvDeposit.shortTokenSwapPath().length
+        // );
+        // GasUtils.payExecutionFee(
+        //     params.dataStore,
+        //     params.eventEmitter,
+        //     params.glvVault,
+        //     params.key,
+        //     glvDeposit.callbackContract(),
+        //     glvDeposit.executionFee(),
+        //     params.startingGas,
+        //     cache.oraclePriceCount,
+        //     params.keeper,
+        //     glvDeposit.receiver()
+        // );
 
         return cache.mintAmount;
     }

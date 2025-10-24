@@ -13,7 +13,7 @@ const func = async ({ getNamedAccounts, deployments, gmx, network }: HardhatRunt
   const tokens: Record<string, TokenConfig> = await getTokens();
 
   for (const [tokenSymbol, token] of Object.entries(tokens)) {
-    if (token.synthetic || !token.deploy) {
+    if (token.isAsset || token.isSynthetic || !token.deploy) {
       continue;
     }
 
@@ -50,7 +50,11 @@ const func = async ({ getNamedAccounts, deployments, gmx, network }: HardhatRunt
   }
 
   for (const [tokenSymbol, token] of Object.entries(tokens)) {
-    if (token.synthetic) {
+    if (token.isAsset) {
+      continue;
+    }
+
+    if (token.isSynthetic) {
       continue;
     }
 
@@ -61,6 +65,12 @@ const func = async ({ getNamedAccounts, deployments, gmx, network }: HardhatRunt
     );
   }
 
+  const usdcAddress = tokens["USDC"].address;
+  if (!usdcAddress) {
+    throw new Error("No USDC token found");
+  }
+  await setAddressIfDifferent(keys.USDC, usdcAddress, "USDC");
+
   const wrappedAddress = Object.values(tokens).find((token) => token.wrappedNative)?.address;
   if (!wrappedAddress) {
     throw new Error("No wrapped native token found");
@@ -69,5 +79,5 @@ const func = async ({ getNamedAccounts, deployments, gmx, network }: HardhatRunt
 };
 
 func.tags = ["Tokens"];
-func.dependencies = ["DataStore"];
+func.dependencies = ["Assets", "DataStore"];
 export default func;

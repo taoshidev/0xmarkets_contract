@@ -29,6 +29,7 @@ library PositionStoreUtils {
     bytes32 public constant DECREASED_AT_TIME = keccak256(abi.encode("DECREASED_AT_TIME"));
 
     bytes32 public constant IS_LONG = keccak256(abi.encode("IS_LONG"));
+    bytes32 public constant REVERSED = keccak256(abi.encode("REVERSED"));
 
     function get(DataStore dataStore, bytes32 key) external view returns (Position.Props memory) {
         Position.Props memory position;
@@ -86,6 +87,10 @@ library PositionStoreUtils {
 
         position.setIsLong(dataStore.getBool(
             keccak256(abi.encode(key, IS_LONG))
+        ));
+
+        position.setReversed(dataStore.getBool(
+            keccak256(abi.encode(key, REVERSED))
         ));
 
         return position;
@@ -166,6 +171,11 @@ library PositionStoreUtils {
             keccak256(abi.encode(key, IS_LONG)),
             position.isLong()
         );
+
+        dataStore.setBool(
+            keccak256(abi.encode(key, REVERSED)),
+            position.reversed()
+        );
     }
 
     function remove(DataStore dataStore, bytes32 key, address account) external {
@@ -233,6 +243,10 @@ library PositionStoreUtils {
 
         dataStore.removeBool(
             keccak256(abi.encode(key, IS_LONG))
+        );
+
+        dataStore.removeBool(
+            keccak256(abi.encode(key, REVERSED))
         );
     }
 

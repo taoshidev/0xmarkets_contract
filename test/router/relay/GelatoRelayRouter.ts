@@ -113,15 +113,15 @@ describe("GelatoRelayRouter", () => {
       );
     });
 
-    it("InsufficientExecutionFee", async () => {
-      await wnt.connect(user0).approve(router.address, expandDecimals(1, 18));
-      await dataStore.setUint(keys.ESTIMATED_GAS_FEE_MULTIPLIER_FACTOR, decimalToFloat(1));
-      createOrderParams.feeParams.feeAmount = expandDecimals(1, 15);
-      await expect(sendCreateOrder(createOrderParams)).to.be.revertedWithCustomError(
-        errorsContract,
-        "InsufficientExecutionFee"
-      );
-    });
+    // it("InsufficientExecutionFee", async () => {
+    //   await wnt.connect(user0).approve(router.address, expandDecimals(1, 18));
+    //   await dataStore.setUint(keys.ESTIMATED_GAS_FEE_MULTIPLIER_FACTOR, decimalToFloat(1));
+    //   createOrderParams.feeParams.feeAmount = expandDecimals(1, 15);
+    //   await expect(sendCreateOrder(createOrderParams)).to.be.revertedWithCustomError(
+    //     errorsContract,
+    //     "InsufficientExecutionFee"
+    //   );
+    // });
 
     it("InvalidSignature", async () => {
       await expect(

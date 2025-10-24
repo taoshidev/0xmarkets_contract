@@ -26,6 +26,15 @@ library TokenUtils {
     event NativeTokenTransferReverted(string reason);
 
     /**
+     * @dev Returns the address of the USDC token.
+     * @param dataStore DataStore contract instance where the address of the USDC token is stored.
+     * @return The address of the USDC token.
+     */
+    function usdc(DataStore dataStore) internal view returns (address) {
+        return dataStore.getAddress(Keys.USDC);
+    }
+
+    /**
      * @dev Returns the address of the WNT token.
      * @param dataStore DataStore contract instance where the address of the WNT token is stored.
      * @return The address of the WNT token.

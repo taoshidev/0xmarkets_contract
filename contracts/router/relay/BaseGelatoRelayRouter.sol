@@ -172,7 +172,7 @@ abstract contract BaseGelatoRelayRouter is GelatoRelayContext, ReentrancyGuard, 
         }
 
         if (order.account() != account) {
-            revert Errors.Unauthorized(account, "account for updateOrder");
+            revert Errors.Unauthorized(account, "updateOrder");
         }
 
         address residualFeeReceiver = increaseExecutionFee ? address(contracts.orderVault) : account;
@@ -207,7 +207,7 @@ abstract contract BaseGelatoRelayRouter is GelatoRelayContext, ReentrancyGuard, 
         }
 
         if (order.account() != account) {
-            revert Errors.Unauthorized(account, "account for cancelOrder");
+            revert Errors.Unauthorized(account, "cancelOrder");
         }
 
         _handleRelay(contracts, relayParams, account, account, isSubaccount);

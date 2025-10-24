@@ -24,6 +24,8 @@ const func = createDeployFunction({
     "OrderStoreUtils",
     "OrderEventUtils",
     "GasUtils",
+    "MarketUtils",
+    "MarketStoreUtils",
   ],
   afterDeploy: async ({ deployedContract, getNamedAccounts, deployments, network }) => {
     const { deployer } = await getNamedAccounts();

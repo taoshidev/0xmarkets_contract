@@ -95,7 +95,7 @@ const processMarkets = async ({
 
   for (const marketConfig of markets) {
     const [indexToken, longToken, shortToken] = getMarketTokenAddresses(marketConfig, tokens);
-    const marketKey = getMarketKey(indexToken, longToken, shortToken);
+    const marketKey = getMarketKey(indexToken, longToken, shortToken, marketConfig.reversed);
     const onchainMarket = onchainMarketsByTokens[marketKey];
 
     if (!onchainMarket) {
@@ -748,7 +748,8 @@ export async function updateMarketConfig({
   const configKeys = [];
   const multicallReadParams = [];
 
-  const supportedRiskOracleMarkets = await getSupportedRiskOracleMarkets(markets, tokens, onchainMarketsByTokens);
+  // const supportedRiskOracleMarkets = await getSupportedRiskOracleMarkets(markets, tokens, onchainMarketsByTokens);
+  const supportedRiskOracleMarkets = new Set();
 
   await processMarkets({
     markets,

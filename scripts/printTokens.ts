@@ -18,11 +18,12 @@ async function main() {
     const oracleTimestampAdjustment = await dataStore.getUint(oracleTimestampAdjustmentKey);
 
     console.log(
-      "%s %s, decimals: %s%s, oracleProvider: %s, oracleTimestampAdjustment: %s",
+      "%s %s, decimals: %s, isAsset: %s, isSynthetic: %s, oracleProvider: %s, oracleTimestampAdjustment: %s",
       symbol.padEnd(5),
       address,
       String(tokenConfig.decimals).padEnd(2),
-      tokenConfig.synthetic ? ", synthetic" : "",
+      tokenConfig.isAsset,
+      tokenConfig.isSynthetic,
       oracleProvider,
       oracleTimestampAdjustment
     );

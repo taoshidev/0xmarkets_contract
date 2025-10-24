@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "./BaseHandler.sol";
 
 import "../market/Market.sol";
+import "../market/MarketUtils.sol";
 
 import "../deposit/Deposit.sol";
 import "../deposit/DepositVault.sol";
@@ -35,9 +36,15 @@ contract DepositHandler is IDepositHandler, BaseHandler {
     // @param params DepositUtils.CreateDepositParams
     function createDeposit(
         address account,
-        DepositUtils.CreateDepositParams calldata params
+        DepositUtils.CreateDepositParams memory params
     ) external override globalNonReentrant onlyController returns (bytes32) {
         FeatureUtils.validateFeature(dataStore, Keys.createDepositFeatureDisabledKey(address(this)));
+
+        Market.Props memory market = MarketUtils.getEnabledMarket(dataStore, params.market);
+
+        if (market.reversed) {
+            (params.initialLongToken, params.initialShortToken) = (params.initialShortToken, params.initialLongToken);
+        }
 
         return DepositUtils.createDeposit(
             dataStore,

@@ -279,18 +279,19 @@ library ExecuteDepositUtils {
         cache.callbackEventData.uintItems.setItem(0, "receivedMarketTokens", cache.receivedMarketTokens);
         CallbackUtils.afterDepositExecution(params.key, deposit, cache.callbackEventData);
 
-        GasUtils.payExecutionFee(
-            params.dataStore,
-            params.eventEmitter,
-            params.depositVault,
-            params.key,
-            deposit.callbackContract(),
-            deposit.executionFee(),
-            params.startingGas,
-            GasUtils.estimateDepositOraclePriceCount(deposit.longTokenSwapPath().length + deposit.shortTokenSwapPath().length),
-            params.keeper,
-            deposit.receiver()
-        );
+        // ! EXECUTION FEE EXEMPTION
+        // GasUtils.payExecutionFee(
+        //     params.dataStore,
+        //     params.eventEmitter,
+        //     params.depositVault,
+        //     params.key,
+        //     deposit.callbackContract(),
+        //     deposit.executionFee(),
+        //     params.startingGas,
+        //     GasUtils.estimateDepositOraclePriceCount(deposit.longTokenSwapPath().length + deposit.shortTokenSwapPath().length),
+        //     params.keeper,
+        //     deposit.receiver()
+        // );
 
         return cache.receivedMarketTokens;
     }

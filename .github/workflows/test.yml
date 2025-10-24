@@ -1,0 +1,29 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches: [$default_branch, dev]
+
+jobs:
+  test:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --ignore-scripts
+
+      - name: Compile contracts
+        run: yarn hardhat compile && yarn hardhat deploy
+
+      - name: Run tests
+        run: yarn hardhat test

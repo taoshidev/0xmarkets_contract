@@ -153,18 +153,19 @@ library ExecuteWithdrawalUtils {
             withdrawal.longTokenSwapPath().length + withdrawal.shortTokenSwapPath().length
         );
 
-        GasUtils.payExecutionFee(
-            params.dataStore,
-            params.eventEmitter,
-            params.withdrawalVault,
-            params.key,
-            withdrawal.callbackContract(),
-            withdrawal.executionFee(),
-            params.startingGas,
-            cache.oraclePriceCount,
-            params.keeper,
-            withdrawal.receiver()
-        );
+        // ! EXECUTION FEE EXEMPTION
+        // GasUtils.payExecutionFee(
+        //     params.dataStore,
+        //     params.eventEmitter,
+        //     params.withdrawalVault,
+        //     params.key,
+        //     withdrawal.callbackContract(),
+        //     withdrawal.executionFee(),
+        //     params.startingGas,
+        //     cache.oraclePriceCount,
+        //     params.keeper,
+        //     withdrawal.receiver()
+        // );
 
         return cache.result;
     }

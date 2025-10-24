@@ -115,17 +115,18 @@ library GlvWithdrawalUtils {
 
         CallbackUtils.validateCallbackGasLimit(dataStore, params.callbackGasLimit);
 
-        uint256 marketCount = GlvUtils.getGlvMarketCount(dataStore, glvWithdrawal.glv());
-        uint256 estimatedGasLimit = GasUtils.estimateExecuteGlvWithdrawalGasLimit(
-            dataStore,
-            glvWithdrawal,
-            marketCount
-        );
-        uint256 oraclePriceCount = GasUtils.estimateGlvWithdrawalOraclePriceCount(
-            marketCount,
-            params.longTokenSwapPath.length + params.shortTokenSwapPath.length
-        );
-        GasUtils.validateExecutionFee(dataStore, estimatedGasLimit, params.executionFee, oraclePriceCount);
+        // ! EXECUTION FEE EXEMPTION
+        // uint256 marketCount = GlvUtils.getGlvMarketCount(dataStore, glvWithdrawal.glv());
+        // uint256 estimatedGasLimit = GasUtils.estimateExecuteGlvWithdrawalGasLimit(
+        //     dataStore,
+        //     glvWithdrawal,
+        //     marketCount
+        // );
+        // uint256 oraclePriceCount = GasUtils.estimateGlvWithdrawalOraclePriceCount(
+        //     marketCount,
+        //     params.longTokenSwapPath.length + params.shortTokenSwapPath.length
+        // );
+        // GasUtils.validateExecutionFee(dataStore, estimatedGasLimit, params.executionFee, oraclePriceCount);
 
         bytes32 key = NonceUtils.getNextKey(dataStore);
 
@@ -190,18 +191,19 @@ library GlvWithdrawalUtils {
             glvWithdrawal.longTokenSwapPath().length + glvWithdrawal.shortTokenSwapPath().length
         );
 
-        GasUtils.payExecutionFee(
-            params.dataStore,
-            params.eventEmitter,
-            params.glvVault,
-            params.key,
-            glvWithdrawal.callbackContract(),
-            glvWithdrawal.executionFee(),
-            params.startingGas,
-            cache.oraclePriceCount,
-            params.keeper,
-            glvWithdrawal.receiver()
-        );
+        // ! EXECUTION FEE EXEMPTION
+        // GasUtils.payExecutionFee(
+        //     params.dataStore,
+        //     params.eventEmitter,
+        //     params.glvVault,
+        //     params.key,
+        //     glvWithdrawal.callbackContract(),
+        //     glvWithdrawal.executionFee(),
+        //     params.startingGas,
+        //     cache.oraclePriceCount,
+        //     params.keeper,
+        //     glvWithdrawal.receiver()
+        // );
     }
 
     function _processMarketWithdrawal(

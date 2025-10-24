@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "./BaseOrderHandler.sol";
 import "../error/ErrorUtils.sol";
 import "./IOrderHandler.sol";
+import "../market/MarketUtils.sol";
 import "../order/OrderUtils.sol";
 import "../order/ExecuteOrderUtils.sol";
 
@@ -38,10 +39,20 @@ contract OrderHandler is IOrderHandler, BaseOrderHandler {
     // @param params BaseOrderUtils.CreateOrderParams
     function createOrder(
         address account,
-        IBaseOrderUtils.CreateOrderParams calldata params,
+        IBaseOrderUtils.CreateOrderParams memory params,
         bool shouldCapMaxExecutionFee
     ) external override globalNonReentrant onlyController returns (bytes32) {
         FeatureUtils.validateFeature(dataStore, Keys.createOrderFeatureDisabledKey(address(this), uint256(params.orderType)));
+
+        if (params.addresses.market != address(0)) {
+            Market.Props memory market = MarketUtils.getEnabledMarket(dataStore, params.addresses.market);
+
+            if (market.reversed) {
+                params.numbers.triggerPrice = Precision.mulDiv(Precision.FLOAT_PRECISION, Precision.FLOAT_PRECISION, params.numbers.triggerPrice);
+                params.numbers.acceptablePrice = Precision.mulDiv(Precision.FLOAT_PRECISION, Precision.FLOAT_PRECISION, params.numbers.acceptablePrice);
+                params.isLong = !params.isLong;
+            }
+        }
 
         return OrderUtils.createOrder(
             dataStore,
@@ -126,15 +137,19 @@ contract OrderHandler is IOrderHandler, BaseOrderHandler {
         cache.wnt = TokenUtils.wnt(dataStore);
         cache.receivedWnt = orderVault.recordTransferIn(cache.wnt);
 
-        cache.estimatedGasLimit = GasUtils.estimateExecuteOrderGasLimit(dataStore, order);
-        cache.oraclePriceCount = GasUtils.estimateOrderOraclePriceCount(order.swapPath().length);
-        (uint256 executionFee, uint256 executionFeeDiff) = GasUtils.validateAndCapExecutionFee(
-            dataStore,
-            cache.estimatedGasLimit,
-            order.executionFee() + cache.receivedWnt,
-            cache.oraclePriceCount,
-            shouldCapMaxExecutionFee
-        );
+        // ! EXECUTION FEE EXEMPTION
+        // cache.estimatedGasLimit = GasUtils.estimateExecuteOrderGasLimit(dataStore, order);
+        // cache.oraclePriceCount = GasUtils.estimateOrderOraclePriceCount(order.swapPath().length);
+        // (uint256 executionFee, uint256 executionFeeDiff) = GasUtils.validateAndCapExecutionFee(
+        //     dataStore,
+        //     cache.estimatedGasLimit,
+        //     order.executionFee() + cache.receivedWnt,
+        //     cache.oraclePriceCount,
+        //     shouldCapMaxExecutionFee
+        // );
+        // order.setExecutionFee(executionFee);
+
+        (uint256 executionFee, uint256 executionFeeDiff) = (order.executionFee() + cache.receivedWnt, 0);
         order.setExecutionFee(executionFee);
 
         if (executionFeeDiff != 0) {

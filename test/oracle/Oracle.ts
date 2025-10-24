@@ -48,9 +48,9 @@ describe("Oracle", () => {
           nativeFee: 0,
           linkFee: 0,
           expiresAt: block.timestamp + 200,
-          price: 100_000,
-          bid: 100_000 - 1,
-          ask: 100_000 + 1,
+          price: expandDecimals(100000, 18),
+          bid: expandDecimals(99999, 18),
+          ask: expandDecimals(100001, 18),
         }),
       ],
       priceFeedTokens: [usdc.address],
@@ -63,8 +63,8 @@ describe("Oracle", () => {
     expect((await oracle.primaryPrices(wnt.address))[0]).eq("5000000000000000");
     expect((await oracle.primaryPrices(wnt.address))[1]).eq("5000000000000000");
 
-    expect((await oracle.primaryPrices(wbtc.address))[0]).eq("999990000");
-    expect((await oracle.primaryPrices(wbtc.address))[1]).eq("1000010000");
+    expect((await oracle.primaryPrices(wbtc.address))[0]).eq("999990000000000000000000000");
+    expect((await oracle.primaryPrices(wbtc.address))[1]).eq("1000010000000000000000000000");
 
     expect((await oracle.primaryPrices(usdc.address))[0]).eq("1000000000000000000000000");
     expect((await oracle.primaryPrices(usdc.address))[1]).eq("1000000000000000000000000");

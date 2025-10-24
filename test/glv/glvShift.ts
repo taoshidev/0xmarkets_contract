@@ -188,13 +188,14 @@ describe("Glv Shifts", () => {
   });
 
   it("execute glv shift, single asset", async () => {
-    await marketFactory.createMarket(sol.address, wnt.address, wnt.address, DEFAULT_MARKET_TYPE);
+    await marketFactory.createMarket(sol.address, wnt.address, wnt.address, DEFAULT_MARKET_TYPE, false);
 
     const solUsdSingleTokenMarket2Address = getMarketTokenAddress(
       sol.address,
       wnt.address,
       wnt.address,
       DEFAULT_MARKET_TYPE,
+      false,
       marketFactory.address,
       roleStore.address,
       dataStore.address

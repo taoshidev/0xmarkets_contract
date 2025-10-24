@@ -121,6 +121,7 @@ export async function deployFixture() {
     wnt.address,
     usdc.address,
     DEFAULT_MARKET_TYPE,
+    false,
     marketFactory.address,
     roleStore.address,
     dataStore.address
@@ -132,6 +133,7 @@ export async function deployFixture() {
     wnt.address,
     usdt.address,
     DEFAULT_MARKET_TYPE,
+    false,
     marketFactory.address,
     roleStore.address,
     dataStore.address
@@ -143,6 +145,7 @@ export async function deployFixture() {
     wnt.address,
     usdc.address,
     DEFAULT_MARKET_TYPE,
+    false,
     marketFactory.address,
     roleStore.address,
     dataStore.address
@@ -154,6 +157,7 @@ export async function deployFixture() {
     usdc.address,
     usdc.address,
     DEFAULT_MARKET_TYPE,
+    false,
     marketFactory.address,
     roleStore.address,
     dataStore.address
@@ -165,6 +169,7 @@ export async function deployFixture() {
     wnt.address,
     wnt.address,
     DEFAULT_MARKET_TYPE,
+    false,
     marketFactory.address,
     roleStore.address,
     dataStore.address
@@ -176,6 +181,7 @@ export async function deployFixture() {
     wbtc.address,
     usdc.address,
     DEFAULT_MARKET_TYPE,
+    false,
     marketFactory.address,
     roleStore.address,
     dataStore.address
@@ -187,6 +193,7 @@ export async function deployFixture() {
     usdc.address,
     usdc.address,
     DEFAULT_MARKET_TYPE,
+    false,
     marketFactory.address,
     roleStore.address,
     dataStore.address
@@ -198,6 +205,7 @@ export async function deployFixture() {
     wnt.address,
     usdc.address,
     DEFAULT_MARKET_TYPE,
+    false,
     marketFactory.address,
     roleStore.address,
     dataStore.address
@@ -320,6 +328,6 @@ export async function deployFixture() {
       glvReader,
       mockVaultV1,
     },
-    props: { oracleSalt, signerIndexes: [0, 1, 2, 3, 4, 5, 6], executionFee: "1000000000000000" },
+    props: { oracleSalt, signerIndexes: [0, 1, 2, 3, 4, 5, 6], executionFee: "0" },
   };
 }

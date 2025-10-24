@@ -9,7 +9,12 @@ export async function validateTokens() {
       throw new Error(`token ${tokenSymbol} has no decimals`);
     }
 
-    if (token.synthetic) {
+    if (token.isAsset) {
+      console.log(`skipping ${tokenSymbol} as it is non-ERC20 asset`);
+      continue;
+    }
+
+    if (token.isSynthetic) {
       console.log(`skipping ${tokenSymbol} as it is synthetic`);
       continue;
     }

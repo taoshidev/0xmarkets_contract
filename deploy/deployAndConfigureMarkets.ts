@@ -1,7 +1,13 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import * as keys from "../utils/keys";
 import { setBoolIfDifferent, setBytes32IfDifferent, setUintIfDifferent } from "../utils/dataStore";
-import { DEFAULT_MARKET_TYPE, getMarketTokenAddresses, getMarketKey, getOnchainMarkets } from "../utils/market";
+import {
+  DEFAULT_MARKET_TYPE,
+  getMarketTokenAddresses,
+  getMarketKey,
+  getMarketName,
+  getOnchainMarkets,
+} from "../utils/market";
 import { updateMarketConfig } from "../scripts/updateMarketConfigUtils";
 
 const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnvironment) => {
@@ -23,20 +29,21 @@ const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnviro
   for (const marketConfig of markets) {
     const [indexToken, longToken, shortToken] = getMarketTokenAddresses(marketConfig, tokens);
 
-    const marketKey = getMarketKey(indexToken, longToken, shortToken);
+    const marketKey = getMarketKey(indexToken, longToken, shortToken, marketConfig.reversed);
+    const marketName = getMarketName(marketConfig);
     const onchainMarket = onchainMarketsByTokens[marketKey];
     if (onchainMarket) {
-      log("market %s:%s:%s already exists at %s", indexToken, longToken, shortToken, onchainMarket.marketToken);
+      log("market %s already exists at %s", marketName, onchainMarket.marketToken);
       continue;
     }
 
     if (process.env.SKIP_NEW_MARKETS) {
-      log("WARN: new market %s:%s:%s skipped", indexToken, longToken, shortToken);
+      log("WARN: new market %s skipped", marketName);
       continue;
     }
 
     const marketType = DEFAULT_MARKET_TYPE;
-    log("creating market %s:%s:%s:%s", indexToken, longToken, shortToken, marketType);
+    log("creating market %s", marketName);
     await execute(
       "MarketFactory",
       { from: deployer, log: true },
@@ -44,7 +51,8 @@ const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnviro
       indexToken,
       longToken,
       shortToken,
-      marketType
+      marketType,
+      marketConfig.reversed
     );
   }
 
@@ -52,7 +60,7 @@ const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnviro
 
   for (const marketConfig of markets) {
     const [indexToken, longToken, shortToken] = getMarketTokenAddresses(marketConfig, tokens);
-    const marketKey = getMarketKey(indexToken, longToken, shortToken);
+    const marketKey = getMarketKey(indexToken, longToken, shortToken, marketConfig.reversed);
     const onchainMarket = onchainMarketsByTokens[marketKey];
     const marketToken = onchainMarket.marketToken;
 
@@ -119,5 +127,5 @@ func.skip = async ({ gmx, network }) => {
 };
 func.runAtTheEnd = true;
 func.tags = ["Markets"];
-func.dependencies = ["MarketFactory", "Tokens", "DataStore", "Config", "Multicall", "Roles"];
+func.dependencies = ["Assets", "MarketFactory", "Tokens", "DataStore", "Config", "Multicall", "Roles"];
 export default func;

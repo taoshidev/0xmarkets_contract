@@ -31,7 +31,10 @@ async function main() {
       throw new Error("Invalid MARKET_KEY");
     }
   } else {
-    if (tokenSymbols.length !== 3) {
+    if (tokenSymbols.length !== 3 && tokenSymbols.length !== 4) {
+      throw new Error("Invalid MARKET_KEY");
+    }
+    if (tokenSymbols.length === 4 && tokenSymbols[3] !== "reversed") {
       throw new Error("Invalid MARKET_KEY");
     }
   }
@@ -39,6 +42,7 @@ async function main() {
   const indexTokenSymbol = swapOnly ? undefined : tokenSymbols[0];
   const longTokenSymbol = swapOnly ? tokenSymbols[0] : tokenSymbols[1];
   const shortTokenSymbol = swapOnly ? tokenSymbols[1] : tokenSymbols[2];
+  const reversed = tokenSymbols.length === 4 && tokenSymbols[3] === "reversed";
 
   const [indexTokenAddress, longTokenAddress, shortTokenAddress] = getMarketTokenAddresses(
     {
@@ -53,7 +57,7 @@ async function main() {
   );
 
   const marketConfigs = await hre.gmx.getMarkets();
-  const marketConfigKey = getMarketKey(indexTokenAddress, longTokenAddress, shortTokenAddress);
+  const marketConfigKey = getMarketKey(indexTokenAddress, longTokenAddress, shortTokenAddress, reversed);
   const marketConfigByKey = createMarketConfigByKey({ marketConfigs, tokens });
   const marketConfig = marketConfigByKey[marketConfigKey];
 
@@ -62,7 +66,7 @@ async function main() {
   }
 
   console.info(
-    `creating market: indexToken: ${indexTokenAddress}, longToken: ${longTokenAddress}, shortToken: ${shortTokenAddress}`
+    `creating market: indexToken: ${indexTokenAddress}, longToken: ${longTokenAddress}, shortToken: ${shortTokenAddress}, reversed: ${reversed}`
   );
 
   if (!write) {
@@ -78,7 +82,8 @@ async function main() {
       indexTokenAddress,
       longTokenAddress,
       shortTokenAddress,
-      DEFAULT_MARKET_TYPE
+      DEFAULT_MARKET_TYPE,
+      reversed
     );
     console.log(`create market tx sent: ${tx0.hash}`);
 
@@ -133,7 +138,8 @@ async function main() {
       indexTokenAddress,
       longTokenAddress,
       shortTokenAddress,
-      DEFAULT_MARKET_TYPE
+      DEFAULT_MARKET_TYPE,
+      reversed
     );
 
     console.log("NOTE: executed in read-only mode, no transactions were sent, marketToken would be %s", marketToken);
