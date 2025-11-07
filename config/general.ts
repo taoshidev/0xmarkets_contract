@@ -3,7 +3,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { decimalToFloat, percentageToFloat, expandDecimals } from "../utils/math";
 
 export default async function ({ network }: HardhatRuntimeEnvironment) {
-  if (network.name === "hardhat") {
+  if (network.name === "hardhat" || network.name === "localhost") {
     // Note that this is only for the hardhat config, the config for all
     // other networks is separate from this
     return {
@@ -126,32 +126,8 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
   };
 
   const networkConfig = {
-    arbitrumGoerli: {},
-    arbitrumSepolia: {
-      maxAutoCancelOrders: 11,
-      maxTotalCallbackGasLimitForAutoCancelOrders: 10_000_000,
-    },
-    avalancheFuji: {},
-    arbitrum: {
-      maxAutoCancelOrders: 11,
-      maxTotalCallbackGasLimitForAutoCancelOrders: 10_000_000,
-      maxCallbackGasLimit: 4_000_000,
-      estimatedGasPerOraclePrice: false,
-      executionGasPerOraclePrice: false,
-      estimatedGasFeeBaseAmount: false,
-      executionGasFeeBaseAmount: false,
-      sequencerUptimeFeed: "0xFdB631F5EE196F0ed6FAa767959853A9F217697D",
-
-      increaseOrderGasLimit: 3_000_000,
-      decreaseOrderGasLimit: 3_000_000,
-      swapOrderGasLimit: 2_500_000,
-      ignoreOpenInterestForUsageFactor: true,
-    },
-    avalanche: {
-      increaseOrderGasLimit: 3_500_000,
-      decreaseOrderGasLimit: 3_500_000,
-      ignoreOpenInterestForUsageFactor: true,
-    },
+    hardhat: {},
+    localhost: {},
   }[network.name];
 
   if (!networkConfig) {

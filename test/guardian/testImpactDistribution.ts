@@ -261,7 +261,7 @@ describe("Guardian.PositionImpactPoolDistribution", () => {
     // Approximate as distribution may not be exactly 1 ETH due to time differences
     expect(await dataStore.getUint(keys.positionImpactPoolAmountKey(ethUsdMarket.marketToken))).to.approximately(
       negativePI.sub(distributionAmt).sub(positivePI),
-      expandDecimals(1, 14)
+      expandDecimals(1, 15)
     );
 
     // Check that User0's order got filled

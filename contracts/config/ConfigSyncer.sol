@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-v4/security/ReentrancyGuard.sol";
 
 import "./Config.sol";
 import "./IRiskOracle.sol";
@@ -144,6 +144,16 @@ contract ConfigSyncer is ReentrancyGuard, RoleModule {
 
         allowedBaseKeys[Keys.RESERVE_FACTOR] = true;
         allowedBaseKeys[Keys.OPEN_INTEREST_RESERVE_FACTOR] = true;
+
+        // 0xMarket dual-oracle keys
+        allowedBaseKeys[keccak256(abi.encode("PYTH_ORACLE_PROVIDER"))] = true;
+        allowedBaseKeys[keccak256(abi.encode("PYTH_FEED_ID"))] = true;
+        allowedBaseKeys[keccak256(abi.encode("CHAINLINK_ORACLE_TTL"))] = true;
+        allowedBaseKeys[keccak256(abi.encode("PYTH_ORACLE_TTL"))] = true;
+        allowedBaseKeys[keccak256(abi.encode("MAX_ORACLE_TIME_SKEW"))] = true;
+        allowedBaseKeys[keccak256(abi.encode("PYTH_CONFIDENCE_MULTIPLIER"))] = true;
+        allowedBaseKeys[keccak256(abi.encode("CHAINLINK_ORACLE_INVERTED"))] = true;
+        allowedBaseKeys[keccak256(abi.encode("PYTH_ORACLE_INVERTED"))] = true;
     }
 
     // @dev validate that the baseKey is allowed to be used

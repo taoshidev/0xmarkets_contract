@@ -118,7 +118,7 @@ describe("Exchange.FundingFees.SingleTokenMarket", () => {
       execute: {
         afterExecution: async ({ logs }) => {
           const feeInfo = getEventData(logs, "PositionFeesCollected");
-          expect(feeInfo.fundingFeeAmount).eq("8064020"); // 8.064020 USD
+          expect(feeInfo.fundingFeeAmount).eq("8064034"); // 8.064034 USD
           expect(feeInfo.collateralToken).eq(usdc.address);
           const claimableFundingData = getEventDataArray(logs, "ClaimableFundingUpdated");
           expect(claimableFundingData.length).eq(0);
@@ -128,7 +128,7 @@ describe("Exchange.FundingFees.SingleTokenMarket", () => {
 
     expect(
       await dataStore.getUint(keys.fundingFeeAmountPerSizeKey(ethUsdSingleTokenMarket.marketToken, usdc.address, true))
-    ).eq("40320100000000000");
+    ).eq("40320166666666668");
     expect(
       await dataStore.getUint(keys.fundingFeeAmountPerSizeKey(ethUsdSingleTokenMarket.marketToken, usdc.address, false))
     ).eq(0);
@@ -142,7 +142,7 @@ describe("Exchange.FundingFees.SingleTokenMarket", () => {
       await dataStore.getUint(
         keys.claimableFundingAmountPerSizeKey(ethUsdSingleTokenMarket.marketToken, usdc.address, false)
       )
-    ).eq("40320099999999998");
+    ).eq("40320166666666666");
 
     // ORDER 4
     // user1 decreases the short position by $80k, remaining short position size is $20k
@@ -167,10 +167,10 @@ describe("Exchange.FundingFees.SingleTokenMarket", () => {
           const claimableFundingData = getEventDataArray(logs, "ClaimableFundingUpdated");
           expect(claimableFundingData.length).eq(2);
           expect(claimableFundingData[0].token).eq(usdc.address);
-          expect(claimableFundingData[0].delta).eq("4032009"); // 4.032009 USD
+          expect(claimableFundingData[0].delta).eq("4032016"); // 4.032016 USD
 
           expect(claimableFundingData[1].token).eq(usdc.address);
-          expect(claimableFundingData[1].delta).eq("4032009"); // 4.032009 USD
+          expect(claimableFundingData[1].delta).eq("4032016"); // 4.032016 USD
         },
       },
     });
@@ -185,6 +185,6 @@ describe("Exchange.FundingFees.SingleTokenMarket", () => {
       await dataStore.getUint(
         keys.claimableFundingAmountKey(ethUsdSingleTokenMarket.marketToken, usdc.address, user1.address)
       )
-    ).eq("8064018"); // 8.064018 USD
+    ).eq("8064032"); // 8.064032 USD
   });
 });

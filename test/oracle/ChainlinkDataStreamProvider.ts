@@ -25,9 +25,11 @@ function decodeValidatedPrice(data: string) {
 }
 
 function encodeReport(feedId: string, bid: BigNumberish, ask: BigNumberish) {
+  const now = Math.floor(Date.now() / 1000);
+
   return encodeData(
     ["bytes32", "uint32", "uint32", "uint192", "uint192", "uint32", "int192", "int192", "int192"],
-    [feedId, 1, 1732209862, 1732209872, 4, 5, 6, bid, ask]
+    [feedId, now, now, 0, 0, now + 3600, 0, bid, ask]
   );
 }
 

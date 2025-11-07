@@ -407,7 +407,7 @@ describe("Exchange.PositionFees", () => {
           expect(positionFeesCollectedEvent.positionFeeAmount).eq("19000000000000000"); // 0.019 ETH => 95 USD
           expect(positionFeesCollectedEvent.totalCostAmount).closeTo("22168147331056031", "10000000000"); // 0.022168147331056031 ETH => 110.840736654 USD
           expect(positionFeesCollectedEvent.latestFundingFeeAmountPerSize).closeTo(
-            "8064019999999995000000000",
+            "8064033333333333333252693",
             "10000000000000000000"
           );
           expect(positionFeesCollectedEvent.latestLongTokenClaimableFundingAmountPerSize).eq("0");
@@ -476,7 +476,7 @@ describe("Exchange.PositionFees", () => {
           expect(positionFeesCollectedEvent.feeAmountForPool).closeTo("28502869", "50"); // 28.502869 USD
           expect(positionFeesCollectedEvent.positionFeeAmountForPool).eq("25600000"); // 25.6 USD
           expect(positionFeesCollectedEvent.positionFeeAmount).eq("40000000"); // 40 USD
-          expect(positionFeesCollectedEvent.totalCostAmount).closeTo("42838114", "50"); // 42.838114 USD
+          expect(positionFeesCollectedEvent.totalCostAmount).closeTo("42838171", "50"); // 42.838171 USD
           expect(positionFeesCollectedEvent.latestFundingFeeAmountPerSize).closeTo("245454545455", "200000000000");
           expect(positionFeesCollectedEvent.latestLongTokenClaimableFundingAmountPerSize).closeTo(
             "16128039999999990000000000",

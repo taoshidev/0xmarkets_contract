@@ -525,7 +525,8 @@ function fillLongShortValues(market, key, longKey, shortKey) {
 export default async function (hre: HardhatRuntimeEnvironment) {
   const markets = config[hre.network.name];
   const tokens = await hre.gmx.getTokens();
-  const defaultMarketConfig = hre.network.name === "hardhat" ? hardhatBaseMarketConfig : baseMarketConfig;
+  const defaultMarketConfig =
+    hre.network.name === "hardhat" || hre.network.name === "localhost" ? hardhatBaseMarketConfig : baseMarketConfig;
   if (markets) {
     const seen = new Set<string>();
     for (const market of markets) {

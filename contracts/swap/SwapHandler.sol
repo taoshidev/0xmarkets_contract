@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-v4/security/ReentrancyGuard.sol";
 
 import "../role/RoleModule.sol";
 import "./SwapUtils.sol";

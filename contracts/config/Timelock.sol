@@ -2,13 +2,12 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-v4/security/ReentrancyGuard.sol";
 
 import "../role/RoleModule.sol";
 import "../event/EventEmitter.sol";
 import "../utils/BasicMulticall.sol";
 import "../utils/Precision.sol";
-import "../oracle/OracleStore.sol";
 import "../data/DataStore.sol";
 import "../data/Keys.sol";
 import "../chain/Chain.sol";
@@ -30,7 +29,6 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
 
     DataStore public immutable dataStore;
     EventEmitter public immutable eventEmitter;
-    OracleStore public immutable oracleStore;
     uint256 public timelockDelay;
 
     mapping (bytes32 => uint256) public pendingActions;
@@ -40,12 +38,10 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
         RoleStore _roleStore,
         DataStore _dataStore,
         EventEmitter _eventEmitter,
-        OracleStore _oracleStore,
         uint256 _timelockDelay
     ) RoleModule(_roleStore) {
         dataStore = _dataStore;
         eventEmitter = _eventEmitter;
-        oracleStore = _oracleStore;
         timelockDelay = _timelockDelay;
 
         _validateTimelockDelay();
@@ -200,74 +196,6 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
         eventData.boolItems.setItem(0, "value", value);
         eventEmitter.emitEventLog(
             "SetAtomicOracleProvider",
-            eventData
-        );
-    }
-
-    function signalAddOracleSigner(address account) external onlyTimelockAdmin nonReentrant {
-        if (account == address(0)) {
-            revert Errors.InvalidOracleSigner(account);
-        }
-
-        bytes32 actionKey = _addOracleSignerActionKey(account);
-        _signalPendingAction(actionKey, "addOracleSigner");
-
-        EventUtils.EventLogData memory eventData;
-        eventData.addressItems.initItems(1);
-        eventData.addressItems.setItem(0, "account", account);
-        eventEmitter.emitEventLog1(
-            "SignalAddOracleSigner",
-            actionKey,
-            eventData
-        );
-    }
-
-    function addOracleSignerAfterSignal(address account) external onlyTimelockAdmin nonReentrant {
-        bytes32 actionKey = _addOracleSignerActionKey(account);
-        _validateAndClearAction(actionKey, "addOracleSigner");
-
-        oracleStore.addSigner(account);
-
-        EventUtils.EventLogData memory eventData;
-        eventData.addressItems.initItems(1);
-        eventData.addressItems.setItem(0, "account", account);
-        eventEmitter.emitEventLog1(
-            "AddOracleSigner",
-            actionKey,
-            eventData
-        );
-    }
-
-    function signalRemoveOracleSigner(address account) external onlyTimelockAdmin nonReentrant {
-        if (account == address(0)) {
-            revert Errors.InvalidOracleSigner(account);
-        }
-
-        bytes32 actionKey = _removeOracleSignerActionKey(account);
-        _signalPendingAction(actionKey, "removeOracleSigner");
-
-        EventUtils.EventLogData memory eventData;
-        eventData.addressItems.initItems(1);
-        eventData.addressItems.setItem(0, "account", account);
-        eventEmitter.emitEventLog1(
-            "SignalRemoveOracleSigner",
-            actionKey,
-            eventData
-        );
-    }
-
-    function removeOracleSignerAfterSignal(address account) external onlyTimelockAdmin nonReentrant {
-        bytes32 actionKey = _removeOracleSignerActionKey(account);
-        _validateAndClearAction(actionKey, "removeOracleSigner");
-
-        oracleStore.removeSigner(account);
-
-        EventUtils.EventLogData memory eventData;
-        eventData.addressItems.initItems(1);
-        eventData.addressItems.setItem(0, "account", account);
-        eventEmitter.emitEventLog1(
-            "RemoveOracleSigner",
-            actionKey,
             eventData
         );
     }
@@ -553,6 +481,98 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
         _clearAction(actionKey, "cancelAction");
     }
 
+    // @dev 0xMarket: signal setting of a Pyth feed
+    // @param token the token to set the Pyth feed for
+    // @param feedId the Pyth feed ID
+    // @param chainlinkTtl TTL for Chainlink price freshness
+    // @param pythTtl TTL for Pyth price freshness
+    // @param maxTimeSkew maximum allowed time skew between oracles
+    // @param confidenceMultiplier K factor for confidence band validation
+    function signalSetPythFeed(
+        address token,
+        bytes32 feedId,
+        uint256 chainlinkTtl,
+        uint256 pythTtl,
+        uint256 maxTimeSkew,
+        uint256 confidenceMultiplier
+    ) external onlyTimelockAdmin nonReentrant {
+        bytes32 actionKey = _setPythFeedActionKey(
+            token,
+            feedId,
+            chainlinkTtl,
+            pythTtl,
+            maxTimeSkew,
+            confidenceMultiplier
+        );
+
+        _signalPendingAction(actionKey, "setPythFeed");
+
+        EventUtils.EventLogData memory eventData;
+        eventData.addressItems.initItems(1);
+        eventData.addressItems.setItem(0, "token", token);
+        eventData.bytes32Items.initItems(1);
+        eventData.bytes32Items.setItem(0, "feedId", feedId);
+        eventData.uintItems.initItems(4);
+        eventData.uintItems.setItem(0, "chainlinkTtl", chainlinkTtl);
+        eventData.uintItems.setItem(1, "pythTtl", pythTtl);
+        eventData.uintItems.setItem(2, "maxTimeSkew", maxTimeSkew);
+        eventData.uintItems.setItem(3, "confidenceMultiplier", confidenceMultiplier);
+        eventEmitter.emitEventLog1(
+            "SignalSetPythFeed",
+            actionKey,
+            eventData
+        );
+    }
+
+    // @dev 0xMarket: sets a Pyth feed after signal
+    // @param token the token to set the Pyth feed for
+    // @param feedId the Pyth feed ID
+    // @param chainlinkTtl TTL for Chainlink price freshness
+    // @param pythTtl TTL for Pyth price freshness
+    // @param maxTimeSkew maximum allowed time skew between oracles
+    // @param confidenceMultiplier K factor for confidence band validation
+    function setPythFeedAfterSignal(
+        address token,
+        bytes32 feedId,
+        uint256 chainlinkTtl,
+        uint256 pythTtl,
+        uint256 maxTimeSkew,
+        uint256 confidenceMultiplier
+    ) external onlyTimelockAdmin nonReentrant {
+        bytes32 actionKey = _setPythFeedActionKey(
+            token,
+            feedId,
+            chainlinkTtl,
+            pythTtl,
+            maxTimeSkew,
+            confidenceMultiplier
+        );
+
+        _validateAndClearAction(actionKey, "setPythFeed");
+
+        dataStore.setBytes32(Keys.pythFeedIdKey(token), feedId);
+        dataStore.setUint(Keys.chainlinkOracleTTLKey(token), chainlinkTtl);
+        dataStore.setUint(Keys.pythOracleTTLKey(token), pythTtl);
+        dataStore.setUint(Keys.maxOracleTimeSkewKey(token), maxTimeSkew);
+        dataStore.setUint(Keys.pythConfidenceMultiplierKey(token), confidenceMultiplier);
+
+        EventUtils.EventLogData memory eventData;
+        eventData.addressItems.initItems(1);
+        eventData.addressItems.setItem(0, "token", token);
+        eventData.bytes32Items.initItems(1);
+        eventData.bytes32Items.setItem(0, "feedId", feedId);
+        eventData.uintItems.initItems(4);
+        eventData.uintItems.setItem(0, "chainlinkTtl", chainlinkTtl);
+        eventData.uintItems.setItem(1, "pythTtl", pythTtl);
+        eventData.uintItems.setItem(2, "maxTimeSkew", maxTimeSkew);
+        eventData.uintItems.setItem(3, "confidenceMultiplier", confidenceMultiplier);
+        eventEmitter.emitEventLog1(
+            "SetPythFeed",
+            actionKey,
+            eventData
+        );
+    }
+
     // @dev signal a pending action
     // @param actionKey the key of the action
     // @param actionLabel a label for the action
@@ -589,14 +609,6 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
 
     function _setAtomicOracleProviderKey(address provider, bool value) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked("setAtomicOracleProvider", provider, value));
-    }
-
-    function _addOracleSignerActionKey(address account) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked("addOracleSigner", account));
-    }
-
-    function _removeOracleSignerActionKey(address account) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked("removeOracleSigner", account));
     }
 
     function _setFeeReceiverActionKey(address account) internal pure returns (bytes32) {
@@ -688,5 +700,24 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
         if (timelockDelay > MAX_TIMELOCK_DELAY) {
             revert Errors.MaxTimelockDelayExceeded(timelockDelay);
         }
+    }
+
+    function _setPythFeedActionKey(
+        address token,
+        bytes32 feedId,
+        uint256 chainlinkTtl,
+        uint256 pythTtl,
+        uint256 maxTimeSkew,
+        uint256 confidenceMultiplier
+    ) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(
+            "setPythFeed",
+            token,
+            feedId,
+            chainlinkTtl,
+            pythTtl,
+            maxTimeSkew,
+            confidenceMultiplier
+        ));
     }
 }

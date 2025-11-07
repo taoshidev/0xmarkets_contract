@@ -1098,10 +1098,9 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
-"@gelatonetwork/relay-context@4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@gelatonetwork/relay-context/-/relay-context-4.1.0.tgz#ef1c91bc568b85e6a623eb3e34ec5e39aef275fa"
-  integrity sha512-I1dc36eVa8YMOTalkjAgQCcudxx6X5ywqkqO38gkzBjmnuCzGK9mFpifCP32g5xIQApwveItznXS1cgiOkCjpg==
+"@gelatonetwork/relay-context@https://github.com/taoshidev/relay-context-contracts#ac73c20c3bc80a8b38a1cedd65be491880fde81d":
+  version "4.1.1"
+  resolved "https://github.com/taoshidev/relay-context-contracts#ac73c20c3bc80a8b38a1cedd65be491880fde81d"
   dependencies:
     "@openzeppelin/contracts" "4.9.3"
 
@@ -1568,10 +1567,25 @@
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.9.3.tgz#ff17a80fb945f5102571f8efecb5ce5915cc4811"
   integrity sha512-jjaHAVRMrE4UuZNfDwjlLGDxTHWIOwTJS2ldnc278a0gevfXfPr8hxKEVBGFBE96kl2G3VHDZhUimw/+G3TG2A==
 
+"@openzeppelin/contracts-upgradeable@5.4.0":
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-5.4.0.tgz#a325066da702d0a8be091eb17136d3e9c92cc76a"
+  integrity sha512-STJKyDzUcYuB35Zub1JpWW58JxvrFFVgQ+Ykdr8A9PGXgtq/obF5uoh07k2XmFyPxfnZdPdBdhkJ/n2YxJ87HQ==
+
+"@openzeppelin/contracts-v4@npm:@openzeppelin/contracts@4.9.3":
+  version "4.9.3"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.9.3.tgz#00d7a8cf35a475b160b3f0293a6403c511099364"
+  integrity sha512-He3LieZ1pP2TNt5JbkPA4PNT9WC3gOTOlDcFGJW4Le4QKqwmiNJCRt44APfxMxvq7OugU/cqYuPcSBzOw38DAg==
+
 "@openzeppelin/contracts@4.9.3":
   version "4.9.3"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.9.3.tgz#00d7a8cf35a475b160b3f0293a6403c511099364"
   integrity sha512-He3LieZ1pP2TNt5JbkPA4PNT9WC3gOTOlDcFGJW4Le4QKqwmiNJCRt44APfxMxvq7OugU/cqYuPcSBzOw38DAg==
+
+"@openzeppelin/contracts@5.4.0":
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-5.4.0.tgz#177594bdb2d86c71f5d1052fe40cb4edb95fb20f"
+  integrity sha512-eCYgWnLg6WO+X52I16TZt8uEjbtdkgLC0SUX/xnAksjjrQI4Xfn4iBRoI5j55dmlOhDv1Y7BoR3cU7e3WWhC6A==
 
 "@parcel/watcher-android-arm64@2.3.0":
   version "2.3.0"

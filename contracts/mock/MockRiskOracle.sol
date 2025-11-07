@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts-v4/access/Ownable.sol";
+import "@openzeppelin/contracts-v4/utils/Strings.sol";
 
 /**
  * @title Dynamic Risk Oracle

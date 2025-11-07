@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-v4/security/ReentrancyGuard.sol";
 
 import "../data/DataStore.sol";
 import "../data/Keys.sol";
@@ -553,6 +553,16 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         allowedBaseKeys[Keys.BUYBACK_MAX_PRICE_AGE] = true;
 
         allowedBaseKeys[Keys.DATA_STREAM_SPREAD_REDUCTION_FACTOR] = true;
+
+        // 0xMarket dual-oracle keys
+        allowedBaseKeys[Keys.PYTH_ORACLE_PROVIDER] = true;
+        allowedBaseKeys[Keys.PYTH_FEED_ID] = true;
+        allowedBaseKeys[Keys.CHAINLINK_ORACLE_TTL] = true;
+        allowedBaseKeys[Keys.PYTH_ORACLE_TTL] = true;
+        allowedBaseKeys[Keys.MAX_ORACLE_TIME_SKEW] = true;
+        allowedBaseKeys[Keys.PYTH_CONFIDENCE_MULTIPLIER] = true;
+        allowedBaseKeys[Keys.CHAINLINK_ORACLE_INVERTED] = true;
+        allowedBaseKeys[Keys.PYTH_ORACLE_INVERTED] = true;
     }
 
     function _initAllowedLimitedBaseKeys() internal {
@@ -577,6 +587,16 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         allowedLimitedBaseKeys[Keys.GLV_MAX_MARKET_TOKEN_BALANCE_AMOUNT] = true;
 
         allowedLimitedBaseKeys[Keys.PRO_TRADER_TIER] = true;
+
+        // 0xMarket dual-oracle keys
+        allowedBaseKeys[Keys.PYTH_ORACLE_PROVIDER] = true;
+        allowedBaseKeys[Keys.PYTH_FEED_ID] = true;
+        allowedBaseKeys[Keys.CHAINLINK_ORACLE_TTL] = true;
+        allowedBaseKeys[Keys.PYTH_ORACLE_TTL] = true;
+        allowedBaseKeys[Keys.MAX_ORACLE_TIME_SKEW] = true;
+        allowedBaseKeys[Keys.PYTH_CONFIDENCE_MULTIPLIER] = true;
+        allowedBaseKeys[Keys.CHAINLINK_ORACLE_INVERTED] = true;
+        allowedBaseKeys[Keys.PYTH_ORACLE_INVERTED] = true;
     }
 
     // @dev validate that the baseKey is allowed to be used

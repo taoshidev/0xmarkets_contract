@@ -5,12 +5,12 @@ import * as keys from "../utils/keys";
 const constructorContracts = ["DataStore", "Oracle"];
 
 const func = createDeployFunction({
-  contractName: "ChainlinkDataStreamProvider",
+  contractName: "ChainlinkDataStreamAdapter",
   dependencyNames: constructorContracts,
   getDeployArgs: async ({ dependencyContracts, gmx, network, get }) => {
     const oracleConfig = await gmx.getOracle();
     let dataStreamFeedVerifierAddress = oracleConfig.dataStreamFeedVerifier;
-    if (network.name === "hardhat") {
+    if (network.name === "hardhat" || network.name === "localhost") {
       const dataStreamFeedVerifier = await get("MockDataStreamVerifier");
       dataStreamFeedVerifierAddress = dataStreamFeedVerifier.address;
     }

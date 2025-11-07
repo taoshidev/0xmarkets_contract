@@ -480,6 +480,16 @@ library Keys {
     // @dev constant for user initiated cancel reason
     string public constant USER_INITIATED_CANCEL = "USER_INITIATED_CANCEL";
 
+    // 0xMarket dual-oracle keys
+    bytes32 public constant PYTH_ORACLE_PROVIDER = keccak256(abi.encode("PYTH_ORACLE_PROVIDER"));
+    bytes32 public constant PYTH_FEED_ID = keccak256(abi.encode("PYTH_FEED_ID"));
+    bytes32 public constant CHAINLINK_ORACLE_TTL = keccak256(abi.encode("CHAINLINK_ORACLE_TTL"));
+    bytes32 public constant PYTH_ORACLE_TTL = keccak256(abi.encode("PYTH_ORACLE_TTL"));
+    bytes32 public constant MAX_ORACLE_TIME_SKEW = keccak256(abi.encode("MAX_ORACLE_TIME_SKEW"));
+    bytes32 public constant PYTH_CONFIDENCE_MULTIPLIER = keccak256(abi.encode("PYTH_CONFIDENCE_MULTIPLIER"));
+    bytes32 public constant CHAINLINK_ORACLE_INVERTED = keccak256(abi.encode("CHAINLINK_ORACLE_INVERTED"));
+    bytes32 public constant PYTH_ORACLE_INVERTED = keccak256(abi.encode("PYTH_ORACLE_INVERTED"));
+
     // @dev function used to calculate fullKey for a given market parameter
     // @param baseKey the base key for the market parameter
     // @param data the additional data for the market parameter
@@ -2111,6 +2121,57 @@ library Keys {
     function buybackMaxPriceImpactFactorKey(address token) internal pure returns (bytes32) {
         return keccak256(abi.encode(
             BUYBACK_MAX_PRICE_IMPACT_FACTOR,
+            token
+        ));
+    }
+
+    // 0xMarket dual-oracle keys
+
+    function pythFeedIdKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            PYTH_FEED_ID,
+            token
+        ));
+    }
+
+    function chainlinkOracleTTLKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            CHAINLINK_ORACLE_TTL,
+            token
+        ));
+    }
+    
+    function pythOracleTTLKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            PYTH_ORACLE_TTL,
+            token
+        ));
+    }
+    
+    function maxOracleTimeSkewKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            MAX_ORACLE_TIME_SKEW,
+            token
+        ));
+    }
+    
+    function pythConfidenceMultiplierKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            PYTH_CONFIDENCE_MULTIPLIER,
+            token
+        ));
+    }
+
+    function chainlinkOracleInvertedKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            CHAINLINK_ORACLE_INVERTED,
+            token
+        ));
+    }
+    
+    function pythOracleInvertedKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            PYTH_ORACLE_INVERTED,
             token
         ));
     }

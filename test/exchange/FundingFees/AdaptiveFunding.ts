@@ -116,8 +116,8 @@ describe("Exchange.FundingFees.AdaptiveFunding", () => {
       reader.getMarketInfo(dataStore.address, prices.ethUsdMarket, ethUsdMarket.marketToken),
       (marketInfo) => {
         expect(marketInfo.nextFunding.longsPayShorts).eq(true);
-        expect(marketInfo.nextFunding.fundingFactorPerSecond).eq("36240000000000000000000000"); // 0.003624%
-        expect(marketInfo.nextFunding.nextSavedFundingFactorPerSecond).eq("36240000000000000000000000"); // 0.003624%
+        expect(marketInfo.nextFunding.fundingFactorPerSecond).eq("36360000000000000000000000"); // 0.003625%
+        expect(marketInfo.nextFunding.nextSavedFundingFactorPerSecond).eq("36360000000000000000000000"); // 0.003636%
       }
     );
 
@@ -131,8 +131,8 @@ describe("Exchange.FundingFees.AdaptiveFunding", () => {
         // fundingIncreaseFactorPerSecond: 0.0001%
         // increase in funding: 6% * 0.0001% * 600 = 0.0036%
         // new funding = 0.0036% + 0.0036% = 0.0072%
-        expect(marketInfo.nextFunding.fundingFactorPerSecond).eq("72236820015899920500397200"); // 0.00722%
-        expect(marketInfo.nextFunding.nextSavedFundingFactorPerSecond).eq("72236820015899920500397200"); // 0.00722%
+        expect(marketInfo.nextFunding.fundingFactorPerSecond).eq("72356820015899920500397200"); // 0.00723%
+        expect(marketInfo.nextFunding.nextSavedFundingFactorPerSecond).eq("72356820015899920500397200"); // 0.00723%
       }
     );
 
@@ -167,13 +167,13 @@ describe("Exchange.FundingFees.AdaptiveFunding", () => {
       (marketInfo) => {
         expect(marketInfo.nextFunding.longsPayShorts).eq(true);
         expect(marketInfo.nextFunding.fundingFactorPerSecond).closeTo(
-          "72637888432138635383224410",
+          "72959791985737118299019392",
           "100000000000000000000000"
-        ); // 0.00726%
+        ); // 0.00729%
         expect(marketInfo.nextFunding.nextSavedFundingFactorPerSecond).closeTo(
-          "72637888432138635383224410",
+          "72959791985737118299019392",
           "100000000000000000000000"
-        ); // 0.00726%
+        ); // 0.00729%
       }
     );
 
@@ -186,13 +186,13 @@ describe("Exchange.FundingFees.AdaptiveFunding", () => {
         // diff in open interest: 8k / 200k = 4%
         // funding rate should not change
         expect(marketInfo.nextFunding.fundingFactorPerSecond).closeTo(
-          "72637888432138635383224410",
+          "72959791985737118299019392",
           "100000000000000000000000"
-        ); // 0.00726%
+        ); // 0.00729%
         expect(marketInfo.nextFunding.nextSavedFundingFactorPerSecond).closeTo(
-          "72637888432138635383224410",
+          "72959791985737118299019392",
           "100000000000000000000000"
-        ); // 0.00726%
+        ); // 0.00729%
       }
     );
 
@@ -227,13 +227,13 @@ describe("Exchange.FundingFees.AdaptiveFunding", () => {
       (marketInfo) => {
         expect(marketInfo.nextFunding.longsPayShorts).eq(true);
         expect(marketInfo.nextFunding.fundingFactorPerSecond).closeTo(
-          "72618803095782552410311774",
+          "72959791985737118299019392",
           "100000000000000000000000"
-        ); // 0.00726%
+        ); // 0.00729%
         expect(marketInfo.nextFunding.nextSavedFundingFactorPerSecond).closeTo(
-          "72618803095782552410311774",
+          "72959791985737118299019392",
           "100000000000000000000000"
-        ); // 0.00726%
+        ); // 0.00729%
       }
     );
 
@@ -248,11 +248,11 @@ describe("Exchange.FundingFees.AdaptiveFunding", () => {
         // decrease in funding: 0.000002% * 600 = 0.0012%
         // new funding = 0.0072% - 0.0012% = 0.006%
         expect(marketInfo.nextFunding.fundingFactorPerSecond).closeTo(
-          "60618803095782552410311774",
+          "60959791985737118299019392",
           "100000000000000000000000"
         ); // 0.0060%
         expect(marketInfo.nextFunding.nextSavedFundingFactorPerSecond).closeTo(
-          "60618803095782552410311774",
+          "60959791985737118299019392",
           "100000000000000000000000"
         ); // 0.0060%
       }
@@ -289,13 +289,13 @@ describe("Exchange.FundingFees.AdaptiveFunding", () => {
       (marketInfo) => {
         expect(marketInfo.nextFunding.longsPayShorts).eq(true);
         expect(marketInfo.nextFunding.fundingFactorPerSecond).closeTo(
-          "60475449363249909351161042",
+          "60734761386938153710293294",
           "100000000000000000000000"
-        ); // 0.00604%
+        ); // 0.00607%
         expect(marketInfo.nextFunding.nextSavedFundingFactorPerSecond).closeTo(
-          "60475449363249909351161042",
+          "60734761386938153710293294",
           "100000000000000000000000"
-        ); // 0.00604%
+        ); // 0.00607%
       }
     );
 
@@ -310,13 +310,13 @@ describe("Exchange.FundingFees.AdaptiveFunding", () => {
         // new funding = 0.00604% + -0.0036% = 0.00244%
         expect(marketInfo.nextFunding.longsPayShorts).eq(true);
         expect(marketInfo.nextFunding.fundingFactorPerSecond).closeTo(
-          "24451790944216678086726159",
+          "24731941401038083210646094",
           "100000000000000000000000"
-        ); // 0.00244%
+        ); // 0.00247%
         expect(marketInfo.nextFunding.nextSavedFundingFactorPerSecond).closeTo(
-          "24451790944216678086726159",
+          "24731941401038083210646094",
           "100000000000000000000000"
-        ); // 0.00244%
+        ); // 0.00247%
       }
     );
 
@@ -331,13 +331,13 @@ describe("Exchange.FundingFees.AdaptiveFunding", () => {
         // new funding = 0.00244% + -0.0036% = -0.00116%
         expect(marketInfo.nextFunding.longsPayShorts).eq(false);
         expect(marketInfo.nextFunding.fundingFactorPerSecond).closeTo(
-          "11500529296732609336067894",
+          "11270878584861987289001106",
           "100000000000000000000000"
-        ); // 0.00115%
+        ); // 0.00112%
         expect(marketInfo.nextFunding.nextSavedFundingFactorPerSecond).closeTo(
-          "-11500529296732609336067894",
+          "-11270878584861987289001106",
           "100000000000000000000000"
-        ); // -0.00115%
+        ); // -0.00112%
       }
     );
 
@@ -352,13 +352,13 @@ describe("Exchange.FundingFees.AdaptiveFunding", () => {
         // new funding = -0.00116% + -0.0036% = -0.00476%
         expect(marketInfo.nextFunding.longsPayShorts).eq(false);
         expect(marketInfo.nextFunding.fundingFactorPerSecond).closeTo(
-          "47533010594450302147780558",
+          "47273698570762057788648306",
           "100000000000000000000000"
-        ); // 0.00475%
+        ); // 0.00472%
         expect(marketInfo.nextFunding.nextSavedFundingFactorPerSecond).closeTo(
-          "-47533010594450302147780558",
+          "-47273698570762057788648306",
           "100000000000000000000000"
-        ); // -0.00475%
+        ); // -0.00472%
       }
     );
   });

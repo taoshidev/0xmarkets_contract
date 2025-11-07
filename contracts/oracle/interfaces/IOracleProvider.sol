@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "./OracleUtils.sol";
+import "../utils/OracleUtils.sol";
 
 // @title IOracleProvider
 // @dev Interface for an oracle provider

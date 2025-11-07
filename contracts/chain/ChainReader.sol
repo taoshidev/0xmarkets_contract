@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts-v4/utils/Strings.sol";
 
 // @title ArbSys
 // @dev Globally available variables for Arbitrum may have both an L1 and an L2

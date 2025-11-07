@@ -38,6 +38,7 @@ type BaseTokenConfig = {
   dataStreamFeedDecimals?: number;
   dataStreamSpreadReductionFactor?: BigNumberish;
   priceFeed?: OraclePriceFeed;
+  pythFeedId?: string;
 };
 
 type AssetToekenConfig = BaseTokenConfig & {

@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import "../glv/glvDeposit/GlvDepositUtils.sol";
 import "../glv/glvWithdrawal/GlvWithdrawalUtils.sol";
-import "../oracle/OracleUtils.sol";
+import "../oracle/utils/OracleUtils.sol";
 
 interface IGlvHandler {
     function createGlvDeposit(

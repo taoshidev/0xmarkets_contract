@@ -18,7 +18,16 @@ const func = async ({ getNamedAccounts, deployments, gmx }: HardhatRuntimeEnviro
     });
     priceFeed.address = address;
 
-    await execute(contractName, { from: deployer, log: true }, "setAnswer", priceFeed.initPrice);
+    await execute(
+      contractName,
+      { from: deployer, log: true },
+      "setLatestRoundData",
+      1, // roundId
+      priceFeed.initPrice, // answer
+      0, // startedAt
+      Math.floor(Date.now() / 1000), // updatedAt (current timestamp)
+      1 // answeredInRound
+    );
   }
 };
 

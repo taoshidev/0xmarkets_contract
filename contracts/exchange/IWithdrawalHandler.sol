@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "../withdrawal/WithdrawalUtils.sol";
-import "../oracle/OracleUtils.sol";
+import "../oracle/utils/OracleUtils.sol";
 import "../pricing/ISwapPricingUtils.sol";
 
 interface IWithdrawalHandler {
