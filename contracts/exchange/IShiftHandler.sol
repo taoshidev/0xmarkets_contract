@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "../shift/ShiftUtils.sol";
-import "../oracle/utils/OracleUtils.sol";
+import "../oracle/OracleUtils.sol";
 
 interface IShiftHandler {
     function createShift(address account, ShiftUtils.CreateShiftParams calldata params) external returns (bytes32);

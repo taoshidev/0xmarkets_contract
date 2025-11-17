@@ -9,7 +9,7 @@ const func = createDeployFunction({
   getDeployArgs: async ({ dependencyContracts, gmx, network, get }) => {
     const riskOracleConfig = await gmx.getRiskOracle();
     let riskOracleAddress = riskOracleConfig.riskOracle;
-    if (network.name === "hardhat" || network.name === "localhost") {
+    if (network.name === "hardhat") {
       const riskOracle = await get("MockRiskOracle");
       riskOracleAddress = riskOracle.address;
     }

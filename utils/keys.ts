@@ -264,16 +264,6 @@ export const VALID_FROM_TIME = hashString("VALID_FROM_TIME");
 
 export const ASSET_TOKEN = hashString("ASSET_TOKEN");
 
-// 0xMarket dual-oracle keys
-export const PYTH_ORACLE_PROVIDER = hashString("PYTH_ORACLE_PROVIDER");
-export const PYTH_FEED_ID = hashString("PYTH_FEED_ID");
-export const CHAINLINK_ORACLE_TTL = hashString("CHAINLINK_ORACLE_TTL");
-export const PYTH_ORACLE_TTL = hashString("PYTH_ORACLE_TTL");
-export const MAX_ORACLE_TIME_SKEW = hashString("MAX_ORACLE_TIME_SKEW");
-export const PYTH_CONFIDENCE_MULTIPLIER = hashString("PYTH_CONFIDENCE_MULTIPLIER");
-export const CHAINLINK_ORACLE_INVERTED = hashString("CHAINLINK_ORACLE_INVERTED");
-export const PYTH_ORACLE_INVERTED = hashString("PYTH_ORACLE_INVERTED");
-
 export function accountDepositListKey(account) {
   return hashData(["bytes32", "address"], [ACCOUNT_DEPOSIT_LIST, account]);
 }
@@ -820,34 +810,4 @@ export function withdrawableBuybackTokenAmountKey(buybackToken: string) {
 
 export function assetTokenKey(asset: string) {
   return hashData(["bytes32", "string"], [ASSET_TOKEN, asset]);
-}
-
-// 0xMarket dual-oracle keys
-
-export function pythFeedIdKey(token: string) {
-  return hashData(["bytes32", "address"], [PYTH_FEED_ID, token]);
-}
-
-export function chainlinkOracleTTLKey(token: string) {
-  return hashData(["bytes32", "address"], [CHAINLINK_ORACLE_TTL, token]);
-}
-
-export function pythOracleTTLKey(token: string) {
-  return hashData(["bytes32", "address"], [PYTH_ORACLE_TTL, token]);
-}
-
-export function maxOracleTimeSkewKey(token: string) {
-  return hashData(["bytes32", "address"], [MAX_ORACLE_TIME_SKEW, token]);
-}
-
-export function pythConfidenceMultiplierKey(token: string) {
-  return hashData(["bytes32", "address"], [PYTH_CONFIDENCE_MULTIPLIER, token]);
-}
-
-export function chainlinkOracleInvertedKey(token: string) {
-  return hashData(["bytes32", "address"], [CHAINLINK_ORACLE_INVERTED, token]);
-}
-
-export function pythOracleInvertedKey(token: string) {
-  return hashData(["bytes32", "address"], [PYTH_ORACLE_INVERTED, token]);
 }

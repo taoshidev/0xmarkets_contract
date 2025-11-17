@@ -1,14 +1,14 @@
-import { setBoolIfDifferent } from "../utils/dataStore";
 import { createDeployFunction } from "../utils/deploy";
+import { setBoolIfDifferent } from "../utils/dataStore";
 import * as keys from "../utils/keys";
 
 const constructorContracts = ["DataStore"];
 
 const func = createDeployFunction({
-  contractName: "SignedPriceProvider",
+  contractName: "ChainlinkPriceFeedProvider",
   dependencyNames: constructorContracts,
   getDeployArgs: async ({ dependencyContracts }) => {
-    return [dependencyContracts.DataStore.address];
+    return constructorContracts.map((dependencyName) => dependencyContracts[dependencyName].address);
   },
   afterDeploy: async ({ deployedContract }) => {
     await setBoolIfDifferent(
@@ -23,12 +23,7 @@ const func = createDeployFunction({
       "isAtomicOracleProviderKey"
     );
   },
-  id: "SignedPriceProvider_1",
+  id: "ChainlinkPriceFeedProvider_2",
 });
-
-func.skip = async ({ network }) => {
-  // Only deploy in test/local networks
-  return network.live;
-};
 
 export default func;

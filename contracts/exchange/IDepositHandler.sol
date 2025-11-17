@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "../deposit/DepositUtils.sol";
-import "../oracle/utils/OracleUtils.sol";
+import "../oracle/OracleUtils.sol";
 
 interface IDepositHandler {
     function createDeposit(address account, DepositUtils.CreateDepositParams calldata params) external returns (bytes32);

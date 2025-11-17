@@ -6,7 +6,7 @@ const func = createDeployFunction({
 });
 
 func.skip = async ({ network }: HardhatRuntimeEnvironment) => {
-  const shouldDeployForNetwork = ["hardhat", "localhost"];
+  const shouldDeployForNetwork = ["hardhat"];
   return !shouldDeployForNetwork.includes(network.name);
 };
 

@@ -78,13 +78,13 @@ describe("Exchange.PositionImpactPoolDistribution", () => {
 
     // 850,000 / 0.85000001, 999,999.988235
     // there is a small difference due to the some amount of position impact pool being distributed between calls
-    expect(await getBalanceOf(ethUsdMarket.marketToken, user1.address)).eq("999999917647065605535773"); // 999,999.917647065605535773
+    expect(await getBalanceOf(ethUsdMarket.marketToken, user1.address)).eq("999999941176474048442703"); // 999,999.941176474048442703
 
     await time.increase(5_000_000);
     await mine(1);
 
     await usingResult(getMarketTokenPriceWithPoolValue(fixture), ([marketTokenPrice, poolValueInfo]) => {
-      expect(marketTokenPrice).eq("895454552158482726102897564883"); // 0.89545455218 USD
+      expect(marketTokenPrice).eq("895454550243072179514856713104"); // 0.89545455024 USD
       expect(poolValueInfo.poolValue).eq("9850000000000000000000000000000000000"); // 9,850,000
     });
 
@@ -92,7 +92,7 @@ describe("Exchange.PositionImpactPoolDistribution", () => {
     await mine(1);
 
     await usingResult(getMarketTokenPriceWithPoolValue(fixture), ([marketTokenPrice, poolValueInfo]) => {
-      expect(marketTokenPrice).eq("895454552158482726102897564883"); // 0.89545455218 USD
+      expect(marketTokenPrice).eq("895454550243072179514856713104"); // 0.89545455024 USD
       expect(poolValueInfo.poolValue).eq("9850000000000000000000000000000000000"); // 9,850,000
     });
   });

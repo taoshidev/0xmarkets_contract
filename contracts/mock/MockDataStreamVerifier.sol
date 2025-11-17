@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../oracle/interfaces/IChainlinkDataStreamVerifier.sol";
+import "../oracle/IChainlinkDataStreamVerifier.sol";
 
 contract MockDataStreamVerifier is IChainlinkDataStreamVerifier {
     function verify(

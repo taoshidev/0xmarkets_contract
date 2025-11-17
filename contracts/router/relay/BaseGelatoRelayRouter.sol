@@ -3,8 +3,8 @@
 pragma solidity ^0.8.0;
 
 import {GelatoRelayContext} from "@gelatonetwork/relay-context/contracts/GelatoRelayContext.sol";
-import "@openzeppelin/contracts-v4/utils/cryptography/ECDSA.sol";
-import "@openzeppelin/contracts-v4/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "../../data/DataStore.sol";
 import "../../event/EventEmitter.sol";

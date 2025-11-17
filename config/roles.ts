@@ -17,6 +17,7 @@ const requiredRolesForContracts = {
     "MarketFactory",
     "GlvFactory",
     "Timelock",
+    "OracleStore",
     "Oracle",
     "ConfigSyncer",
 

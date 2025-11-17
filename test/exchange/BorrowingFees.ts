@@ -171,7 +171,7 @@ describe("Exchange.BorrowingFees", () => {
       decimalToFloat(10, 8)
     );
     expect(await dataStore.getUint(keys.cumulativeBorrowingFactorKey(ethUsdMarket.marketToken, false))).eq(
-      "36288180000000000000000000000"
+      "36288120000000000000000000000"
     );
 
     // user1 increase short position by $1000
@@ -198,9 +198,9 @@ describe("Exchange.BorrowingFees", () => {
     ); // 0.004838432
 
     expect(await dataStore.getUint(keys.cumulativeBorrowingFactorKey(ethUsdMarket.marketToken, false))).closeTo(
-      "36288360000000000000000000000",
+      "36288240000000000000000000000",
       decimalToFloat(10, 8)
-    ); // 0.03628836
+    ); // 0.03628824
 
     await usingResult(
       getMarketTokenPriceWithPoolValue(fixture, { prices: prices.ethUsdMarket }),
@@ -390,8 +390,8 @@ describe("Exchange.BorrowingFees", () => {
     await usingResult(
       getMarketTokenPriceWithPoolValue(fixture, { prices: prices.ethUsdMarket }),
       ([marketTokenPrice, poolValueInfo]) => {
-        expect(marketTokenPrice).eq("1000806400800000000000000000000"); // 1.00080640080
-        expect(poolValueInfo.poolValue).eq("6004838404800000000000000000000000000"); // 6,004,838.4048
+        expect(marketTokenPrice).eq("1000806400533333333333333333333"); // 1.00080640053
+        expect(poolValueInfo.poolValue).eq("6004838403200000000000000000000000000"); // 6,004,838.4032
       }
     );
 
@@ -590,8 +590,8 @@ describe("Exchange.BorrowingFees", () => {
         prices: prices.ethUsdSingleTokenMarket,
       }),
       ([marketTokenPrice, poolValueInfo]) => {
-        expect(marketTokenPrice).eq("1000483840480000000000000000000"); // 1.00048384048
-        expect(poolValueInfo.poolValue).eq("10004838404800000000000000000000000000"); // 10,004,838.4048
+        expect(marketTokenPrice).eq("1000483840320000000000000000000"); // 1.00048384032
+        expect(poolValueInfo.poolValue).eq("10004838403200000000000000000000000000"); // 10,004,838.4032
       }
     );
 
@@ -635,8 +635,8 @@ describe("Exchange.BorrowingFees", () => {
         prices: prices.ethUsdSingleTokenMarket,
       }),
       ([marketTokenPrice, poolValueInfo]) => {
-        expect(marketTokenPrice).closeTo("1000483842479800000000000000000", "100000000000000000000"); // 1.00048384247
-        expect(poolValueInfo.poolValue).closeTo("10004838424798000000000000000000000000", decimalToFloat(1, 2)); // 10,004,838.4247
+        expect(marketTokenPrice).closeTo("1000483841519800000000000000000", "100000000000000000000"); // 1.00048384152
+        expect(poolValueInfo.poolValue).closeTo("10004838415198000000000000000000000000", decimalToFloat(1, 2)); // 10,004,838.4152
       }
     );
   });

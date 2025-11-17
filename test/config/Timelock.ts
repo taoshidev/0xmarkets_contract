@@ -63,6 +63,57 @@ describe("Timelock", () => {
     expect(await timelock.timelockDelay()).eq(2 * 24 * 60 * 60);
   });
 
+  it("addOracleSigner", async () => {
+    await expect(timelock.connect(user2).signalAddOracleSigner(user3.address))
+      .to.be.revertedWithCustomError(errorsContract, "Unauthorized")
+      .withArgs(user2.address, "TIMELOCK_ADMIN");
+
+    await timelock.connect(timelockAdmin).signalAddOracleSigner(user3.address);
+
+    await expect(timelock.connect(user2).addOracleSignerAfterSignal(user3.address))
+      .to.be.revertedWithCustomError(errorsContract, "Unauthorized")
+      .withArgs(user2.address, "TIMELOCK_ADMIN");
+
+    await expect(
+      timelock.connect(timelockAdmin).addOracleSignerAfterSignal(user3.address)
+    ).to.be.revertedWithCustomError(errorsContract, "SignalTimeNotYetPassed");
+
+    await time.increase(1 * 24 * 60 * 60 + 10);
+
+    expect(await oracleStore.getSignerCount()).eq(10);
+
+    await timelock.connect(timelockAdmin).addOracleSignerAfterSignal(user3.address);
+
+    expect(await oracleStore.getSignerCount()).eq(11);
+    expect(await oracleStore.getSigner(10)).eq(user3.address);
+  });
+
+  it("removeOracleSigner", async () => {
+    await expect(timelock.connect(user2).signalRemoveOracleSigner(signer0.address))
+      .to.be.revertedWithCustomError(errorsContract, "Unauthorized")
+      .withArgs(user2.address, "TIMELOCK_ADMIN");
+
+    await timelock.connect(timelockAdmin).signalRemoveOracleSigner(signer0.address);
+
+    await expect(timelock.connect(user2).removeOracleSignerAfterSignal(signer0.address))
+      .to.be.revertedWithCustomError(errorsContract, "Unauthorized")
+      .withArgs(user2.address, "TIMELOCK_ADMIN");
+
+    await expect(
+      timelock.connect(timelockAdmin).removeOracleSignerAfterSignal(signer0.address)
+    ).to.be.revertedWithCustomError(errorsContract, "SignalTimeNotYetPassed");
+
+    await time.increase(1 * 24 * 60 * 60 + 10);
+
+    expect(await oracleStore.getSignerCount()).eq(10);
+    expect(await oracleStore.getSigner(0)).eq(signer0.address);
+
+    await timelock.connect(timelockAdmin).removeOracleSignerAfterSignal(signer0.address);
+
+    expect(await oracleStore.getSignerCount()).eq(9);
+    expect(await oracleStore.getSigner(0)).eq(signer9.address);
+  });
+
   it("setFeeReceiver", async () => {
     await expect(timelock.connect(user2).signalSetFeeReceiver(user3.address))
       .to.be.revertedWithCustomError(errorsContract, "Unauthorized")
@@ -165,7 +216,7 @@ describe("Timelock", () => {
     await time.increase(1 * 24 * 60 * 60 + 10);
 
     expect(await dataStore.getAddress(keys.oracleProviderForTokenKey(wnt.address))).eq(
-      fixture.contracts.signedPriceProvider.address
+      fixture.contracts.gmOracleProvider.address
     );
 
     await timelock.connect(timelockAdmin).setOracleProviderForTokenAfterSignal(wnt.address, user3.address);

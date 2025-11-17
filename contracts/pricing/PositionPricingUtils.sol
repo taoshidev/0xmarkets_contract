@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-v4/utils/math/SignedMath.sol";
+import "@openzeppelin/contracts/utils/math/SignedMath.sol";
 
 import "../market/MarketUtils.sol";
 

@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-v4/governance/Governor.sol";
-import "@openzeppelin/contracts-v4/governance/compatibility/GovernorCompatibilityBravo.sol";
-import "@openzeppelin/contracts-v4/governance/extensions/GovernorVotes.sol";
-import "@openzeppelin/contracts-v4/governance/extensions/GovernorSettings.sol";
-import "@openzeppelin/contracts-v4/governance/extensions/GovernorVotesQuorumFraction.sol";
-import "@openzeppelin/contracts-v4/governance/extensions/GovernorTimelockControl.sol";
+import "@openzeppelin/contracts/governance/Governor.sol";
+import "@openzeppelin/contracts/governance/compatibility/GovernorCompatibilityBravo.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 
 import "../chain/Chain.sol";
 

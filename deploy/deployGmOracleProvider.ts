@@ -2,10 +2,10 @@ import { createDeployFunction } from "../utils/deploy";
 import { setBoolIfDifferent } from "../utils/dataStore";
 import * as keys from "../utils/keys";
 
-const constructorContracts = ["DataStore"];
+const constructorContracts = ["RoleStore", "DataStore", "OracleStore"];
 
 const func = createDeployFunction({
-  contractName: "ChainlinkPriceFeedAdapter",
+  contractName: "GmOracleProvider",
   dependencyNames: constructorContracts,
   getDeployArgs: async ({ dependencyContracts }) => {
     return constructorContracts.map((dependencyName) => dependencyContracts[dependencyName].address);
@@ -16,14 +16,8 @@ const func = createDeployFunction({
       true,
       "isOracleProviderEnabledKey"
     );
-
-    await setBoolIfDifferent(
-      keys.isAtomicOracleProviderKey(deployedContract.address),
-      true,
-      "isAtomicOracleProviderKey"
-    );
   },
-  id: "ChainlinkPriceFeedProvider_2",
+  id: "GmOracleProvider_2",
 });
 
 export default func;

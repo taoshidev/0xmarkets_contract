@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-v4/utils/math/SafeCast.sol";
+import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "hardhat/console.sol";
 
 /**

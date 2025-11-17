@@ -1,19 +1,18 @@
-import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { grantRoleIfNotGranted } from "../utils/role";
 import { createDeployFunction } from "../utils/deploy";
 
-const constructorContracts = ["MockVaultGovV1"];
+const constructorContracts = ["RoleStore", "EventEmitter"];
 
 const func = createDeployFunction({
-  contractName: "MockVaultV1",
+  contractName: "OracleStore",
+  id: "OracleStore_3",
   dependencyNames: constructorContracts,
   getDeployArgs: async ({ dependencyContracts }) => {
     return constructorContracts.map((dependencyName) => dependencyContracts[dependencyName].address);
   },
+  afterDeploy: async ({ deployedContract }) => {
+    await grantRoleIfNotGranted(deployedContract.address, "CONTROLLER");
+  },
 });
-
-func.skip = async ({ network }: HardhatRuntimeEnvironment) => {
-  const shouldDeployForNetwork = ["hardhat"];
-  return !shouldDeployForNetwork.includes(network.name);
-};
 
 export default func;

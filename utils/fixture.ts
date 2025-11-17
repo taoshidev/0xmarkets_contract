@@ -39,7 +39,6 @@ export async function deployFixture() {
   const gmx = await hre.ethers.getContract("GMX");
 
   const wbtc = await hre.ethers.getContract("WBTC");
-
   const sol = { address: getSyntheticTokenAddress(hre.network.config.chainId, "SOL") };
 
   const usdc = await hre.ethers.getContract("USDC");
@@ -71,6 +70,7 @@ export async function deployFixture() {
   const withdrawalVault = await hre.ethers.getContract("WithdrawalVault");
   const shiftVault = await hre.ethers.getContract("ShiftVault");
   const eventEmitter = await hre.ethers.getContract("EventEmitter");
+  const oracleStore = await hre.ethers.getContract("OracleStore");
   const orderVault = await hre.ethers.getContract("OrderVault");
   const glvVault = await hre.ethers.getContract("GlvVault");
   const marketFactory = await hre.ethers.getContract("MarketFactory");
@@ -97,9 +97,9 @@ export async function deployFixture() {
   const subaccountGelatoRelayRouter = await hre.ethers.getContract("SubaccountGelatoRelayRouter");
   const subaccountRouter = await hre.ethers.getContract("SubaccountRouter");
   const oracle = await hre.ethers.getContract("Oracle");
-  const chainlinkPriceFeedProvider = await hre.ethers.getContract("ChainlinkPriceFeedAdapter");
-  const chainlinkDataStreamProvider = await hre.ethers.getContract("ChainlinkDataStreamAdapter");
-  const signedPriceProvider = await hre.ethers.getContract("SignedPriceProvider");
+  const gmOracleProvider = await hre.ethers.getContract("GmOracleProvider");
+  const chainlinkPriceFeedProvider = await hre.ethers.getContract("ChainlinkPriceFeedProvider");
+  const chainlinkDataStreamProvider = await hre.ethers.getContract("ChainlinkDataStreamProvider");
   const marketUtils = await hre.ethers.getContract("MarketUtils");
   const marketStoreUtils = await hre.ethers.getContract("MarketStoreUtils");
   const depositStoreUtils = await hre.ethers.getContract("DepositStoreUtils");
@@ -263,6 +263,7 @@ export async function deployFixture() {
       eventEmitter,
       withdrawalVault,
       shiftVault,
+      oracleStore,
       orderVault,
       marketFactory,
       depositHandler,
@@ -281,9 +282,9 @@ export async function deployFixture() {
       subaccountGelatoRelayRouter,
       subaccountRouter,
       oracle,
+      gmOracleProvider,
       chainlinkPriceFeedProvider,
       chainlinkDataStreamProvider,
-      signedPriceProvider,
       marketUtils,
       marketStoreUtils,
       depositStoreUtils,

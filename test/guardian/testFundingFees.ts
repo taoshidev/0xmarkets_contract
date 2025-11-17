@@ -592,7 +592,7 @@ describe("Guardian.FundingFees", () => {
 
     const balanceAfter = await usdc.balanceOf(user1.address);
 
-    expect(balanceAfter.sub(balanceBefore)).eq("25920015"); // $25.920015
+    expect(balanceAfter.sub(balanceBefore)).eq("25920009"); // $25.920009
 
     const balanceBeforeUser2 = await usdc.balanceOf(user2.address);
 
@@ -917,7 +917,7 @@ describe("Guardian.FundingFees", () => {
 
     const USDCBalanceAfterUser1 = await usdc.balanceOf(user1.address);
 
-    expect(USDCBalanceAfterUser1.sub(USDCBalanceBeforeUser1)).eq("17280010"); // $17.280010
+    expect(USDCBalanceAfterUser1.sub(USDCBalanceBeforeUser1)).eq("17280006"); // $17.280006
 
     const USDCBalanceBeforeUser2 = await usdc.balanceOf(user2.address);
 
@@ -925,7 +925,7 @@ describe("Guardian.FundingFees", () => {
 
     const USDCBalanceAfterUser2 = await usdc.balanceOf(user2.address);
 
-    expect(USDCBalanceAfterUser2.sub(USDCBalanceBeforeUser2)).closeTo("17280043", 10); // $17.280043
+    expect(USDCBalanceAfterUser2.sub(USDCBalanceBeforeUser2)).closeTo("17280025", 10); // $17.280025
 
     const WNTBalanceBeforeUser1 = await wnt.balanceOf(user1.address);
 
@@ -933,7 +933,7 @@ describe("Guardian.FundingFees", () => {
 
     const WNTBalanceAfterUser1 = await wnt.balanceOf(user1.address);
 
-    expect(WNTBalanceAfterUser1.sub(WNTBalanceBeforeUser1)).eq("1728001000000000"); // $8.640003
+    expect(WNTBalanceAfterUser1.sub(WNTBalanceBeforeUser1)).eq("1728000600000000"); // $8.640003
 
     const WNTBalanceBeforeUser2 = await wnt.balanceOf(user2.address);
 
@@ -941,7 +941,7 @@ describe("Guardian.FundingFees", () => {
 
     const WNTBalanceAfterUser2 = await wnt.balanceOf(user2.address);
 
-    expect(WNTBalanceAfterUser2.sub(WNTBalanceBeforeUser2)).eq("1728001000000000"); // $8.640003
+    expect(WNTBalanceAfterUser2.sub(WNTBalanceBeforeUser2)).eq("1728000600000000"); // $8.640003
 
     // Total claimed funding fees
     // 17.280006 + 17.280006 + 8.640003 + 8.640003 = $51.840018

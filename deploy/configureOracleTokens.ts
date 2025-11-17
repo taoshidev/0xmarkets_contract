@@ -3,18 +3,15 @@ import * as keys from "../utils/keys";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { setAddressIfDifferent, setBytes32IfDifferent, setUintIfDifferent } from "../utils/dataStore";
 import { OracleProvider } from "../config/oracle";
-import { sign } from "crypto";
 
 const func = async ({ gmx, deployments, network }: HardhatRuntimeEnvironment) => {
   const tokens = await gmx.getTokens();
   const { get } = deployments;
 
-  const defaultOracleProvider: OracleProvider =
-    network.name === "hardhat" || network.name === "localhost" ? "signedPriceProvider" : "chainlinkDataStream";
+  const defaultOracleProvider: OracleProvider = network.name === "hardhat" ? "gmOracle" : "chainlinkDataStream";
   const oracleProviders = {
-    chainlinkDataStream: (await get("ChainlinkDataStreamAdapter")).address,
-    chainlinkPriceFeed: (await get("ChainlinkPriceFeedAdapter")).address,
-    signedPriceProvider: (await get("SignedPriceProvider")).address,
+    gmOracle: (await get("GmOracleProvider")).address,
+    chainlinkDataStream: (await get("ChainlinkDataStreamProvider")).address,
   };
 
   for (const tokenSymbol of Object.keys(tokens)) {
@@ -59,14 +56,7 @@ const func = async ({ gmx, deployments, network }: HardhatRuntimeEnvironment) =>
   }
 };
 
-func.dependencies = [
-  "Tokens",
-  "PriceFeeds",
-  "DataStore",
-  "ChainlinkDataStreamAdapter",
-  "ChainlinkPriceFeedAdapter",
-  "SignedPriceProvider",
-];
+func.dependencies = ["Tokens", "PriceFeeds", "DataStore", "GmOracleProvider", "ChainlinkDataStreamProvider"];
 func.tags = ["ConfigureOracleTokens"];
 
 export default func;

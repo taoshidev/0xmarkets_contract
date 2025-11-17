@@ -121,7 +121,7 @@ describe("Exchange.FundingFees.PairMarket", () => {
       execute: {
         afterExecution: async ({ logs }) => {
           const feeInfo = getEventData(logs, "PositionFeesCollected");
-          expect(feeInfo.fundingFeeAmount).eq("1612806666666667"); // 0.001612806 ETH, 8.06402 USD
+          expect(feeInfo.fundingFeeAmount).eq("1612804000000000"); // 0.001612804 ETH, 8.06402 USD
           expect(feeInfo.collateralToken).eq(wnt.address);
           const claimableFundingData = getEventDataArray(logs, "ClaimableFundingUpdated");
           expect(claimableFundingData.length).eq(0);
@@ -131,7 +131,7 @@ describe("Exchange.FundingFees.PairMarket", () => {
 
     expect(
       await dataStore.getUint(keys.fundingFeeAmountPerSizeKey(ethUsdMarket.marketToken, wnt.address, true))
-    ).closeTo("8064033333333333333252693", "10000000000");
+    ).closeTo("8064019999999995000000000", "10000000000");
     expect(await dataStore.getUint(keys.fundingFeeAmountPerSizeKey(ethUsdMarket.marketToken, wnt.address, false))).eq(
       "0"
     );
@@ -147,7 +147,7 @@ describe("Exchange.FundingFees.PairMarket", () => {
     ).eq("0");
     expect(
       await dataStore.getUint(keys.claimableFundingAmountPerSizeKey(ethUsdMarket.marketToken, wnt.address, false))
-    ).eq("16128066666666666666505386");
+    ).eq("16128039999999999999838719");
     expect(
       await dataStore.getUint(keys.claimableFundingAmountPerSizeKey(ethUsdMarket.marketToken, usdc.address, true))
     ).eq("0");
@@ -180,7 +180,7 @@ describe("Exchange.FundingFees.PairMarket", () => {
           const claimableFundingData = getEventDataArray(logs, "ClaimableFundingUpdated");
           expect(claimableFundingData.length).eq(1);
           expect(claimableFundingData[0].token).eq(wnt.address);
-          expect(claimableFundingData[0].delta).eq("1612806666666666"); // 0.001612806666666666 ETH, ~$8.06402
+          expect(claimableFundingData[0].delta).eq("1612803999999999"); // 0.001612803999999999 ETH, ~$8.06402
         },
       },
     });
@@ -197,7 +197,7 @@ describe("Exchange.FundingFees.PairMarket", () => {
     // long positions using wnt for collateral should pay a funding fee
     expect(
       await dataStore.getUint(keys.fundingFeeAmountPerSizeKey(ethUsdMarket.marketToken, wnt.address, true))
-    ).closeTo("8064033333333333333252693", "10000000000");
+    ).closeTo("8064019999999995000000000", "10000000000");
     expect(await dataStore.getUint(keys.fundingFeeAmountPerSizeKey(ethUsdMarket.marketToken, wnt.address, false))).eq(
       0
     );
@@ -213,7 +213,7 @@ describe("Exchange.FundingFees.PairMarket", () => {
     ).eq(0);
     expect(
       await dataStore.getUint(keys.claimableFundingAmountPerSizeKey(ethUsdMarket.marketToken, wnt.address, false))
-    ).closeTo("16128066666666666666505386", "10000000000");
+    ).closeTo("16128039999999999999838719", "10000000000");
     expect(
       await dataStore.getUint(keys.claimableFundingAmountPerSizeKey(ethUsdMarket.marketToken, usdc.address, true))
     ).closeTo(0, "10000000000000");
@@ -223,7 +223,7 @@ describe("Exchange.FundingFees.PairMarket", () => {
 
     expect(
       await dataStore.getUint(keys.claimableFundingAmountKey(ethUsdMarket.marketToken, wnt.address, user1.address))
-    ).eq("1612806666666666");
+    ).eq("1612803999999999");
 
     await expectTokenBalanceIncrease({
       token: wnt,
@@ -231,7 +231,7 @@ describe("Exchange.FundingFees.PairMarket", () => {
       sendTxn: async () => {
         await exchangeRouter.connect(user1).claimFundingFees([ethUsdMarket.marketToken], [wnt.address], user2.address);
       },
-      increaseAmount: "1612806666666666",
+      increaseAmount: "1612803999999999",
     });
 
     await time.increase(14 * 24 * 60 * 60);
@@ -301,7 +301,7 @@ describe("Exchange.FundingFees.PairMarket", () => {
 
     expect(
       await dataStore.getUint(keys.fundingFeeAmountPerSizeKey(ethUsdMarket.marketToken, wnt.address, true))
-    ).closeTo("8064033333333333333252693", "10000000000"); // 0.000000008064033333 ETH, 0.00004032009 USD
+    ).closeTo("8064019999999995000000000", "10000000000"); // 0.000000008064019999 ETH, 0.00004032009 USD
     expect(await dataStore.getUint(keys.fundingFeeAmountPerSizeKey(ethUsdMarket.marketToken, wnt.address, false))).eq(
       0
     );
@@ -320,10 +320,10 @@ describe("Exchange.FundingFees.PairMarket", () => {
     ).eq(0);
     expect(
       await dataStore.getUint(keys.claimableFundingAmountPerSizeKey(ethUsdMarket.marketToken, wnt.address, false))
-    ).closeTo("16128066666666666666505386", "100000000000"); // -0.000000016128066666 ETH, -0.00008064019 USD
+    ).closeTo("16128039999999990000000000", "100000000000"); // -0.000000016128039999 ETH, -0.00008064019 USD
     expect(
       await dataStore.getUint(keys.claimableFundingAmountPerSizeKey(ethUsdMarket.marketToken, usdc.address, true))
-    ).closeTo("80644490909090908", "1000000000000"); // -0.00008 USD
+    ).closeTo("80642700000000000", "1000000000000"); // -0.00008 USD
     expect(
       await dataStore.getUint(keys.claimableFundingAmountPerSizeKey(ethUsdMarket.marketToken, usdc.address, false))
     ).eq(0);

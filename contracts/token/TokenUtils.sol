@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-v4/utils/Address.sol";
-import "@openzeppelin/contracts-v4/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts-v4/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../data/DataStore.sol";
 import "../data/Keys.sol";
