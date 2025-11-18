@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { TokenConfig } from "../config/tokens";
 
 import * as keys from "../utils/keys";
-import { setBytes32IfDifferent, setUintIfDifferent } from "../utils/dataStore";
+import { setBoolIfDifferent, setBytes32IfDifferent, setUintIfDifferent } from "../utils/dataStore";
 import { expandDecimals } from "../utils/math";
 
 const func = async ({ gmx }: HardhatRuntimeEnvironment) => {
@@ -31,6 +31,14 @@ const func = async ({ gmx }: HardhatRuntimeEnvironment) => {
       token.dataStreamFeedId,
       `data stream feed id for ${tokenSymbol} ${token.address}`
     );
+
+    if (token.dataStreamInverted) {
+      await setBoolIfDifferent(
+        keys.dataStreamInvertedKey(token.address),
+        token.dataStreamInverted,
+        `data stream feed inverted flag for ${tokenSymbol} ${token.address}`
+      );
+    }
 
     const dataStreamMultiplier = expandDecimals(1, 60 - token.decimals - token.dataStreamFeedDecimals);
     await setUintIfDifferent(

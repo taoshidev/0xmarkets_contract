@@ -552,6 +552,7 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         allowedBaseKeys[Keys.BUYBACK_MAX_PRICE_IMPACT_FACTOR] = true;
         allowedBaseKeys[Keys.BUYBACK_MAX_PRICE_AGE] = true;
 
+        allowedBaseKeys[Keys.DATA_STREAM_INVERTED] = true;
         allowedBaseKeys[Keys.DATA_STREAM_SPREAD_REDUCTION_FACTOR] = true;
     }
 

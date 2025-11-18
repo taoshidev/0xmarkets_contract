@@ -332,6 +332,8 @@ library Keys {
     bytes32 public constant PRICE_FEED_HEARTBEAT_DURATION = keccak256(abi.encode("PRICE_FEED_HEARTBEAT_DURATION"));
     // @dev key for data stream feed id
     bytes32 public constant DATA_STREAM_ID = keccak256(abi.encode("DATA_STREAM_ID"));
+    // @dev key for data stream inverted flag (e.g. USD/JPY for JPY)
+    bytes32 public constant DATA_STREAM_INVERTED = keccak256(abi.encode("DATA_STREAM_INVERTED"));
     // @dev key for data stream feed multiplier
     bytes32 public constant DATA_STREAM_MULTIPLIER = keccak256(abi.encode("DATA_STREAM_MULTIPLIER"));
     bytes32 public constant DATA_STREAM_SPREAD_REDUCTION_FACTOR = keccak256(abi.encode("DATA_STREAM_SPREAD_REDUCTION_FACTOR"));
@@ -1851,6 +1853,16 @@ library Keys {
     function dataStreamIdKey(address token) internal pure returns (bytes32) {
         return keccak256(abi.encode(
             DATA_STREAM_ID,
+            token
+        ));
+    }
+
+    // @dev key for data stream inverted flag (e.g. USD/JPY for JPY)
+    // @param token the token to get the key for
+    // @return key for data stream inverted flag
+    function dataStreamInvertedKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            DATA_STREAM_INVERTED,
             token
         ));
     }
