@@ -36,6 +36,7 @@ type BaseTokenConfig = {
   oracleType?: string;
   dataStreamFeedId?: string;
   dataStreamFeedDecimals?: number;
+  dataStreamInverted?: boolean;
   dataStreamSpreadReductionFactor?: BigNumberish;
   priceFeed?: OraclePriceFeed;
 };

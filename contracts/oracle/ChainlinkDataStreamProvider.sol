@@ -77,6 +77,13 @@ contract ChainlinkDataStreamProvider is IOracleProvider {
         uint256 adjustedBidPrice = Precision.mulDiv(uint256(uint192(report.bid)), precision, Precision.FLOAT_PRECISION);
         uint256 adjustedAskPrice = Precision.mulDiv(uint256(uint192(report.ask)), precision, Precision.FLOAT_PRECISION);
 
+        bool inverted = dataStore.getBool(Keys.dataStreamInvertedKey(token));
+        if (inverted) {
+            uint256 temp = adjustedBidPrice;
+            adjustedBidPrice = Precision.mulDiv(Precision.FLOAT_PRECISION, Precision.FLOAT_PRECISION, adjustedAskPrice);
+            adjustedAskPrice = Precision.mulDiv(Precision.FLOAT_PRECISION, Precision.FLOAT_PRECISION, temp);
+        }
+
         uint256 spreadReductionFactor = _getDataStreamSpreadReductionFactor(token);
         if (spreadReductionFactor != 0) {
             // small optimization for full reduction
