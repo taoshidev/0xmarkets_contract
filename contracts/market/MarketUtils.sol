@@ -1160,6 +1160,31 @@ library MarketUtils {
         cache.fundingUsd = Precision.applyFactor(cache.sizeOfLargerSide, cache.durationInSeconds * result.fundingFactorPerSecond);
         cache.fundingUsd = cache.fundingUsd / divisor;
 
+        // calculate a baseline swap rate for certain markets (e.g. forex markets)
+        // and adjust the fundingUsd value accordingly
+        bool swapLongsPayShorts = dataStore.getBool(Keys.baselineSwapLongsPayShortsKey(market.marketToken));
+        uint256 swapPerDay = dataStore.getUint(Keys.baselineSwapPerDayKey(market.marketToken));
+        uint256 swapPerSecond = swapPerDay / 86400;
+
+        if (swapPerSecond > 0) {
+            uint256 baselineSwapUsd = Precision.applyFactor(
+                swapLongsPayShorts ? cache.shortOpenInterest : cache.longOpenInterest,
+                cache.durationInSeconds * swapPerSecond
+            );
+
+            if (result.longsPayShorts == swapLongsPayShorts) {
+                cache.fundingUsd += baselineSwapUsd;
+
+            } else {
+                if (cache.fundingUsd >= baselineSwapUsd) {
+                    cache.fundingUsd -= baselineSwapUsd;
+                } else {
+                    cache.fundingUsd = baselineSwapUsd - cache.fundingUsd;
+                    result.longsPayShorts = !result.longsPayShorts;
+                }
+            }
+        }
+
         // split the fundingUsd value by long and short collateral
         // e.g. if the fundingUsd value is $500, and there is $1000 of long open interest using long collateral and $4000 of long open interest
         // with short collateral, then $100 of funding fees should be paid from long positions using long collateral, $400 of funding fees
@@ -1720,7 +1745,7 @@ library MarketUtils {
     // @param market the position's market
     // @param prices the prices of the market tokens
     // @return the borrowing fees for a position
-    function getNextBorrowingFees(DataStore dataStore, Position.Props memory position, Market.Props memory market, MarketPrices memory prices) internal view returns (uint256) {
+    function getNextBorrowingFees(DataStore dataStore, Position.Props memory position, Market.Props memory market, MarketPrices memory prices) external view returns (uint256) {
         (uint256 nextCumulativeBorrowingFactor, /* uint256 delta */) = getNextCumulativeBorrowingFactor(
             dataStore,
             market,

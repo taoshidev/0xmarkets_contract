@@ -265,6 +265,9 @@ export const VALID_FROM_TIME = hashString("VALID_FROM_TIME");
 
 export const ASSET_TOKEN = hashString("ASSET_TOKEN");
 
+export const BASELINE_SWAP_LONGS_PAY_SHORTS = hashString("BASELINE_SWAP_LONGS_PAY_SHORTS");
+export const BASELINE_SWAP_PER_DAY = hashString("BASELINE_SWAP_PER_DAY");
+
 export function accountDepositListKey(account) {
   return hashData(["bytes32", "address"], [ACCOUNT_DEPOSIT_LIST, account]);
 }
@@ -815,4 +818,12 @@ export function withdrawableBuybackTokenAmountKey(buybackToken: string) {
 
 export function assetTokenKey(asset: string) {
   return hashData(["bytes32", "string"], [ASSET_TOKEN, asset]);
+}
+
+export function baselineSwapLongsPayShortsKey(market: string) {
+  return hashData(["bytes32", "address"], [BASELINE_SWAP_LONGS_PAY_SHORTS, market]);
+}
+
+export function baselineSwapPerDayKey(market: string) {
+  return hashData(["bytes32", "address"], [BASELINE_SWAP_PER_DAY, market]);
 }

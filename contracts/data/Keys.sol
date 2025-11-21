@@ -482,6 +482,11 @@ library Keys {
     // @dev constant for user initiated cancel reason
     string public constant USER_INITIATED_CANCEL = "USER_INITIATED_CANCEL";
 
+    // @dev key for the baseline swap direction (true for long to short, false for short to long) for a market
+    bytes32 public constant BASELINE_SWAP_LONGS_PAY_SHORTS = keccak256(abi.encode("BASELINE_SWAP_LONGS_PAY_SHORTS"));
+    // @dev key for the baseline swap amount per day for a market
+    bytes32 public constant BASELINE_SWAP_PER_DAY = keccak256(abi.encode("BASELINE_SWAP_PER_DAY"));
+
     // @dev function used to calculate fullKey for a given market parameter
     // @param baseKey the base key for the market parameter
     // @param data the additional data for the market parameter
@@ -2124,6 +2129,26 @@ library Keys {
         return keccak256(abi.encode(
             BUYBACK_MAX_PRICE_IMPACT_FACTOR,
             token
+        ));
+    }
+
+    // @dev key for the baseline swap direction (true for long to short, false for short to long) for a market
+    // @param market the market to check
+    // @return key for baseline swap direction
+    function baselineSwapLongsPayShortsKey(address market) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            BASELINE_SWAP_LONGS_PAY_SHORTS,
+            market
+        ));
+    }
+
+    // @dev key for the baseline swap amount per day for a market
+    // @param market the market to check
+    // @return key for baseline swap amount per day
+    function baselineSwapPerDayKey(address market) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            BASELINE_SWAP_PER_DAY,
+            market
         ));
     }
 }
