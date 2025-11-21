@@ -69,19 +69,19 @@ describe("Config", () => {
       .withArgs(keys.POOL_AMOUNT);
   });
 
-  it("allows LIMITED_CONFIG_KEEPER to set allowedLimitedBaseKeys", async () => {
-    expect(await dataStore.getAddress(keys.HOLDING_ADDRESS)).eq(AddressZero);
-    await config.connect(user0).setAddress(keys.HOLDING_ADDRESS, "0x", user1.address);
-    expect(await dataStore.getAddress(keys.HOLDING_ADDRESS)).eq(user1.address);
-
-    await expect(config.connect(user2).setAddress(keys.HOLDING_ADDRESS, "0x", user2.address))
-      .to.be.revertedWithCustomError(errorsContract, "InvalidBaseKey")
-      .withArgs(keys.HOLDING_ADDRESS);
-
-    expect(await dataStore.getUint(keys.ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1), "0");
-    await config.connect(user2).setUint(keys.ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1, "0x", "200");
-    expect(await dataStore.getUint(keys.ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1), "200");
-  });
+  // it("allows LIMITED_CONFIG_KEEPER to set allowedLimitedBaseKeys", async () => {
+  //   expect(await dataStore.getAddress(keys.HOLDING_ADDRESS)).eq(AddressZero);
+  //   await config.connect(user0).setAddress(keys.HOLDING_ADDRESS, "0x", user1.address);
+  //   expect(await dataStore.getAddress(keys.HOLDING_ADDRESS)).eq(user1.address);
+  //
+  //   await expect(config.connect(user2).setAddress(keys.HOLDING_ADDRESS, "0x", user2.address))
+  //     .to.be.revertedWithCustomError(errorsContract, "InvalidBaseKey")
+  //     .withArgs(keys.HOLDING_ADDRESS);
+  //
+  //   expect(await dataStore.getUint(keys.ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1), "0");
+  //   await config.connect(user2).setUint(keys.ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1, "0x", "200");
+  //   expect(await dataStore.getUint(keys.ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1), "200");
+  // });
 
   it("setBool", async () => {
     const key = keys.isMarketDisabledKey(ethUsdMarket.marketToken);

@@ -49,7 +49,7 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         eventEmitter = _eventEmitter;
 
         _initAllowedBaseKeys();
-        _initAllowedLimitedBaseKeys();
+        // _initAllowedLimitedBaseKeys();
     }
 
     modifier onlyKeeper() {
@@ -226,6 +226,32 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
 
         eventEmitter.emitEventLog1(
             "SetPositionImpactPoolDistributionRate",
+            Cast.toBytes32(market),
+            eventData
+        );
+    }
+
+    function setBaselineSwap(
+        address market,
+        uint256 baselineSwapPerDay,
+        bool longsPayShorts
+    ) external onlyConfigKeeper nonReentrant {
+        dataStore.setBool(Keys.baselineSwapLongsPayShortsKey(market), longsPayShorts);
+        dataStore.setUint(Keys.baselineSwapPerDayKey(market), baselineSwapPerDay);
+
+        EventUtils.EventLogData memory eventData;
+
+        eventData.addressItems.initItems(1);
+        eventData.addressItems.setItem(0, "market", market);
+
+        eventData.uintItems.initItems(1);
+        eventData.uintItems.setItem(0, "baselineSwapPerDay", baselineSwapPerDay);
+
+        eventData.boolItems.initItems(1);
+        eventData.boolItems.setItem(0, "longsPayShorts", longsPayShorts);
+
+        eventEmitter.emitEventLog1(
+            "SetBaselineSwap",
             Cast.toBytes32(market),
             eventData
         );
@@ -554,31 +580,34 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
 
         allowedBaseKeys[Keys.DATA_STREAM_INVERTED] = true;
         allowedBaseKeys[Keys.DATA_STREAM_SPREAD_REDUCTION_FACTOR] = true;
+
+        allowedBaseKeys[Keys.BASELINE_SWAP_LONGS_PAY_SHORTS] = true;
+        allowedBaseKeys[Keys.BASELINE_SWAP_PER_DAY] = true;
     }
 
-    function _initAllowedLimitedBaseKeys() internal {
-        allowedLimitedBaseKeys[Keys.ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1] = true;
-        allowedLimitedBaseKeys[Keys.ESTIMATED_GAS_FEE_PER_ORACLE_PRICE] = true;
-        allowedLimitedBaseKeys[Keys.ESTIMATED_GAS_FEE_MULTIPLIER_FACTOR] = true;
-
-        allowedLimitedBaseKeys[Keys.EXECUTION_GAS_FEE_BASE_AMOUNT_V2_1] = true;
-        allowedLimitedBaseKeys[Keys.EXECUTION_GAS_FEE_PER_ORACLE_PRICE] = true;
-        allowedLimitedBaseKeys[Keys.EXECUTION_GAS_FEE_MULTIPLIER_FACTOR] = true;
-
-        allowedLimitedBaseKeys[Keys.MAX_FUNDING_FACTOR_PER_SECOND] = true;
-        allowedLimitedBaseKeys[Keys.MIN_FUNDING_FACTOR_PER_SECOND] = true;
-        allowedLimitedBaseKeys[Keys.FUNDING_INCREASE_FACTOR_PER_SECOND] = true;
-        allowedLimitedBaseKeys[Keys.FUNDING_DECREASE_FACTOR_PER_SECOND] = true;
-
-        allowedLimitedBaseKeys[Keys.MAX_POOL_AMOUNT] = true;
-        allowedLimitedBaseKeys[Keys.MAX_POOL_USD_FOR_DEPOSIT] = true;
-        allowedLimitedBaseKeys[Keys.MAX_OPEN_INTEREST] = true;
-
-        allowedLimitedBaseKeys[Keys.GLV_MAX_MARKET_TOKEN_BALANCE_USD] = true;
-        allowedLimitedBaseKeys[Keys.GLV_MAX_MARKET_TOKEN_BALANCE_AMOUNT] = true;
-
-        allowedLimitedBaseKeys[Keys.PRO_TRADER_TIER] = true;
-    }
+    // function _initAllowedLimitedBaseKeys() internal {
+    //     allowedLimitedBaseKeys[Keys.ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1] = true;
+    //     allowedLimitedBaseKeys[Keys.ESTIMATED_GAS_FEE_PER_ORACLE_PRICE] = true;
+    //     allowedLimitedBaseKeys[Keys.ESTIMATED_GAS_FEE_MULTIPLIER_FACTOR] = true;
+    //
+    //     allowedLimitedBaseKeys[Keys.EXECUTION_GAS_FEE_BASE_AMOUNT_V2_1] = true;
+    //     allowedLimitedBaseKeys[Keys.EXECUTION_GAS_FEE_PER_ORACLE_PRICE] = true;
+    //     allowedLimitedBaseKeys[Keys.EXECUTION_GAS_FEE_MULTIPLIER_FACTOR] = true;
+    //
+    //     allowedLimitedBaseKeys[Keys.MAX_FUNDING_FACTOR_PER_SECOND] = true;
+    //     allowedLimitedBaseKeys[Keys.MIN_FUNDING_FACTOR_PER_SECOND] = true;
+    //     allowedLimitedBaseKeys[Keys.FUNDING_INCREASE_FACTOR_PER_SECOND] = true;
+    //     allowedLimitedBaseKeys[Keys.FUNDING_DECREASE_FACTOR_PER_SECOND] = true;
+    //
+    //     allowedLimitedBaseKeys[Keys.MAX_POOL_AMOUNT] = true;
+    //     allowedLimitedBaseKeys[Keys.MAX_POOL_USD_FOR_DEPOSIT] = true;
+    //     allowedLimitedBaseKeys[Keys.MAX_OPEN_INTEREST] = true;
+    //
+    //     allowedLimitedBaseKeys[Keys.GLV_MAX_MARKET_TOKEN_BALANCE_USD] = true;
+    //     allowedLimitedBaseKeys[Keys.GLV_MAX_MARKET_TOKEN_BALANCE_AMOUNT] = true;
+    //
+    //     allowedLimitedBaseKeys[Keys.PRO_TRADER_TIER] = true;
+    // }
 
     // @dev validate that the baseKey is allowed to be used
     // @param baseKey the base key to validate
@@ -591,13 +620,13 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
             return;
         }
 
-        if (roleStore.hasRole(msg.sender, Role.LIMITED_CONFIG_KEEPER)) {
-            if (!allowedLimitedBaseKeys[baseKey]) {
-                revert Errors.InvalidBaseKey(baseKey);
-            }
-
-            return;
-        }
+        // if (roleStore.hasRole(msg.sender, Role.LIMITED_CONFIG_KEEPER)) {
+        //     if (!allowedLimitedBaseKeys[baseKey]) {
+        //         revert Errors.InvalidBaseKey(baseKey);
+        //     }
+        //
+        //     return;
+        // }
 
         revert Errors.InvalidBaseKey(baseKey);
     }
