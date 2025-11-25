@@ -236,7 +236,25 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         uint256 baselineSwapPerDay,
         bool longsPayShorts
     ) external onlyConfigKeeper nonReentrant {
-        dataStore.setBool(Keys.baselineSwapLongsPayShortsKey(market), longsPayShorts);
+        _setBaselineSwap(market, baselineSwapPerDay, longsPayShorts, false);
+    }
+
+    function setBaselineSwap(
+        address market,
+        uint256 baselineSwapPerDay,
+        bool longsPayShorts,
+        bool reversed
+    ) external onlyConfigKeeper nonReentrant {
+        _setBaselineSwap(market, baselineSwapPerDay, longsPayShorts, reversed);
+    }
+
+    function _setBaselineSwap(
+        address market,
+        uint256 baselineSwapPerDay,
+        bool longsPayShorts,
+        bool reversed
+    ) internal onlyConfigKeeper nonReentrant {
+        dataStore.setBool(Keys.baselineSwapLongsPayShortsKey(market), reversed ? !longsPayShorts : longsPayShorts);
         dataStore.setUint(Keys.baselineSwapPerDayKey(market), baselineSwapPerDay);
 
         EventUtils.EventLogData memory eventData;
