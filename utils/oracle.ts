@@ -368,10 +368,13 @@ async function getOracleProviderMap() {
     const chainlinkPriceFeedProvider = await hre.ethers.getContract("ChainlinkPriceFeedProvider");
     const chainlinkDataStreamProvider = await hre.ethers.getContract("ChainlinkDataStreamProvider");
     const gmOracleProvider = await hre.ethers.getContract("GmOracleProvider");
+    const pythLazerFeedProvider = await hre.ethers.getContract("PythLazerFeedProvider");
+
     _oracleProviderMap = {
       chainlinkPriceFeed: chainlinkPriceFeedProvider.address,
       chainlinkDataStream: chainlinkDataStreamProvider.address,
       gmOracle: gmOracleProvider.address,
+      pythLazerFeed: pythLazerFeedProvider.address,
     };
   }
 

@@ -32,11 +32,13 @@ const func = createDeployFunction({
       oracleConfig.maxRefPriceDeviationFactor,
       "max ref price deviation factor"
     );
-    await setAddressIfDifferent(
-      keys.CHAINLINK_PAYMENT_TOKEN,
-      oracleConfig.chainlinkPaymentToken,
-      "chainlinkPaymentToken"
-    );
+    if (oracleConfig.chainlinkPaymentToken) {
+      await setAddressIfDifferent(
+        keys.CHAINLINK_PAYMENT_TOKEN,
+        oracleConfig.chainlinkPaymentToken,
+        "chainlinkPaymentToken"
+      );
+    }
 
     // the Oracle contract requires the CONTROLLER to emit events
     await grantRoleIfNotGranted(deployedContract.address, "CONTROLLER", "oracle");

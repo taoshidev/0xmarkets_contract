@@ -268,6 +268,10 @@ export const ASSET_TOKEN = hashString("ASSET_TOKEN");
 export const BASELINE_SWAP_LONGS_PAY_SHORTS = hashString("BASELINE_SWAP_LONGS_PAY_SHORTS");
 export const BASELINE_SWAP_PER_DAY = hashString("BASELINE_SWAP_PER_DAY");
 
+export const PYTH_LAZER_FEED_ID = hashString("PYTH_LAZER_FEED_ID");
+export const PYTH_LAZER_FEED_INVERTED = hashString("PYTH_LAZER_FEED_INVERTED");
+export const PYTH_LAZER_FEED_MULTIPLIER = hashString("PYTH_LAZER_FEED_MULTIPLIER");
+
 export function accountDepositListKey(account) {
   return hashData(["bytes32", "address"], [ACCOUNT_DEPOSIT_LIST, account]);
 }
@@ -826,4 +830,16 @@ export function baselineSwapLongsPayShortsKey(market: string) {
 
 export function baselineSwapPerDayKey(market: string) {
   return hashData(["bytes32", "address"], [BASELINE_SWAP_PER_DAY, market]);
+}
+
+export function pythLazerFeedIdKey(token: string) {
+  return hashData(["bytes32", "address"], [PYTH_LAZER_FEED_ID, token]);
+}
+
+export function pythLazerFeedInvertedKey(token: string) {
+  return hashData(["bytes32", "address"], [PYTH_LAZER_FEED_INVERTED, token]);
+}
+
+export function pythLazerFeedMultiplierKey(token: string) {
+  return hashData(["bytes32", "address"], [PYTH_LAZER_FEED_MULTIPLIER, token]);
 }

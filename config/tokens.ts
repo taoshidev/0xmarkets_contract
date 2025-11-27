@@ -39,6 +39,9 @@ type BaseTokenConfig = {
   dataStreamInverted?: boolean;
   dataStreamSpreadReductionFactor?: BigNumberish;
   priceFeed?: OraclePriceFeed;
+  pythLazerFeedId?: number;
+  pythLazerFeedDecimals?: number;
+  pythLazerFeedInverted?: boolean;
 };
 
 type AssetToekenConfig = BaseTokenConfig & {

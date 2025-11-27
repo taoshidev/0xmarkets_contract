@@ -81,6 +81,22 @@ export async function updateOracleConfigForTokens() {
     multicallReadParams.push({
       target: dataStore.address,
       allowFailure: false,
+      callData: dataStore.interface.encodeFunctionData("getInt", [
+        getFullKey(keys.PYTH_LAZER_FEED_ID, encodeData(["address"], [token.address])),
+      ]),
+    });
+
+    multicallReadParams.push({
+      target: dataStore.address,
+      allowFailure: false,
+      callData: dataStore.interface.encodeFunctionData("getUint", [
+        getFullKey(keys.PYTH_LAZER_FEED_MULTIPLIER, encodeData(["address"], [token.address])),
+      ]),
+    });
+
+    multicallReadParams.push({
+      target: dataStore.address,
+      allowFailure: false,
       callData: dataStore.interface.encodeFunctionData("getAddress", [
         getFullKey(keys.ORACLE_PROVIDER_FOR_TOKEN, encodeData(["address"], [token.address])),
       ]),
@@ -105,7 +121,9 @@ export async function updateOracleConfigForTokens() {
       dataStreamId: result[i * paramsCount + 3].returnData,
       dataStreamMultiplier: defaultAbiCoder.decode(["uint"], result[i * paramsCount + 4].returnData)[0],
       dataStreamSpreadReductionFactor: defaultAbiCoder.decode(["uint"], result[i * paramsCount + 5].returnData)[0],
-      oracleProviderForToken: defaultAbiCoder.decode(["address"], result[i * paramsCount + 6].returnData)[0],
+      pythLazerFeedId: defaultAbiCoder.decode(["uint"], result[i * paramsCount + 6].returnData)[0],
+      pythLazerFeedMultiplier: defaultAbiCoder.decode(["uint"], result[i * paramsCount + 7].returnData)[0],
+      oracleProviderForToken: defaultAbiCoder.decode(["address"], result[i * paramsCount + 8].returnData)[0],
     };
   }
 
@@ -171,8 +189,8 @@ export async function updateOracleConfigForTokens() {
       }
 
       console.log(
-        `setDataStream(${tokenSymbol} ${
-          token.dataStreamFeedId
+        `setDataStream(${tokenSymbol}, ${token.dataStreamFeedId}, ${
+          token.dataStreamInverted ? true : false
         }, ${dataStreamMultiplier.toString()}, ${dataStreamSpreadReductionFactor.toString()})`
       );
 
@@ -182,8 +200,36 @@ export async function updateOracleConfigForTokens() {
         timelock.interface.encodeFunctionData(method, [
           token.address,
           token.dataStreamFeedId,
+          token.dataStreamInverted ? true : false,
           dataStreamMultiplier,
           dataStreamSpreadReductionFactor,
+        ])
+      );
+    }
+
+    if (token.pythLazerFeedId && onchainConfig.pythLazerFeedId !== token.pythLazerFeedId) {
+      const pythLazerFeedMultiplier = expandDecimals(1, 60 - token.decimals - token.pythLazerFeedDecimals);
+
+      if (!onchainConfig.pythLazerFeedMultiplier.eq(pythLazerFeedMultiplier)) {
+        throw new Error(
+          `pythLazerFeedMultiplier mismatch for ${tokenSymbol}: ${pythLazerFeedMultiplier.toString()}, ${onchainConfig.pythLazerFeedMultiplier.toString()}`
+        );
+      }
+
+      console.log(
+        `setPythLazerFeed(${tokenSymbol}, ${token.pythLazerFeedId}, ${
+          token.pythLazerFeedInverted ? true : false
+        }, ${pythLazerFeedMultiplier.toString()})`
+      );
+
+      const method = phase === "signal" ? "signalSetDataStream" : "setDataStreamAfterSignal";
+
+      multicallWriteParams.push(
+        timelock.interface.encodeFunctionData(method, [
+          token.address,
+          token.pythLazerFeedId,
+          token.pythLazerFeedInverted ? true : false,
+          pythLazerFeedMultiplier,
         ])
       );
     }

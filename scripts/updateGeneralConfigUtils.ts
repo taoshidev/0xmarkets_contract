@@ -11,13 +11,15 @@ import {
 import * as keys from "../utils/keys";
 
 const processGeneralConfig = async ({ generalConfig, oracleConfig, handleConfig }) => {
-  await handleConfig(
-    "address",
-    keys.CHAINLINK_PAYMENT_TOKEN,
-    "0x",
-    oracleConfig.chainlinkPaymentToken,
-    `chainlinkPaymentToken`
-  );
+  if (oracleConfig.chainlinkPaymentToken) {
+    await handleConfig(
+      "address",
+      keys.CHAINLINK_PAYMENT_TOKEN,
+      "0x",
+      oracleConfig.chainlinkPaymentToken,
+      `chainlinkPaymentToken`
+    );
+  }
 
   await handleConfig(
     "uint",

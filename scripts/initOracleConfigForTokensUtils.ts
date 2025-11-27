@@ -32,6 +32,7 @@ export async function initOracleConfigForTokens({ write }) {
         getFullKey(keys.PRICE_FEED, encodeData(["address"], [token.address])),
       ]),
     });
+
     multicallReadParams.push({
       target: dataStore.address,
       allowFailure: false,
@@ -39,6 +40,15 @@ export async function initOracleConfigForTokens({ write }) {
         getFullKey(keys.DATA_STREAM_ID, encodeData(["address"], [token.address])),
       ]),
     });
+
+    multicallReadParams.push({
+      target: dataStore.address,
+      allowFailure: false,
+      callData: dataStore.interface.encodeFunctionData("getUint", [
+        getFullKey(keys.PYTH_LAZER_FEED_ID, encodeData(["address"], [token.address])),
+      ]),
+    });
+
     multicallReadParams.push({
       target: dataStore.address,
       allowFailure: false,
@@ -73,8 +83,9 @@ export async function initOracleConfigForTokens({ write }) {
     onchainOracleConfig[tokenSymbol] = {
       priceFeed: defaultAbiCoder.decode(["address"], result[i * paramsCount].returnData)[0],
       dataStreamId: result[i * paramsCount + 1].returnData,
-      oracleProvider: defaultAbiCoder.decode(["address"], result[i * paramsCount + 2].returnData)[0],
-      oracleTimestampAdjustment: defaultAbiCoder.decode(["uint"], result[i * paramsCount + 3].returnData)[0],
+      pythLazerFeedId: defaultAbiCoder.decode(["uint"], result[i * paramsCount + 2].returnData)[0],
+      oracleProvider: defaultAbiCoder.decode(["address"], result[i * paramsCount + 3].returnData)[0],
+      oracleTimestampAdjustment: defaultAbiCoder.decode(["uint"], result[i * paramsCount + 4].returnData)[0],
     };
   }
 
@@ -114,8 +125,8 @@ export async function initOracleConfigForTokens({ write }) {
       const dataStreamSpreadReductionFactor = bigNumberify(token.dataStreamSpreadReductionFactor ?? 0);
 
       console.log(
-        `setDataStream(${tokenSymbol} ${
-          token.dataStreamFeedId
+        `setDataStream(${tokenSymbol}, ${token.dataStreamFeedId}, ${
+          token.dataStreamInverted ? true : false
         }, ${dataStreamMultiplier.toString()}, ${dataStreamSpreadReductionFactor.toString()})`
       );
 
@@ -123,8 +134,28 @@ export async function initOracleConfigForTokens({ write }) {
         config.interface.encodeFunctionData("setDataStream", [
           token.address,
           token.dataStreamFeedId,
+          token.dataStreamInverted ? true : false,
           dataStreamMultiplier,
           dataStreamSpreadReductionFactor,
+        ])
+      );
+    }
+
+    if (onchainConfig.pythLazerFeedId === 0 && token.pythLazerFeedId !== 0) {
+      const pythLazerFeedMultiplier = expandDecimals(1, 60 - token.decimals - token.pythLazerFeedDecimals);
+
+      console.log(
+        `setPythLazerFeed(${tokenSymbol}, ${token.pythLazerFeedId}, ${
+          token.pythLazerFeedInverted ? true : false
+        }, ${pythLazerFeedMultiplier.toString()})`
+      );
+
+      multicallWriteParams.push(
+        config.interface.encodeFunctionData("setPythLazerFeed", [
+          token.address,
+          token.pythLazerFeedId,
+          token.pythLazerFeedInverted ? true : false,
+          pythLazerFeedMultiplier,
         ])
       );
     }
