@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/math/SignedMath.sol";
+import "@openzeppelin/contracts-v4/utils/math/SignedMath.sol";
 
 import "../position/Position.sol";
 import "../position/PositionUtils.sol";

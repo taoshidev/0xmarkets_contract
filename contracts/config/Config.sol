@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-v4/security/ReentrancyGuard.sol";
 
 import "../data/DataStore.sol";
 import "../data/Keys.sol";
@@ -71,9 +71,9 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         dataStore.setAddress(Keys.oracleProviderForTokenKey(token), provider);
 
         EventUtils.EventLogData memory eventData;
-        eventData.addressItems.initItems(2);
-        eventData.addressItems.setItem(0, "token", token);
-        eventData.addressItems.setItem(1, "provider", provider);
+        // eventData.addressItems.initItems(2);
+        // eventData.addressItems.setItem(0, "token", token);
+        // eventData.addressItems.setItem(1, "provider", provider);
         eventEmitter.emitEventLog(
             "InitOracleProviderForToken",
             eventData
@@ -98,13 +98,13 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         dataStore.setUint(Keys.stablePriceKey(token), stablePrice);
 
         EventUtils.EventLogData memory eventData;
-        eventData.addressItems.initItems(2);
-        eventData.addressItems.setItem(0, "token", token);
-        eventData.addressItems.setItem(1, "priceFeed", priceFeed);
-        eventData.uintItems.initItems(3);
-        eventData.uintItems.setItem(0, "priceFeedMultiplier", priceFeedMultiplier);
-        eventData.uintItems.setItem(1, "priceFeedHeartbeatDuration", priceFeedHeartbeatDuration);
-        eventData.uintItems.setItem(2, "stablePrice", stablePrice);
+        // eventData.addressItems.initItems(2);
+        // eventData.addressItems.setItem(0, "token", token);
+        // eventData.addressItems.setItem(1, "priceFeed", priceFeed);
+        // eventData.uintItems.initItems(3);
+        // eventData.uintItems.setItem(0, "priceFeedMultiplier", priceFeedMultiplier);
+        // eventData.uintItems.setItem(1, "priceFeedHeartbeatDuration", priceFeedHeartbeatDuration);
+        // eventData.uintItems.setItem(2, "stablePrice", stablePrice);
         eventEmitter.emitEventLog1(
             "ConfigSetPriceFeed",
             Cast.toBytes32(token),
@@ -115,6 +115,7 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
     function setDataStream(
         address token,
         bytes32 feedId,
+        bool dataStreamInverted,
         uint256 dataStreamMultiplier,
         uint256 dataStreamSpreadReductionFactor
     ) external onlyConfigKeeper nonReentrant {
@@ -125,19 +126,54 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         _validateRange(Keys.DATA_STREAM_SPREAD_REDUCTION_FACTOR, abi.encode(token), dataStreamSpreadReductionFactor);
 
         dataStore.setBytes32(Keys.dataStreamIdKey(token), feedId);
+        dataStore.setBool(Keys.dataStreamInvertedKey(token), dataStreamInverted);
         dataStore.setUint(Keys.dataStreamMultiplierKey(token), dataStreamMultiplier);
         dataStore.setUint(Keys.dataStreamSpreadReductionFactorKey(token), dataStreamSpreadReductionFactor);
 
         EventUtils.EventLogData memory eventData;
-        eventData.addressItems.initItems(1);
-        eventData.addressItems.setItem(0, "token", token);
-        eventData.bytes32Items.initItems(1);
-        eventData.bytes32Items.setItem(0, "feedId", feedId);
-        eventData.uintItems.initItems(2);
-        eventData.uintItems.setItem(0, "dataStreamMultiplier", dataStreamMultiplier);
-        eventData.uintItems.setItem(1, "dataStreamSpreadReductionFactor", dataStreamSpreadReductionFactor);
+        // eventData.addressItems.initItems(1);
+        // eventData.addressItems.setItem(0, "token", token);
+        // eventData.bytes32Items.initItems(1);
+        // eventData.bytes32Items.setItem(0, "feedId", feedId);
+        // eventData.boolItems.initItems(1);
+        // eventData.boolItems.setItem(0, "dataStreamInverted", dataStreamInverted);
+        // eventData.uintItems.initItems(2);
+        // eventData.uintItems.setItem(0, "dataStreamMultiplier", dataStreamMultiplier);
+        // eventData.uintItems.setItem(1, "dataStreamSpreadReductionFactor", dataStreamSpreadReductionFactor);
+
         eventEmitter.emitEventLog1(
             "ConfigSetDataStream",
+            Cast.toBytes32(token),
+            eventData
+        );
+    }
+
+    function setPythLazerFeed(
+        address token,
+        bytes32 pythLazerFeedId,
+        bool pythLazerFeedInverted,
+        uint256 pythLazerFeedMultiplier
+    ) external onlyConfigKeeper nonReentrant {
+        if (dataStore.getBytes32(Keys.dataStreamIdKey(token)) != bytes32(0)) {
+            revert Errors.DataStreamIdAlreadyExistsForToken(token);
+        }
+    
+        dataStore.setBytes32(Keys.dataStreamIdKey(token), pythLazerFeedId);
+        dataStore.setBool(Keys.dataStreamInvertedKey(token), pythLazerFeedInverted);
+        dataStore.setUint(Keys.dataStreamMultiplierKey(token), pythLazerFeedMultiplier);
+    
+        EventUtils.EventLogData memory eventData;
+        // eventData.addressItems.initItems(1);
+        // eventData.addressItems.setItem(0, "token", token);
+        // eventData.bytes32Items.initItems(1);
+        // eventData.bytes32Items.setItem(0, "pythLazerFeedId", pythLazerFeedId);
+        // eventData.boolItems.initItems(1);
+        // eventData.boolItems.setItem(0, "pythLazerFeedInverted", pythLazerFeedInverted);
+        // eventData.uintItems.initItems(1);
+        // eventData.uintItems.setItem(0, "pythLazerFeedMultiplier", pythLazerFeedMultiplier);
+
+        eventEmitter.emitEventLog1(
+            "ConfigSetPythLazerFeed",
             Cast.toBytes32(token),
             eventData
         );
@@ -155,14 +191,12 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         dataStore.setUint(key, factor);
 
         EventUtils.EventLogData memory eventData;
-
-        eventData.addressItems.initItems(2);
-        eventData.addressItems.setItem(0, "market", market);
-        eventData.addressItems.setItem(1, "token", token);
-
-        eventData.uintItems.initItems(2);
-        eventData.uintItems.setItem(0, "timeKey", timeKey);
-        eventData.uintItems.setItem(1, "factor", factor);
+        // eventData.addressItems.initItems(2);
+        // eventData.addressItems.setItem(0, "market", market);
+        // eventData.addressItems.setItem(1, "token", token);
+        // eventData.uintItems.initItems(2);
+        // eventData.uintItems.setItem(0, "timeKey", timeKey);
+        // eventData.uintItems.setItem(1, "factor", factor);
 
         eventEmitter.emitEventLog2(
             "SetClaimableCollateralFactorForTime",
@@ -185,15 +219,13 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         dataStore.setUint(key, factor);
 
         EventUtils.EventLogData memory eventData;
-
-        eventData.addressItems.initItems(3);
-        eventData.addressItems.setItem(0, "market", market);
-        eventData.addressItems.setItem(1, "token", token);
-        eventData.addressItems.setItem(2, "account", account);
-
-        eventData.uintItems.initItems(2);
-        eventData.uintItems.setItem(0, "timeKey", timeKey);
-        eventData.uintItems.setItem(1, "factor", factor);
+        // eventData.addressItems.initItems(3);
+        // eventData.addressItems.setItem(0, "market", market);
+        // eventData.addressItems.setItem(1, "token", token);
+        // eventData.addressItems.setItem(2, "account", account);
+        // eventData.uintItems.initItems(2);
+        // eventData.uintItems.setItem(0, "timeKey", timeKey);
+        // eventData.uintItems.setItem(1, "factor", factor);
 
         eventEmitter.emitEventLog2(
             "SetClaimableCollateralFactorForAccount",
@@ -216,13 +248,11 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         dataStore.setUint(Keys.positionImpactPoolDistributedAtKey(market), Chain.currentTimestamp());
 
         EventUtils.EventLogData memory eventData;
-
-        eventData.addressItems.initItems(1);
-        eventData.addressItems.setItem(0, "market", market);
-
-        eventData.uintItems.initItems(2);
-        eventData.uintItems.setItem(0, "minPositionImpactPoolAmount", minPositionImpactPoolAmount);
-        eventData.uintItems.setItem(1, "positionImpactPoolDistributionRate", positionImpactPoolDistributionRate);
+        // eventData.addressItems.initItems(1);
+        // eventData.addressItems.setItem(0, "market", market);
+        // eventData.uintItems.initItems(2);
+        // eventData.uintItems.setItem(0, "minPositionImpactPoolAmount", minPositionImpactPoolAmount);
+        // eventData.uintItems.setItem(1, "positionImpactPoolDistributionRate", positionImpactPoolDistributionRate);
 
         eventEmitter.emitEventLog1(
             "SetPositionImpactPoolDistributionRate",
@@ -258,15 +288,12 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         dataStore.setUint(Keys.baselineSwapPerDayKey(market), baselineSwapPerDay);
 
         EventUtils.EventLogData memory eventData;
-
-        eventData.addressItems.initItems(1);
-        eventData.addressItems.setItem(0, "market", market);
-
-        eventData.uintItems.initItems(1);
-        eventData.uintItems.setItem(0, "baselineSwapPerDay", baselineSwapPerDay);
-
-        eventData.boolItems.initItems(1);
-        eventData.boolItems.setItem(0, "longsPayShorts", longsPayShorts);
+        // eventData.addressItems.initItems(1);
+        // eventData.addressItems.setItem(0, "market", market);
+        // eventData.uintItems.initItems(1);
+        // eventData.uintItems.setItem(0, "baselineSwapPerDay", baselineSwapPerDay);
+        // eventData.boolItems.initItems(1);
+        // eventData.boolItems.setItem(0, "longsPayShorts", longsPayShorts);
 
         eventEmitter.emitEventLog1(
             "SetBaselineSwap",
@@ -601,6 +628,10 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
 
         allowedBaseKeys[Keys.BASELINE_SWAP_LONGS_PAY_SHORTS] = true;
         allowedBaseKeys[Keys.BASELINE_SWAP_PER_DAY] = true;
+
+        allowedBaseKeys[Keys.PYTH_LAZER_FEED_ID] = true;
+        allowedBaseKeys[Keys.PYTH_LAZER_FEED_INVERTED] = true;
+        allowedBaseKeys[Keys.PYTH_LAZER_FEED_MULTIPLIER] = true;
     }
 
     // function _initAllowedLimitedBaseKeys() internal {

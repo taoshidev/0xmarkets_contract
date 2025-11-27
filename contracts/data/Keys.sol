@@ -487,6 +487,14 @@ library Keys {
     // @dev key for the baseline swap amount per day for a market
     bytes32 public constant BASELINE_SWAP_PER_DAY = keccak256(abi.encode("BASELINE_SWAP_PER_DAY"));
 
+    // @dev key for Pyth Lazer feed ID
+    bytes32 public constant PYTH_LAZER_FEED_ID = keccak256(abi.encode("PYTH_LAZER_FEED_ID"));
+    // @dev key for Pyth Lazere feed inverted flag (e.g. USD/JPY for JPY)
+    bytes32 public constant PYTH_LAZER_FEED_INVERTED = keccak256(abi.encode("PYTH_LAZER_FEED_INVERTED"));
+    // @dev key for Pyth Lazer feed multiplier
+    bytes32 public constant PYTH_LAZER_FEED_MULTIPLIER = keccak256(abi.encode("PYTH_LAZER_FEED_MULTIPLIER"));
+
+
     // @dev function used to calculate fullKey for a given market parameter
     // @param baseKey the base key for the market parameter
     // @param data the additional data for the market parameter
@@ -2149,6 +2157,36 @@ library Keys {
         return keccak256(abi.encode(
             BASELINE_SWAP_PER_DAY,
             market
+        ));
+    }
+
+    // @dev key for Pyth Lazeer feed ID
+    // @param token the token to get the key for
+    // @return key for Pyth Lazer feed ID
+    function pythLazerFeedIdKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            PYTH_LAZER_FEED_ID,
+            token
+        ));
+    }
+
+    // @dev key for Pyth Lazeer feed inverted flag (e.g. USD/JPY for JPY)
+    // @param token the token to get the key for
+    // @return key for Pyth Lazeer feed inverted flag
+    function pythLazerFeedInvertedKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            PYTH_LAZER_FEED_INVERTED,
+            token
+        ));
+    }
+
+    // @dev key for Pyth Lazeer feedfeed multiplier
+    // @param token the token to get the key for
+    // @return key for Pyth Lazeer feed multiplier
+    function pythLazerFeedMultiplierKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            PYTH_LAZER_FEED_MULTIPLIER,
+            token
         ));
     }
 }

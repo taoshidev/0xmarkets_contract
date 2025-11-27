@@ -237,6 +237,10 @@ library Errors {
     error InvalidBlockRangeSet(uint256 largestMinBlockNumber, uint256 smallestMaxBlockNumber);
     error EmptyChainlinkPaymentToken();
     error NonAtomicOracleProvider(address provider);
+    error EmptyPythLazerFeedData(address token);
+    error EmptyPythLazerFeedId(address token);
+    error EmptyPythLazerFeedMultiplier(address token);
+    error StaleOraclePrice(address token, uint256 publishedTimestamp, uint256 storedTimestamp);
 
     // OracleModule errors
     error InvalidPrimaryPricesForSimulation(uint256 primaryTokensLength, uint256 primaryPricesLength);

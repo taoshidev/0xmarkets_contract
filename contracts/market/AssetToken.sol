@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-v4/token/ERC20/ERC20.sol";
 
 // @title AssetToken
 // @dev The asset token is a dummy token for non-ERC20 assets such as Euro, GBP, Gold, ...
