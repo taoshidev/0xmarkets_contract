@@ -1,6 +1,6 @@
+import { BigNumberish } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { decimalToFloat } from "../utils/math";
-import { BigNumberish } from "ethers";
 
 export type OracleConfig = {
   signers: string[];
@@ -23,13 +23,23 @@ export default async function (hre: HardhatRuntimeEnvironment): Promise<OracleCo
   }
 
   const config: { [network: string]: OracleConfig } = {
-    localhost: {
-      signers: testSigners,
+    base: {
+      signers: [],
       minOracleSigners: 0,
       minOracleBlockConfirmations: 255,
-      maxOraclePriceAge: 60 * 60,
+      maxOraclePriceAge: 5 * 60,
       maxOracleTimestampRange: 60,
       maxRefPriceDeviationFactor: decimalToFloat(5, 1), // 50%
+      pythLazerFeedVerifier: "0xacea761c27a909d4d3895128ebe6370fde2df481",
+    },
+    baseSepolia: {
+      signers: [],
+      minOracleSigners: 0,
+      minOracleBlockConfirmations: 255,
+      maxOraclePriceAge: 5 * 60,
+      maxOracleTimestampRange: 60,
+      maxRefPriceDeviationFactor: decimalToFloat(5, 1), // 50%
+      pythLazerFeedVerifier: "0xacea761c27a909d4d3895128ebe6370fde2df481",
     },
     hardhat: {
       signers: testSigners,
@@ -39,6 +49,14 @@ export default async function (hre: HardhatRuntimeEnvironment): Promise<OracleCo
       maxOracleTimestampRange: 60,
       maxRefPriceDeviationFactor: decimalToFloat(5, 1), // 50%,
       chainlinkPaymentToken: "0x99bbA657f2BbC93c02D617f8bA121cB8Fc104Acf",
+    },
+    localhost: {
+      signers: testSigners,
+      minOracleSigners: 0,
+      minOracleBlockConfirmations: 255,
+      maxOraclePriceAge: 60 * 60,
+      maxOracleTimestampRange: 60,
+      maxRefPriceDeviationFactor: decimalToFloat(5, 1), // 50%
     },
   };
 

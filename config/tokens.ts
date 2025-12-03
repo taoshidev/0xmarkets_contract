@@ -1,10 +1,9 @@
-import { ethers } from "ethers";
+import { BigNumberish, ethers } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { getSyntheticTokenAddress } from "../utils/token";
 import * as keys from "../utils/keys";
-import { decimalToFloat, percentageToFloat } from "../utils/math";
-import { BigNumberish } from "ethers";
+import { percentageToFloat } from "../utils/math";
 import { TOKEN_ORACLE_TYPES } from "../utils/oracle";
+import { getSyntheticTokenAddress } from "../utils/token";
 
 import { OracleProvider } from "./types";
 
@@ -94,6 +93,104 @@ const MID_BUYBACK_IMPACT = percentageToFloat("0.40%");
 const config: {
   [network: string]: TokensConfig;
 } = {
+  base: {
+    EUR: {
+      decimals: 6,
+      pythLazerFeedId: 327,
+      pythLazerFeedDecimals: 5,
+      isAsset: true,
+    },
+    GBP: {
+      decimals: 6,
+      pythLazerFeedId: 333,
+      pythLazerFeedDecimals: 5,
+      isAsset: true,
+    },
+    GOLD: {
+      decimals: 6,
+      pythLazerFeedId: 346, // XAUUSD
+      pythLazerFeedDecimals: 3,
+      isAsset: true,
+    },
+    JPY: {
+      decimals: 6,
+      pythLazerFeedId: 340,
+      pythLazerFeedDecimals: 3,
+      pythLazerFeedInverted: true,
+      isAsset: true,
+    },
+    USDC: {
+      address: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      decimals: 6,
+      transferGasLimit: 200 * 1000,
+      pythLazerFeedId: 7,
+      pythLazerFeedDecimals: 8,
+    },
+    WBTC: {
+      address: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
+      decimals: 8,
+      transferGasLimit: 200 * 1000,
+      pythLazerFeedId: 1,
+      pythLazerFeedDecimals: 8,
+    },
+    WETH: {
+      address: "0x4200000000000000000000000000000000000006",
+      decimals: 18,
+      transferGasLimit: 200 * 1000,
+      pythLazerFeedId: 2,
+      pythLazerFeedDecimals: 8,
+      wrappedNative: true,
+    },
+  },
+  baseSepolia: {
+    EUR: {
+      decimals: 6,
+      pythLazerFeedId: 327,
+      pythLazerFeedDecimals: 5,
+      isAsset: true,
+    },
+    GBP: {
+      decimals: 6,
+      pythLazerFeedId: 333,
+      pythLazerFeedDecimals: 5,
+      isAsset: true,
+    },
+    GOLD: {
+      decimals: 6,
+      pythLazerFeedId: 346, // XAUUSD
+      pythLazerFeedDecimals: 3,
+      isAsset: true,
+    },
+    JPY: {
+      decimals: 6,
+      pythLazerFeedId: 340,
+      pythLazerFeedDecimals: 3,
+      pythLazerFeedInverted: true,
+      isAsset: true,
+    },
+    USDC: {
+      address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      decimals: 6,
+      transferGasLimit: 200 * 1000,
+      pythLazerFeedId: 7,
+      pythLazerFeedDecimals: 8,
+    },
+    WBTC: {
+      address: "0xD8a6E3FCA403d79b6AD6216b60527F51cc967D39",
+      decimals: 8,
+      transferGasLimit: 200 * 1000,
+      pythLazerFeedId: 1,
+      pythLazerFeedDecimals: 8,
+    },
+    WETH: {
+      address: "0xEa347A7CB535cBE125099A4C3B992149aE08e55d",
+      decimals: 18,
+      transferGasLimit: 200 * 1000,
+      pythLazerFeedId: 2,
+      pythLazerFeedDecimals: 8,
+      wrappedNative: true,
+    },
+  },
   hardhat: {
     EUR: {
       decimals: 6,
@@ -181,17 +278,6 @@ const config: {
       decimals: 6,
       isAsset: true,
     },
-    GMX: {
-      decimals: 18,
-      transferGasLimit: 200 * 1000,
-      priceFeed: {
-        decimals: 8,
-        heartbeatDuration: 24 * 60 * 60,
-        deploy: true,
-        initPrice: "10000000000",
-      },
-      deploy: true,
-    },
     GOLD: {
       decimals: 6,
       isAsset: true,
@@ -200,22 +286,7 @@ const config: {
       decimals: 6,
       isAsset: true,
     },
-    SOL: {
-      decimals: 18,
-      isSynthetic: true,
-    },
     USDC: {
-      decimals: 6,
-      transferGasLimit: 200 * 1000,
-      priceFeed: {
-        decimals: 8,
-        heartbeatDuration: 24 * 60 * 60,
-        deploy: true,
-        initPrice: "100000000",
-      },
-      deploy: true,
-    },
-    USDT: {
       decimals: 6,
       transferGasLimit: 200 * 1000,
       priceFeed: {

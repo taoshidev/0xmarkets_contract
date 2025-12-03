@@ -1,9 +1,8 @@
-import { BigNumberish, ethers } from "ethers";
+import { BigNumberish } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
-import { expandDecimals, exponentToFloat, decimalToFloat, bigNumberify, percentageToFloat } from "../utils/math";
-import { hashString } from "../utils/hash";
 import { SECONDS_PER_HOUR, SECONDS_PER_YEAR } from "../utils/constants";
+import { bigNumberify, decimalToFloat, expandDecimals, exponentToFloat, percentageToFloat } from "../utils/math";
 
 export type BaseMarketConfig = {
   reserveFactor: BigNumberish;
@@ -406,6 +405,59 @@ const hardhatBaseMarketConfig: Partial<BaseMarketConfig> = {
 const config: {
   [network: string]: MarketConfig[];
 } = {
+  base: [
+    // TODO: add more parameters for each mainnet market
+    {
+      tokens: { indexToken: "EUR", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "GBP", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "GOLD", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
+      reversed: true,
+    },
+    {
+      tokens: { indexToken: "WBTC", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "WETH", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+  ],
+  baseSepolia: [
+    {
+      tokens: { indexToken: "EUR", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "GBP", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "GOLD", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
+      reversed: true,
+    },
+    {
+      tokens: { indexToken: "WBTC", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "WETH", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+  ],
   hardhat: [
     {
       tokens: { indexToken: "EUR", longToken: "USDC", shortToken: "USDC" },
@@ -481,32 +533,6 @@ const config: {
     },
     {
       tokens: { indexToken: "WETH", longToken: "USDC", shortToken: "USDC" },
-      reversed: false,
-    },
-
-    // For testing only
-    {
-      tokens: { indexToken: "SOL", longToken: "WETH", shortToken: "USDC" },
-      reversed: false,
-    },
-    {
-      tokens: { longToken: "WETH", shortToken: "USDC" },
-      swapOnly: true,
-    },
-    {
-      tokens: { indexToken: "WBTC", longToken: "WBTC", shortToken: "USDC" },
-      reversed: false,
-    },
-    {
-      tokens: { indexToken: "WETH", longToken: "WETH", shortToken: "WETH" },
-      reversed: false,
-    },
-    {
-      tokens: { indexToken: "WETH", longToken: "WETH", shortToken: "USDC" },
-      reversed: false,
-    },
-    {
-      tokens: { indexToken: "WETH", longToken: "WETH", shortToken: "USDT" },
       reversed: false,
     },
   ],

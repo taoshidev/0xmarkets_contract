@@ -33,4 +33,6 @@ const func = createDeployFunction({
   id: "PythLazerFeedProvider",
 });
 
+func.dependencies = func.dependencies.concat(["DataStore", "MockPythLazer"]);
+
 export default func;

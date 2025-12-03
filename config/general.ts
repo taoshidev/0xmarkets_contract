@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { decimalToFloat, percentageToFloat, expandDecimals } from "../utils/math";
+import { decimalToFloat, expandDecimals, percentageToFloat } from "../utils/math";
 
 export default async function ({ network }: HardhatRuntimeEnvironment) {
   if (network.name === "hardhat") {
@@ -67,8 +67,6 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
   }
 
   const generalConfig = {
-    feeReceiver: "0x43ce1d475e06c65dd879f4ec644b8e0e10ff2b6d",
-    holdingAddress: "0x3f59203ea1c66527422998b54287e1efcacbe2c5",
     sequencerUptimeFeed: ethers.constants.AddressZero,
     sequencerGraceDuration: 300,
     maxUiFeeFactor: percentageToFloat("0.05%"),
@@ -126,31 +124,29 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
   };
 
   const networkConfig = {
-    arbitrumGoerli: {},
-    arbitrumSepolia: {
-      maxAutoCancelOrders: 11,
-      maxTotalCallbackGasLimitForAutoCancelOrders: 10_000_000,
-    },
-    avalancheFuji: {},
-    arbitrum: {
-      maxAutoCancelOrders: 11,
-      maxTotalCallbackGasLimitForAutoCancelOrders: 10_000_000,
-      maxCallbackGasLimit: 4_000_000,
-      estimatedGasPerOraclePrice: false,
-      executionGasPerOraclePrice: false,
+    base: {
       estimatedGasFeeBaseAmount: false,
+      estimatedGasPerOraclePrice: false,
       executionGasFeeBaseAmount: false,
-      sequencerUptimeFeed: "0xFdB631F5EE196F0ed6FAa767959853A9F217697D",
-
-      increaseOrderGasLimit: 3_000_000,
-      decreaseOrderGasLimit: 3_000_000,
-      swapOrderGasLimit: 2_500_000,
-      ignoreOpenInterestForUsageFactor: true,
+      executionGasPerOraclePrice: false,
+      feeReceiver: "REPLACE_ME",
+      holdingAddress: "REPLACE_ME",
     },
-    avalanche: {
-      increaseOrderGasLimit: 3_500_000,
-      decreaseOrderGasLimit: 3_500_000,
-      ignoreOpenInterestForUsageFactor: true,
+    baseSepolia: {
+      estimatedGasFeeBaseAmount: false,
+      estimatedGasPerOraclePrice: false,
+      executionGasFeeBaseAmount: false,
+      executionGasPerOraclePrice: false,
+      feeReceiver: "REPLACE_ME",
+      holdingAddress: "REPLACE_ME",
+    },
+    localhost: {
+      estimatedGasFeeBaseAmount: false,
+      estimatedGasPerOraclePrice: false,
+      executionGasFeeBaseAmount: false,
+      executionGasPerOraclePrice: false,
+      feeReceiver: "REPLACE_ME",
+      holdingAddress: "REPLACE_ME",
     },
   }[network.name];
 
