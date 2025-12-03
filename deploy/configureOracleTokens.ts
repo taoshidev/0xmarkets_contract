@@ -1,17 +1,16 @@
-import { expandDecimals } from "../utils/math";
-import * as keys from "../utils/keys";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { setAddressIfDifferent, setBytes32IfDifferent, setUintIfDifferent } from "../utils/dataStore";
-import { OracleProvider } from "../config/oracle";
+import * as keys from "../utils/keys";
+import { expandDecimals } from "../utils/math";
 
 const func = async ({ gmx, deployments, network }: HardhatRuntimeEnvironment) => {
   const tokens = await gmx.getTokens();
   const { get } = deployments;
 
-  const defaultOracleProvider: OracleProvider = network.name === "hardhat" ? "gmOracle" : "chainlinkDataStream";
+  const defaultOracleProvider = network.name === "hardhat" ? "gmOracle" : "pythLazerFeed";
   const oracleProviders = {
     gmOracle: (await get("GmOracleProvider")).address,
-    chainlinkDataStream: (await get("ChainlinkDataStreamProvider")).address,
+    pythLazerFeed: (await get("PythLazerFeedProvider")).address,
   };
 
   for (const tokenSymbol of Object.keys(tokens)) {
@@ -56,7 +55,7 @@ const func = async ({ gmx, deployments, network }: HardhatRuntimeEnvironment) =>
   }
 };
 
-func.dependencies = ["Tokens", "PriceFeeds", "DataStore", "GmOracleProvider", "ChainlinkDataStreamProvider"];
+func.dependencies = ["Tokens", "PriceFeeds", "DataStore", "GmOracleProvider", "PythLazerFeedProvider"];
 func.tags = ["ConfigureOracleTokens"];
 
 export default func;

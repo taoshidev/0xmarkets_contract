@@ -1,5 +1,5 @@
-import hre from "hardhat";
 import { BigNumber } from "ethers";
+import hre, { ethers } from "hardhat";
 
 export async function setUintIfDifferent(key: string, value: BigNumber | string | number, label?: string) {
   await setIfDifferent("uint", key, value, {
@@ -54,7 +54,8 @@ async function setIfDifferent(
   const currentValue: string = await read("DataStore", getMethod, key);
   if (compare ? !compare(currentValue, value) : currentValue != value) {
     log("setting %s %s (%s) to %s, prev: %s", type, label || "", key, value.toString(), currentValue.toString());
-    await execute("DataStore", { from: deployer, log: true }, setMethod, key, value);
+    const nonce = await ethers.provider.getTransactionCount(deployer, "pending");
+    await execute("DataStore", { from: deployer, log: true, nonce: nonce }, setMethod, key, value);
   } else {
     log("skipping %s %s (%s) as it is already set to %s", type, label, key, value.toString());
   }

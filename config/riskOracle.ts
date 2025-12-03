@@ -17,8 +17,10 @@ export type RiskOracleConfig = {
 
 export default async function (hre: HardhatRuntimeEnvironment): Promise<RiskOracleConfig> {
   const config: { [network: string]: RiskOracleConfig } = {
-    localhost: {},
+    base: {},
+    baseSepolia: {},
     hardhat: {},
+    localhost: {},
   };
 
   const riskOracleConfig: RiskOracleConfig = config[hre.network.name];

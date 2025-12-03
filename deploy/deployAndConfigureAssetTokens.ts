@@ -1,3 +1,4 @@
+import { ethers } from "hardhat";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { setAddressIfDifferent } from "../utils/dataStore";
 import * as keys from "../utils/keys";
@@ -16,11 +17,13 @@ const func = async ({ deployments, getNamedAccounts }: HardhatRuntimeEnvironment
     ["Gold", "GOLD"],
     ["Japaness Yen", "JPY"],
   ]) {
+    const nonce = await ethers.provider.getTransactionCount(deployer, "pending");
     const deployment = await deploy(name, {
       contract: "AssetToken",
       from: deployer,
       args: [name, symbol],
       log: true,
+      nonce: nonce,
     });
 
     await setAddressIfDifferent(keys.assetTokenKey(symbol), deployment.address);

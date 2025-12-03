@@ -1,5 +1,6 @@
-import { createDeployFunction } from "../utils/deploy";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { setBoolIfDifferent } from "../utils/dataStore";
+import { createDeployFunction } from "../utils/deploy";
 import * as keys from "../utils/keys";
 
 const constructorContracts = ["DataStore", "Oracle"];
@@ -32,5 +33,9 @@ const func = createDeployFunction({
 });
 
 func.dependencies = func.dependencies.concat(["MockDataStreamVerifier"]);
+
+func.skip = async ({ network }: HardhatRuntimeEnvironment) => {
+  return network.name === "base" || network.name === "baseSepolia";
+};
 
 export default func;

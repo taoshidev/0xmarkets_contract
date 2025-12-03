@@ -1,5 +1,6 @@
-import { grantRoleIfNotGranted } from "../utils/role";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { createDeployFunction } from "../utils/deploy";
+import { grantRoleIfNotGranted } from "../utils/role";
 
 const constructorContracts = ["RoleStore", "Config", "DataStore", "EventEmitter"];
 
@@ -27,5 +28,9 @@ const func = createDeployFunction({
 });
 
 func.dependencies = func.dependencies.concat(["MockRiskOracle"]);
+
+func.skip = async ({ network }: HardhatRuntimeEnvironment) => {
+  return network.name === "base" || network.name === "baseSepolia";
+};
 
 export default func;

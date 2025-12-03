@@ -726,7 +726,7 @@ export async function updateMarketConfig({
   includePositionImpact = false,
   includeMaxOpenInterest = false,
 }) {
-  if (!["arbitrumGoerli", "avalancheFuji", "hardhat"].includes(hre.network.name)) {
+  if (!["arbitrumGoerli", "avalancheFuji", "baseSepolia", "hardhat"].includes(hre.network.name)) {
     const { errors } = await validateMarketConfigs();
     if (errors.length !== 0) {
       throw new Error("Invalid market configs");
@@ -840,9 +840,9 @@ export async function updateMarketConfig({
     await handleInBatches(multicallWriteParams, 100, async (batch) => {
       await read(
         "Config",
-        {
-          from: "0xF09d66CF7dEBcdEbf965F1Ac6527E1Aa5D47A745",
-        },
+        // {
+        //   from: "0xF09d66CF7dEBcdEbf965F1Ac6527E1Aa5D47A745",
+        // },
         "multicall",
         batch
       );

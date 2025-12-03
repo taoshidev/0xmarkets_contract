@@ -1,30 +1,30 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import path from "path";
-import fs from "fs";
 import { ethers } from "ethers";
+import fs from "fs";
+import path from "path";
 
-import { HardhatUserConfig, task, types } from "hardhat/config";
+import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomicfoundation/hardhat-verify";
 import "hardhat-contract-sizer";
-import "solidity-coverage";
-import "hardhat-gas-reporter";
 import "hardhat-deploy";
-import "@nomicfoundation/hardhat-chai-matchers";
+import "hardhat-gas-reporter";
+import { HardhatUserConfig, task, types } from "hardhat/config";
+import "solidity-coverage";
 
-import "@typechain/hardhat";
-import "@nomiclabs/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomicfoundation/hardhat-foundry";
+import "@nomiclabs/hardhat-ethers";
+import "@typechain/hardhat";
 
 // extends hre with gmx domain data
 import "./config";
 
 // add test helper methods
-import "./utils/test";
 import { updateGlvConfig } from "./scripts/updateGlvConfigUtils";
 import { updateMarketConfig } from "./scripts/updateMarketConfigUtils";
+import "./utils/test";
 
 const getRpcUrl = (network) => {
   const defaultRpcs = {
@@ -61,8 +61,8 @@ export const getExplorerUrl = (network) => {
     arbitrumSepolia: "https://api-sepolia.arbiscan.io/",
     avalancheFuji: "https://api-testnet.snowtrace.io/",
     arbitrumBlockscout: "https://arbitrum.blockscout.com/api",
-    base: "https://api.etherscan.io/v2/api?chainid=8453",
-    baseSepolia: "https://api.etherscan.io/v2/api?chainid=84532",
+    base: "https://base.blockscout.com/",
+    baseSepolia: "	https://sepolia-explorer.base.org/",
   };
 
   const url = urls[network];
@@ -230,7 +230,8 @@ const config: HardhatUserConfig = {
           apiKey: process.env.BASESCAN_API_KEY,
         },
       },
-      blockGasLimit: 25_000_000,
+      gas: "auto",
+      gasMultiplier: 1.3,
     },
     baseSepolia: {
       url: getRpcUrl("baseSepolia"),
@@ -242,7 +243,8 @@ const config: HardhatUserConfig = {
           apiKey: process.env.BASESCAN_API_KEY,
         },
       },
-      blockGasLimit: 60_000_000,
+      gas: "auto",
+      gasMultiplier: 10.0,
     },
   },
   // hardhat-deploy has issues with some contracts

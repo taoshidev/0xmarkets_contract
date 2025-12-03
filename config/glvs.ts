@@ -1,6 +1,5 @@
 import { BigNumberish } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { percentageToFloat, expandDecimals, decimalToFloat } from "../utils/math";
 
 type GlvConfig = {
   name: string;
@@ -27,7 +26,12 @@ type GlvConfig = {
 }[];
 
 export default async function ({ network }: HardhatRuntimeEnvironment) {
-  const config: GlvConfig = {}[network.name]!;
+  const config: GlvConfig = {
+    base: [],
+    baseSepolia: [],
+    hardhat: [],
+    localhost: [],
+  }[network.name]!;
 
   if (!config) {
     throw new Error(`Network config not defined for ${network.name}`);
