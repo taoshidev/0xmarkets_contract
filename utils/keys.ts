@@ -99,6 +99,7 @@ export const IS_ATOMIC_ORACLE_PROVIDER = hashString("IS_ATOMIC_ORACLE_PROVIDER")
 export const CHAINLINK_PAYMENT_TOKEN = hashString("CHAINLINK_PAYMENT_TOKEN");
 
 export const MIN_COLLATERAL_FACTOR = hashString("MIN_COLLATERAL_FACTOR");
+export const MIN_MAINTAIN_COLLATERAL_FACTOR = hashString("MIN_MAINTAIN_COLLATERAL_FACTOR");
 export const MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER = hashString(
   "MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER"
 );
@@ -459,6 +460,10 @@ export function isAtomicOracleProviderKey(provider: string) {
 
 export function minCollateralFactorKey(market: string) {
   return hashData(["bytes32", "address"], [MIN_COLLATERAL_FACTOR, market]);
+}
+
+export function minMaintainCollateralFactorKey(market: string) {
+  return hashData(["bytes32", "address"], [MIN_MAINTAIN_COLLATERAL_FACTOR, market]);
 }
 
 export function minCollateralFactorForOpenInterestMultiplierKey(market: string, isLong: boolean) {

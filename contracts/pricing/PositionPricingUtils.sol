@@ -40,6 +40,7 @@ library PositionPricingUtils {
         address longToken;
         address shortToken;
         uint256 sizeDeltaUsd;
+        uint256 remainingCollateralUsd;
         address uiFeeReceiver;
         bool isLiquidation;
     }
@@ -335,7 +336,7 @@ library PositionPricingUtils {
         );
 
         if (params.isLiquidation) {
-            fees.liquidation = getLiquidationFees(params.dataStore, params.position.market(), params.sizeDeltaUsd, params.collateralTokenPrice);
+            fees.liquidation = getLiquidationFees(params.dataStore, params.position.market(), params.remainingCollateralUsd, params.collateralTokenPrice);
         }
 
         fees.feeAmountForPool =

@@ -14,6 +14,7 @@ export type BaseMarketConfig = {
   openInterestReserveFactorShorts?: BigNumberish;
 
   minCollateralFactor: BigNumberish;
+  minMaintainCollateralFactor: BigNumberish;
   minCollateralFactorForOpenInterestMultiplier?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplierLong?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplierShort?: BigNumberish;
@@ -251,7 +252,8 @@ const borrowingRateConfig_HighMax_WithHigherBase: BorrowingRateConfig = {
 };
 
 const baseMarketConfig: Partial<BaseMarketConfig> = {
-  minCollateralFactor: percentageToFloat("1%"), // 1%
+  minCollateralFactor: percentageToFloat("1%"),
+  minMaintainCollateralFactor: percentageToFloat("0.2%"),
 
   minCollateralFactorForOpenInterestMultiplier: 0,
 
@@ -310,7 +312,7 @@ const baseMarketConfig: Partial<BaseMarketConfig> = {
   positionImpactPoolDistributionRate: bigNumberify(0),
   minPositionImpactPoolAmount: 0,
 
-  liquidationFeeFactor: percentageToFloat("0.20%"),
+  liquidationFeeFactor: percentageToFloat("50%"),
 };
 
 const singleTokenMarketConfig: Partial<BaseMarketConfig> = {
@@ -379,7 +381,8 @@ const hardhatBaseMarketConfig: Partial<BaseMarketConfig> = {
   reserveFactor: decimalToFloat(5, 1), // 50%,
   openInterestReserveFactor: decimalToFloat(5, 1), // 50%,
 
-  minCollateralFactor: percentageToFloat("1%"), // 1%
+  minCollateralFactor: percentageToFloat("1%"),
+  minMaintainCollateralFactor: percentageToFloat("1%"),
   minCollateralFactorForOpenInterestMultiplier: 0,
 
   maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 18),
@@ -410,52 +413,88 @@ const config: {
     {
       tokens: { indexToken: "EUR", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
+      ...baseMarketConfig,
+      ...fundingRateConfig_Low,
+      ...borrowingRateConfig_LowMax_WithLowerBase,
     },
     {
       tokens: { indexToken: "GBP", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
+      ...baseMarketConfig,
+      ...fundingRateConfig_Low,
+      ...borrowingRateConfig_LowMax_WithLowerBase,
     },
     {
       tokens: { indexToken: "GOLD", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
+      ...baseMarketConfig,
+      ...fundingRateConfig_Low,
+      ...borrowingRateConfig_LowMax_WithLowerBase,
     },
     {
       tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
       reversed: true,
+      ...baseMarketConfig,
+      ...fundingRateConfig_Low,
+      ...borrowingRateConfig_LowMax_WithLowerBase,
     },
     {
       tokens: { indexToken: "WBTC", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
+      ...baseMarketConfig,
+      ...fundingRateConfig_Low,
+      ...borrowingRateConfig_LowMax_WithLowerBase,
     },
     {
       tokens: { indexToken: "WETH", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
+      ...baseMarketConfig,
+      ...fundingRateConfig_Low,
+      ...borrowingRateConfig_LowMax_WithLowerBase,
     },
   ],
   baseSepolia: [
     {
       tokens: { indexToken: "EUR", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
+      ...baseMarketConfig,
+      ...fundingRateConfig_Low,
+      ...borrowingRateConfig_LowMax_WithLowerBase,
     },
     {
       tokens: { indexToken: "GBP", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
+      ...baseMarketConfig,
+      ...fundingRateConfig_Low,
+      ...borrowingRateConfig_LowMax_WithLowerBase,
     },
     {
       tokens: { indexToken: "GOLD", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
+      ...baseMarketConfig,
+      ...fundingRateConfig_Low,
+      ...borrowingRateConfig_LowMax_WithLowerBase,
     },
     {
       tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
       reversed: true,
+      ...baseMarketConfig,
+      ...fundingRateConfig_Low,
+      ...borrowingRateConfig_LowMax_WithLowerBase,
     },
     {
       tokens: { indexToken: "WBTC", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
+      ...baseMarketConfig,
+      ...fundingRateConfig_Low,
+      ...borrowingRateConfig_LowMax_WithLowerBase,
     },
     {
       tokens: { indexToken: "WETH", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
+      ...baseMarketConfig,
+      ...fundingRateConfig_Low,
+      ...borrowingRateConfig_LowMax_WithLowerBase,
     },
   ],
   hardhat: [

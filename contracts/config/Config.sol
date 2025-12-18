@@ -549,6 +549,7 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
 
         allowedBaseKeys[Keys.REQUEST_EXPIRATION_TIME] = true;
         allowedBaseKeys[Keys.MIN_COLLATERAL_FACTOR] = true;
+        allowedBaseKeys[Keys.MIN_MAINTAIN_COLLATERAL_FACTOR] = true;
         allowedBaseKeys[Keys.MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER] = true;
         allowedBaseKeys[Keys.MIN_COLLATERAL_USD] = true;
 

@@ -112,6 +112,7 @@ library DecreasePositionCollateralUtils {
             params.market.longToken, // longToken
             params.market.shortToken, // shortToken
             params.order.sizeDeltaUsd(), // sizeDeltaUsd
+            0, // remainingCollateralUsd, fills in the code below
             params.order.uiFeeReceiver(), // uiFeeReceiver
             BaseOrderUtils.isLiquidationOrder(params.order.orderType()) // isLiquidation
         );
@@ -190,6 +191,7 @@ library DecreasePositionCollateralUtils {
         }
 
         values.remainingCollateralAmount = params.position.collateralAmount();
+        getPositionFeesParams.remainingCollateralUsd = values.remainingCollateralAmount * cache.collateralTokenPrice.min;
 
         PositionPricingUtils.PositionFees memory fees = PositionPricingUtils.getPositionFees(
             getPositionFeesParams

@@ -377,6 +377,7 @@ library PositionUtils {
             market.longToken, // longToken
             market.shortToken, // shortToken
             position.sizeInUsd(), // sizeDeltaUsd
+            0, // remainingCollateralUsd, needs for liquidation fee calculation
             address(0), // uiFeeReceiver
 
             // should not account for liquidation fees to determine if position should be liquidated
@@ -399,7 +400,7 @@ library PositionUtils {
             + cache.priceImpactUsd
             - collateralCostUsd.toInt256();
 
-        cache.minCollateralFactor = MarketUtils.getMinCollateralFactor(dataStore, market.marketToken);
+        cache.minCollateralFactor = MarketUtils.getMinMaintainCollateralFactor(dataStore, market.marketToken);
 
         // validate if (remaining collateral) / position.size is less than the min collateral factor (max leverage exceeded)
         // this validation includes the position fee to be paid when closing the position
