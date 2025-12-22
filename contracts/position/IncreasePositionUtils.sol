@@ -263,6 +263,7 @@ library IncreasePositionUtils {
             params.market.longToken, // longToken
             params.market.shortToken, // shortToken
             params.order.sizeDeltaUsd(), // sizeDeltaUsd
+            0, // remainingCollateralUsd, needs for liquidation fee calculation
             params.order.uiFeeReceiver(), // uiFeeReceiver
             false // isLiquidation
         );

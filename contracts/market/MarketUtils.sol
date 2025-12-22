@@ -2029,6 +2029,13 @@ library MarketUtils {
         return dataStore.getUint(Keys.minCollateralFactorKey(market));
     }
 
+    // @dev get the min maintain collateral factor
+    // @param dataStore DataStore
+    // @param market the market to check
+    function getMinMaintainCollateralFactor(DataStore dataStore, address market) internal view returns (uint256) {
+        return dataStore.getUint(Keys.minMaintainCollateralFactorKey(market));
+    }
+
     // @dev get the min collateral factor for open interest multiplier
     // @param dataStore DataStore
     // @param market the market to check

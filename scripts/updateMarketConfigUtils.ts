@@ -297,6 +297,14 @@ const processMarkets = async ({
 
     await handleConfig(
       "uint",
+      keys.MIN_MAINTAIN_COLLATERAL_FACTOR,
+      encodeData(["address"], [marketToken]),
+      marketConfig.minMaintainCollateralFactor,
+      `minMaintainCollateralFactor ${marketLabel} (${marketToken})`
+    );
+
+    await handleConfig(
+      "uint",
       keys.MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER,
       encodeData(["address", "bool"], [marketToken, true]),
       marketConfig.minCollateralFactorForOpenInterestMultiplierLong,

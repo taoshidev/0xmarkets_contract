@@ -219,6 +219,7 @@ library ReaderPositionUtils {
             longToken: cache.market.longToken,
             shortToken: cache.market.shortToken,
             sizeDeltaUsd: sizeDeltaUsd,
+            remainingCollateralUsd: 0, // needs for liquidation fee calculation
             uiFeeReceiver: uiFeeReceiver,
             isLiquidation: false
         });
