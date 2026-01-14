@@ -183,7 +183,7 @@ const config: {
       pythLazerFeedDecimals: 8,
     },
     WETH: {
-      address: "0xEa347A7CB535cBE125099A4C3B992149aE08e55d",
+      address: "0x4200000000000000000000000000000000000006",
       decimals: 18,
       transferGasLimit: 200 * 1000,
       pythLazerFeedId: 2,
