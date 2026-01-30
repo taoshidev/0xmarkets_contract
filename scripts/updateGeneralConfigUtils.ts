@@ -101,6 +101,16 @@ const processGeneralConfig = async ({ generalConfig, oracleConfig, handleConfig 
     `swapFeeReceiverFactor`
   );
 
+  if (generalConfig.swapFeeSecondaryReceiverFactor !== undefined) {
+    await handleConfig(
+      "uint",
+      keys.SWAP_FEE_SECONDARY_RECEIVER_FACTOR,
+      "0x",
+      generalConfig.swapFeeSecondaryReceiverFactor,
+      `swapFeeSecondaryReceiverFactor`
+    );
+  }
+
   await handleConfig(
     "uint",
     keys.POSITION_FEE_RECEIVER_FACTOR,
@@ -109,6 +119,16 @@ const processGeneralConfig = async ({ generalConfig, oracleConfig, handleConfig 
     `positionFeeReceiverFactor`
   );
 
+  if (generalConfig.positionFeeSecondaryReceiverFactor !== undefined) {
+    await handleConfig(
+      "uint",
+      keys.POSITION_FEE_SECONDARY_RECEIVER_FACTOR,
+      "0x",
+      generalConfig.positionFeeSecondaryReceiverFactor,
+      `positionFeeSecondaryReceiverFactor`
+    );
+  }
+
   await handleConfig(
     "uint",
     keys.LIQUIDATION_FEE_RECEIVER_FACTOR,
@@ -116,6 +136,16 @@ const processGeneralConfig = async ({ generalConfig, oracleConfig, handleConfig 
     generalConfig.liquidationFeeReceiverFactor,
     `liquidationFeeReceiverFactor`
   );
+
+  if (generalConfig.liquidationFeeSecondaryReceiverFactor !== undefined) {
+    await handleConfig(
+      "uint",
+      keys.LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR,
+      "0x",
+      generalConfig.liquidationFeeSecondaryReceiverFactor,
+      `liquidationFeeSecondaryReceiverFactor`
+    );
+  }
 
   await handleConfig("uint", keys.DEPOSIT_GAS_LIMIT, "0x", generalConfig.depositGasLimit, `depositGasLimit`);
 
@@ -396,7 +426,7 @@ export async function updateGeneralConfig({ write }) {
       console.log(`tx sent: ${tx.hash}`);
     } else {
       await config.callStatic.multicall(
-        multicallWriteParams,
+        multicallWriteParams
         // {
         //   from: "0xF09d66CF7dEBcdEbf965F1Ac6527E1Aa5D47A745",
         // }

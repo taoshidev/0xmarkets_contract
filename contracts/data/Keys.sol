@@ -14,6 +14,7 @@ library Keys {
 
     // @dev for sending received fees
     bytes32 public constant FEE_RECEIVER = keccak256(abi.encode("FEE_RECEIVER"));
+    bytes32 public constant SECONDARY_FEE_RECEIVER = keccak256(abi.encode("SECONDARY_FEE_RECEIVER"));
 
     // @dev for holding tokens that could not be sent out
     bytes32 public constant HOLDING_ADDRESS = keccak256(abi.encode("HOLDING_ADDRESS"));
@@ -202,12 +203,16 @@ library Keys {
 
     // @dev key for the percentage amount of position fees to be received
     bytes32 public constant POSITION_FEE_RECEIVER_FACTOR = keccak256(abi.encode("POSITION_FEE_RECEIVER_FACTOR"));
+    bytes32 public constant POSITION_FEE_SECONDARY_RECEIVER_FACTOR = keccak256(abi.encode("POSITION_FEE_SECONDARY_RECEIVER_FACTOR"));
     // @dev key for the percentage amount of liquidation fees to be received
     bytes32 public constant LIQUIDATION_FEE_RECEIVER_FACTOR = keccak256(abi.encode("LIQUIDATION_FEE_RECEIVER_FACTOR"));
+    bytes32 public constant LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR = keccak256(abi.encode("LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR"));
     // @dev key for the percentage amount of swap fees to be received
     bytes32 public constant SWAP_FEE_RECEIVER_FACTOR = keccak256(abi.encode("SWAP_FEE_RECEIVER_FACTOR"));
+    bytes32 public constant SWAP_FEE_SECONDARY_RECEIVER_FACTOR = keccak256(abi.encode("SWAP_FEE_SECONDARY_RECEIVER_FACTOR"));
     // @dev key for the percentage amount of borrowing fees to be received
     bytes32 public constant BORROWING_FEE_RECEIVER_FACTOR = keccak256(abi.encode("BORROWING_FEE_RECEIVER_FACTOR"));
+    bytes32 public constant BORROWING_FEE_SECONDARY_RECEIVER_FACTOR = keccak256(abi.encode("BORROWING_FEE_SECONDARY_RECEIVER_FACTOR"));
 
     // @dev key for the base gas limit used when estimating execution fee
     bytes32 public constant ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1 = keccak256(abi.encode("ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1"));
@@ -573,6 +578,14 @@ library Keys {
     // @param token the token for the fee
     function claimableFeeAmountKey(address market, address token) internal pure returns (bytes32) {
         return keccak256(abi.encode(CLAIMABLE_FEE_AMOUNT, market, token));
+    }
+
+    // @dev key for the claimable fee amount
+    // @param market the market for the fee
+    // @param token the token for the fee
+    // @param receiver the address that can claim the fee
+    function claimableFeeAmountKey(address market, address token, address receiver) internal pure returns (bytes32) {
+        return keccak256(abi.encode(CLAIMABLE_FEE_AMOUNT, market, token, receiver));
     }
 
     // @dev key for the claimable ui fee amount

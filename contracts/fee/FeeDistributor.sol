@@ -65,7 +65,8 @@ contract FeeDistributor is ReentrancyGuard, RoleModule {
     ) external nonReentrant onlyFeeDistributionKeeper {
         FeeBatch.Props memory feeBatch;
 
-        uint256 countV1 = vaultV1.allWhitelistedTokensLength();
+        // uint256 countV1 = vaultV1.allWhitelistedTokensLength();
+        uint256 countV1 = 0;
 
         address[] memory marketKeysV2 = MarketStoreUtils.getMarketKeys(dataStore, startIndexV2, endIndexV2);
         uint256 countV2 = marketKeysV2.length;
@@ -75,7 +76,7 @@ contract FeeDistributor is ReentrancyGuard, RoleModule {
         feeBatch.feeAmounts = new uint256[](totalCount);
         feeBatch.remainingAmounts = new uint256[](totalCount);
 
-        feeBatch = _claimFeesV1(feeBatch, countV1);
+        // feeBatch = _claimFeesV1(feeBatch, countV1);
         feeBatch = _claimFeesV2(feeBatch, marketKeysV2, countV1, countV2);
         feeBatch.createdAt = Chain.currentTimestamp();
 
@@ -169,9 +170,12 @@ contract FeeDistributor is ReentrancyGuard, RoleModule {
             address marketKey = marketKeys[i];
             Market.Props memory market = MarketStoreUtils.get(dataStore, marketKey);
 
+            address feeReceiver = dataStore.getAddress(Keys.FEE_RECEIVER);
+
             uint256 longTokenFeeAmount = FeeUtils.claimFees(
                 dataStore,
                 eventEmitter,
+                feeReceiver,
                 market.marketToken,
                 market.longToken,
                 address(this)
@@ -180,6 +184,7 @@ contract FeeDistributor is ReentrancyGuard, RoleModule {
             uint256 shortTokenFeeAmount = FeeUtils.claimFees(
                 dataStore,
                 eventEmitter,
+                feeReceiver,
                 market.marketToken,
                 market.shortToken,
                 address(this)
@@ -198,5 +203,4 @@ contract FeeDistributor is ReentrancyGuard, RoleModule {
 
         return feeBatch;
     }
-
 }

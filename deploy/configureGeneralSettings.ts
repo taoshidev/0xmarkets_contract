@@ -7,6 +7,15 @@ const func = async ({ gmx }: HardhatRuntimeEnvironment) => {
   const generalConfig = await gmx.getGeneral();
 
   await setAddressIfDifferent(keys.FEE_RECEIVER, generalConfig.feeReceiver, "fee receiver");
+
+  if (generalConfig.secondaryFeeReceiver !== undefined) {
+    await setAddressIfDifferent(
+      keys.SECONDARY_FEE_RECEIVER,
+      generalConfig.secondaryFeeReceiver,
+      "secondary fee receiver"
+    );
+  }
+
   await setAddressIfDifferent(keys.HOLDING_ADDRESS, generalConfig.holdingAddress, "holding address");
 
   await setUintIfDifferent(
@@ -14,6 +23,14 @@ const func = async ({ gmx }: HardhatRuntimeEnvironment) => {
     generalConfig.borrowingFeeReceiverFactor,
     "borrowingFeeReceiverFactor"
   );
+
+  if (generalConfig.borrowingFeeSecondaryReceiverFactor !== undefined) {
+    await setUintIfDifferent(
+      keys.BORROWING_FEE_SECONDARY_RECEIVER_FACTOR,
+      generalConfig.borrowingFeeSecondaryReceiverFactor,
+      "borrowingFeeSecondaryReceiverFactor"
+    );
+  }
 
   await setBoolIfDifferent(
     keys.SKIP_BORROWING_FEE_FOR_SMALLER_SIDE,

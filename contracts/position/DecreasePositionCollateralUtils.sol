@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import "../data/DataStore.sol";
 import "../event/EventEmitter.sol";
-
+import "../market/MarketCollateralUtils.sol";
 import "../oracle/Oracle.sol";
 import "../pricing/PositionPricingUtils.sol";
 
@@ -217,7 +217,7 @@ library DecreasePositionCollateralUtils {
             // send the funding fee amount to the holding address
             // this funding fee amount should be swapped to the required token
             // and the resulting tokens should be deposited back into the pool
-            MarketUtils.incrementClaimableCollateralAmount(
+            MarketCollateralUtils.incrementClaimableCollateralAmount(
                 params.contracts.dataStore,
                 params.contracts.eventEmitter,
                 params.market.marketToken,
@@ -319,21 +319,39 @@ library DecreasePositionCollateralUtils {
                 fees.feeAmountForPool.toInt256()
             );
 
+            address feeReceiver = params.contracts.dataStore.getAddress(Keys.FEE_RECEIVER);
+            address collateralToken = params.position.collateralToken();
+
             FeeUtils.incrementClaimableFeeAmount(
                 params.contracts.dataStore,
                 params.contracts.eventEmitter,
+                feeReceiver,
                 params.market.marketToken,
-                params.position.collateralToken(),
+                collateralToken,
                 fees.feeReceiverAmount,
                 Keys.POSITION_FEE_TYPE
             );
+
+            address secondaryFeeReceiver = params.contracts.dataStore.getAddress(Keys.SECONDARY_FEE_RECEIVER);
+
+            if (secondaryFeeReceiver != address(0)) {
+                FeeUtils.incrementClaimableFeeAmount(
+                    params.contracts.dataStore,
+                    params.contracts.eventEmitter,
+                    secondaryFeeReceiver,
+                    params.market.marketToken,
+                    collateralToken,
+                    fees.secondaryFeeReceiverAmount,
+                    Keys.POSITION_FEE_TYPE
+                );
+            }
 
             FeeUtils.incrementClaimableUiFeeAmount(
                 params.contracts.dataStore,
                 params.contracts.eventEmitter,
                 params.order.uiFeeReceiver(),
                 params.market.marketToken,
-                params.position.collateralToken(),
+                collateralToken,
                 fees.ui.uiFeeAmount,
                 Keys.UI_POSITION_FEE_TYPE
             );
@@ -443,7 +461,7 @@ library DecreasePositionCollateralUtils {
             );
 
             if (collateralCache.result.amountPaidInCollateralToken > 0) {
-                MarketUtils.incrementClaimableCollateralAmount(
+                MarketCollateralUtils.incrementClaimableCollateralAmount(
                     params.contracts.dataStore,
                     params.contracts.eventEmitter,
                     params.market.marketToken,
@@ -454,7 +472,7 @@ library DecreasePositionCollateralUtils {
             }
 
             if (collateralCache.result.amountPaidInSecondaryOutputToken > 0) {
-                MarketUtils.incrementClaimableCollateralAmount(
+                MarketCollateralUtils.incrementClaimableCollateralAmount(
                     params.contracts.dataStore,
                     params.contracts.eventEmitter,
                     params.market.marketToken,
@@ -655,7 +673,9 @@ library DecreasePositionCollateralUtils {
             borrowingFeeUsd: 0,
             borrowingFeeAmount: 0,
             borrowingFeeReceiverFactor: 0,
-            borrowingFeeAmountForFeeReceiver: 0
+            borrowingFeeAmountForFeeReceiver: 0,
+            borrowingFeeSecondaryReceiverFactor: 0,
+            borrowingFeeAmountForSecondaryReceiver: 0
         });
 
         PositionPricingUtils.PositionUiFees memory ui = PositionPricingUtils.PositionUiFees({
@@ -668,7 +688,9 @@ library DecreasePositionCollateralUtils {
             liquidationFeeUsd: 0,
             liquidationFeeAmount: 0,
             liquidationFeeReceiverFactor: 0,
-            liquidationFeeAmountForFeeReceiver: 0
+            liquidationFeeAmountForFeeReceiver: 0,
+            liquidationFeeSecondaryReceiverFactor: 0,
+            liquidationFeeAmountForSecondaryReceiver: 0
         });
 
         // all fees are zeroed even though funding may have been paid
@@ -684,7 +706,9 @@ library DecreasePositionCollateralUtils {
             positionFeeFactor: 0,
             protocolFeeAmount: 0,
             positionFeeReceiverFactor: 0,
+            positionFeeSecondaryReceiverFactor: 0,
             feeReceiverAmount: 0,
+            secondaryFeeReceiverAmount: 0,
             feeAmountForPool: 0,
             positionFeeAmountForPool: 0,
             positionFeeAmount: 0,

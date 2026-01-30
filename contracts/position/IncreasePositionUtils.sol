@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import "../data/DataStore.sol";
 import "../event/EventEmitter.sol";
+import "../market/MarketCollateralUtils.sol";
 
 import "../oracle/Oracle.sol";
 import "../pricing/PositionPricingUtils.sol";
@@ -270,33 +271,53 @@ library IncreasePositionUtils {
 
         PositionPricingUtils.PositionFees memory fees = PositionPricingUtils.getPositionFees(getPositionFeesParams);
 
+        address feeReceiver = params.contracts.dataStore.getAddress(Keys.FEE_RECEIVER);
+        address collateralToken = params.position.collateralToken();
+
         FeeUtils.incrementClaimableFeeAmount(
             params.contracts.dataStore,
             params.contracts.eventEmitter,
+            feeReceiver,
             params.market.marketToken,
-            params.position.collateralToken(),
+            collateralToken,
             fees.feeReceiverAmount,
             Keys.POSITION_FEE_TYPE
         );
+
+        address secondaryFeeReceiver = params.contracts.dataStore.getAddress(Keys.SECONDARY_FEE_RECEIVER);
+
+        if (secondaryFeeReceiver != address(0) ) {
+            FeeUtils.incrementClaimableFeeAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                secondaryFeeReceiver,
+                params.market.marketToken,
+                collateralToken,
+                fees.secondaryFeeReceiverAmount,
+                Keys.POSITION_FEE_TYPE
+            );
+        }
 
         FeeUtils.incrementClaimableUiFeeAmount(
             params.contracts.dataStore,
             params.contracts.eventEmitter,
             params.order.uiFeeReceiver(),
             params.market.marketToken,
-            params.position.collateralToken(),
+            collateralToken,
             fees.ui.uiFeeAmount,
             Keys.UI_POSITION_FEE_TYPE
         );
 
         collateralDeltaAmount -= fees.totalCostAmount.toInt256();
 
-        MarketUtils.applyDeltaToCollateralSum(
+        bool isLong = params.order.isLong();
+
+        MarketCollateralUtils.applyDeltaToCollateralSum(
             params.contracts.dataStore,
             params.contracts.eventEmitter,
             params.order.market(),
-            params.position.collateralToken(),
-            params.order.isLong(),
+            collateralToken,
+            isLong,
             collateralDeltaAmount
         );
 
@@ -304,7 +325,7 @@ library IncreasePositionUtils {
             params.contracts.dataStore,
             params.contracts.eventEmitter,
             params.market,
-            params.position.collateralToken(),
+            collateralToken,
             fees.feeAmountForPool.toInt256()
         );
 

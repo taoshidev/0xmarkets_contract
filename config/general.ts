@@ -111,10 +111,14 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
     minPositionSizeUsd: decimalToFloat(1),
     claimableCollateralTimeDivisor: 60 * 60,
 
-    positionFeeReceiverFactor: decimalToFloat(37, 2), // 37%
-    swapFeeReceiverFactor: decimalToFloat(37, 2), // 37%
-    borrowingFeeReceiverFactor: decimalToFloat(37, 2), // 37%
-    liquidationFeeReceiverFactor: decimalToFloat(37, 2), // 37%
+    positionFeeReceiverFactor: decimalToFloat(40, 2), // 40%
+    positionFeeSecondaryReceiverFactor: decimalToFloat(10, 2), // 10%
+    swapFeeReceiverFactor: decimalToFloat(40, 2), // 40%
+    swapFeeSecondaryReceiverFactor: decimalToFloat(10, 2), // 10%
+    borrowingFeeReceiverFactor: decimalToFloat(40, 2), // 40%
+    borrowingFeeSecondaryReceiverFactor: decimalToFloat(10, 2), // 10%
+    liquidationFeeReceiverFactor: decimalToFloat(40, 2), // 40%
+    liquidationFeeSecondaryReceiverFactor: decimalToFloat(10, 2), // 10%
 
     skipBorrowingFeeForSmallerSide: true,
 
@@ -130,6 +134,7 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
       executionGasFeeBaseAmount: false,
       executionGasPerOraclePrice: false,
       feeReceiver: "REPLACE_ME",
+      secondaryFeeReceiver: "REPLACE_ME",
       holdingAddress: "REPLACE_ME",
     },
     baseSepolia: {
@@ -138,6 +143,7 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
       executionGasFeeBaseAmount: false,
       executionGasPerOraclePrice: false,
       feeReceiver: "REPLACE_ME",
+      secondaryFeeReceiver: "REPLACE_ME",
       holdingAddress: "REPLACE_ME",
     },
     localhost: {

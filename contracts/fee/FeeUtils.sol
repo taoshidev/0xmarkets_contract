@@ -34,6 +34,7 @@ library FeeUtils {
     function incrementClaimableFeeAmount(
         DataStore dataStore,
         EventEmitter eventEmitter,
+        address feeReceiver,
         address market,
         address token,
         uint256 delta,
@@ -43,19 +44,24 @@ library FeeUtils {
             return;
         }
 
-        bytes32 key = Keys.claimableFeeAmountKey(market, token);
-
         uint256 nextValue = dataStore.incrementUint(
-            key,
+            Keys.claimableFeeAmountKey(market, token, feeReceiver),
+            delta
+        );
+
+        uint256 nextPoolValue = dataStore.incrementUint(
+            Keys.claimableFeeAmountKey(market, token),
             delta
         );
 
         emitClaimableFeeAmountUpdated(
             eventEmitter,
+            feeReceiver,
             market,
             token,
             delta,
             nextValue,
+            nextPoolValue,
             feeType
         );
     }
@@ -104,16 +110,22 @@ library FeeUtils {
     function claimFees(
         DataStore dataStore,
         EventEmitter eventEmitter,
+        address feeReceiver,
         address market,
         address token,
         address receiver
     ) internal returns (uint256) {
         AccountUtils.validateReceiver(receiver);
 
-        bytes32 key = Keys.claimableFeeAmountKey(market, token);
+        bytes32 key = Keys.claimableFeeAmountKey(market, token, feeReceiver);
 
         uint256 feeAmount = dataStore.getUint(key);
         dataStore.setUint(key, 0);
+
+        uint256 nextPoolValue = dataStore.decrementUint(
+            Keys.claimableFeeAmountKey(market, token),
+            feeAmount
+        );
 
         MarketToken(payable(market)).transferOut(
             token,
@@ -125,9 +137,11 @@ library FeeUtils {
 
         emitFeesClaimed(
             eventEmitter,
+            feeReceiver,
             market,
             receiver,
-            feeAmount
+            feeAmount,
+            nextPoolValue
         );
 
         return feeAmount;
@@ -175,21 +189,25 @@ library FeeUtils {
 
     function emitClaimableFeeAmountUpdated(
         EventEmitter eventEmitter,
+        address feeReceiver,
         address market,
         address token,
         uint256 delta,
         uint256 nextValue,
+        uint256 nextPoolValue,
         bytes32 feeType
     ) internal {
         EventUtils.EventLogData memory eventData;
 
-        eventData.addressItems.initItems(2);
-        eventData.addressItems.setItem(0, "market", market);
-        eventData.addressItems.setItem(1, "token", token);
+        eventData.addressItems.initItems(3);
+        eventData.addressItems.setItem(0, "feeReceiver", feeReceiver);
+        eventData.addressItems.setItem(1, "market", market);
+        eventData.addressItems.setItem(2, "token", token);
 
-        eventData.uintItems.initItems(2);
+        eventData.uintItems.initItems(3);
         eventData.uintItems.setItem(0, "delta", delta);
         eventData.uintItems.setItem(1, "nextValue", nextValue);
+        eventData.uintItems.setItem(2, "nextPoolValue", nextPoolValue);
 
         eventData.bytes32Items.initItems(1);
         eventData.bytes32Items.setItem(0, "feeType", feeType);
@@ -237,18 +255,22 @@ library FeeUtils {
 
     function emitFeesClaimed(
         EventEmitter eventEmitter,
+        address feeReceiver,
         address market,
         address receiver,
-        uint256 feeAmount
+        uint256 feeAmount,
+        uint256 nextPoolValue
     ) internal {
         EventUtils.EventLogData memory eventData;
 
-        eventData.addressItems.initItems(2);
-        eventData.addressItems.setItem(0, "market", market);
-        eventData.addressItems.setItem(1, "receiver", receiver);
+        eventData.addressItems.initItems(3);
+        eventData.addressItems.setItem(0, "feeReceiver", feeReceiver);
+        eventData.addressItems.setItem(1, "market", market);
+        eventData.addressItems.setItem(2, "receiver", receiver);
 
-        eventData.uintItems.initItems(1);
+        eventData.uintItems.initItems(2);
         eventData.uintItems.setItem(0, "feeAmount", feeAmount);
+        eventData.uintItems.setItem(1, "nextPoolValue", nextPoolValue);
 
         eventEmitter.emitEventLog1(
             "FeesClaimed",
