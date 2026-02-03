@@ -4,6 +4,7 @@ const func = createDeployFunction({
   contractName: "IncreasePositionUtils",
   libraryNames: [
     "FeeUtils",
+    "MarketCollateralUtils",
     "MarketUtils",
     "MarketEventUtils",
     "PositionUtils",

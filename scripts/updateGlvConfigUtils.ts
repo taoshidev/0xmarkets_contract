@@ -215,6 +215,8 @@ export async function updateGlvConfig({ write }) {
 
   await handleInBatches(multicallWriteParams, 100, async (batch) => {
     const tx = await config.multicall(batch);
+    await tx.wait(1);
+    await new Promise((r) => setTimeout(r, 2000));
     console.info(`update config tx sent: ${tx.hash}`);
   });
 }

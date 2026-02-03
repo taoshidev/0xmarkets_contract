@@ -88,7 +88,9 @@ library PositionPricingUtils {
         uint256 positionFeeFactor;
         uint256 protocolFeeAmount;
         uint256 positionFeeReceiverFactor;
+        uint256 positionFeeSecondaryReceiverFactor;
         uint256 feeReceiverAmount;
+        uint256 secondaryFeeReceiverAmount;
         uint256 feeAmountForPool;
         uint256 positionFeeAmountForPool;
         uint256 positionFeeAmount;
@@ -108,6 +110,8 @@ library PositionPricingUtils {
         uint256 liquidationFeeAmount;
         uint256 liquidationFeeReceiverFactor;
         uint256 liquidationFeeAmountForFeeReceiver;
+        uint256 liquidationFeeSecondaryReceiverFactor;
+        uint256 liquidationFeeAmountForSecondaryReceiver;
     }
 
     // @param affiliate the referral affiliate of the trader
@@ -131,6 +135,8 @@ library PositionPricingUtils {
         uint256 borrowingFeeAmount;
         uint256 borrowingFeeReceiverFactor;
         uint256 borrowingFeeAmountForFeeReceiver;
+        uint256 borrowingFeeSecondaryReceiverFactor;
+        uint256 borrowingFeeAmountForSecondaryReceiver;
     }
 
     // @param fundingFeeAmount the position's funding fee amount
@@ -342,13 +348,19 @@ library PositionPricingUtils {
         fees.feeAmountForPool =
             fees.positionFeeAmountForPool +
             fees.borrowing.borrowingFeeAmount -
-            fees.borrowing.borrowingFeeAmountForFeeReceiver +
+            fees.borrowing.borrowingFeeAmountForFeeReceiver -
+            fees.borrowing.borrowingFeeAmountForSecondaryReceiver +
             fees.liquidation.liquidationFeeAmount -
+            fees.liquidation.liquidationFeeAmountForSecondaryReceiver -
             fees.liquidation.liquidationFeeAmountForFeeReceiver;
 
         fees.feeReceiverAmount +=
             fees.borrowing.borrowingFeeAmountForFeeReceiver +
             fees.liquidation.liquidationFeeAmountForFeeReceiver;
+
+        fees.secondaryFeeReceiverAmount +=
+            fees.borrowing.borrowingFeeAmountForSecondaryReceiver +
+            fees.liquidation.liquidationFeeAmountForSecondaryReceiver;
 
         fees.funding.latestFundingFeeAmountPerSize = MarketUtils.getFundingFeeAmountPerSize(
             params.dataStore,
@@ -408,6 +420,8 @@ library PositionPricingUtils {
         borrowingFees.borrowingFeeAmount = borrowingFeeUsd / collateralTokenPrice.min;
         borrowingFees.borrowingFeeReceiverFactor = dataStore.getUint(Keys.BORROWING_FEE_RECEIVER_FACTOR);
         borrowingFees.borrowingFeeAmountForFeeReceiver = Precision.applyFactor(borrowingFees.borrowingFeeAmount, borrowingFees.borrowingFeeReceiverFactor);
+        borrowingFees.borrowingFeeSecondaryReceiverFactor = dataStore.getUint(Keys.BORROWING_FEE_SECONDARY_RECEIVER_FACTOR);
+        borrowingFees.borrowingFeeAmountForSecondaryReceiver = Precision.applyFactor(borrowingFees.borrowingFeeAmount, borrowingFees.borrowingFeeSecondaryReceiverFactor);
 
         return borrowingFees;
     }
@@ -562,7 +576,10 @@ library PositionPricingUtils {
 
         fees.positionFeeReceiverFactor = dataStore.getUint(Keys.POSITION_FEE_RECEIVER_FACTOR);
         fees.feeReceiverAmount = Precision.applyFactor(fees.protocolFeeAmount, fees.positionFeeReceiverFactor);
-        fees.positionFeeAmountForPool = fees.protocolFeeAmount - fees.feeReceiverAmount;
+        fees.positionFeeSecondaryReceiverFactor = dataStore.getUint(Keys.POSITION_FEE_SECONDARY_RECEIVER_FACTOR);
+        fees.secondaryFeeReceiverAmount = Precision.applyFactor(fees.protocolFeeAmount, fees.positionFeeSecondaryReceiverFactor);
+
+        fees.positionFeeAmountForPool = fees.protocolFeeAmount - fees.feeReceiverAmount - fees.secondaryFeeReceiverAmount;
 
         return fees;
     }
@@ -578,6 +595,8 @@ library PositionPricingUtils {
         liquidationFees.liquidationFeeAmount = Calc.roundUpDivision(liquidationFees.liquidationFeeUsd, collateralTokenPrice.min);
         liquidationFees.liquidationFeeReceiverFactor = dataStore.getUint(Keys.LIQUIDATION_FEE_RECEIVER_FACTOR);
         liquidationFees.liquidationFeeAmountForFeeReceiver = Precision.applyFactor(liquidationFees.liquidationFeeAmount, liquidationFees.liquidationFeeReceiverFactor);
+        liquidationFees.liquidationFeeSecondaryReceiverFactor = dataStore.getUint(Keys.LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR);
+        liquidationFees.liquidationFeeAmountForSecondaryReceiver = Precision.applyFactor(liquidationFees.liquidationFeeAmount, liquidationFees.liquidationFeeSecondaryReceiverFactor);
         return liquidationFees;
     }
 }

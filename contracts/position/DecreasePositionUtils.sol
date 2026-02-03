@@ -6,6 +6,7 @@ import "../utils/Precision.sol";
 
 import "../data/DataStore.sol";
 import "../event/EventEmitter.sol";
+import "../market/MarketCollateralUtils.sol";
 
 import "../oracle/Oracle.sol";
 import "../pricing/PositionPricingUtils.sol";
@@ -272,7 +273,7 @@ library DecreasePositionUtils {
             PositionStoreUtils.set(params.contracts.dataStore, params.positionKey, params.position);
         }
 
-        MarketUtils.applyDeltaToCollateralSum(
+        MarketCollateralUtils.applyDeltaToCollateralSum(
             params.contracts.dataStore,
             params.contracts.eventEmitter,
             params.position.market(),

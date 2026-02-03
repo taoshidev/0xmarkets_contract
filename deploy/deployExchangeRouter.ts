@@ -25,6 +25,7 @@ const func = createDeployFunction({
     "FeeUtils",
     "MarketEventUtils",
     "MarketStoreUtils",
+    "MarketUtils",
     "OrderStoreUtils",
     "ReferralUtils",
     "ShiftStoreUtils",

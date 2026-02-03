@@ -54,8 +54,17 @@ async function setIfDifferent(
   const currentValue: string = await read("DataStore", getMethod, key);
   if (compare ? !compare(currentValue, value) : currentValue != value) {
     log("setting %s %s (%s) to %s, prev: %s", type, label || "", key, value.toString(), currentValue.toString());
-    const nonce = await ethers.provider.getTransactionCount(deployer, "pending");
-    await execute("DataStore", { from: deployer, log: true, nonce: nonce }, setMethod, key, value);
+    const receipt = await execute("DataStore", { from: deployer, log: true }, setMethod, key, value);
+    if (receipt.transactionHash) {
+      let tx = null;
+      for (let i = 0; i < 5; i++) {
+        tx = await ethers.provider.getTransaction(receipt.transactionHash);
+        if (tx) break;
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+      await tx?.wait(1);
+    }
+    await new Promise((r) => setTimeout(r, 2000));
   } else {
     log("skipping %s %s (%s) as it is already set to %s", type, label, key, value.toString());
   }

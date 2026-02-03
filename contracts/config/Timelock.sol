@@ -292,6 +292,24 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
         );
     }
 
+    function signalSetSecondaryFeeReceiver(address account) external onlyTimelockAdmin nonReentrant {
+        if (account == address(0)) {
+            revert Errors.InvalidFeeReceiver(account);
+        }
+
+        bytes32 actionKey = _setSecondaryFeeReceiverActionKey(account);
+        _signalPendingAction(actionKey, "setSecondaryFeeReceiver");
+
+        EventUtils.EventLogData memory eventData;
+        eventData.addressItems.initItems(1);
+        eventData.addressItems.setItem(0, "account", account);
+        eventEmitter.emitEventLog1(
+            "SignalSetSecondaryFeeReceiver",
+            actionKey,
+            eventData
+        );
+    }
+
     // @dev set the fee receiver
     // @param account the new fee receiver
     function setFeeReceiverAfterSignal(address account) external onlyTimelockAdmin nonReentrant {
@@ -305,6 +323,21 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
         eventData.addressItems.setItem(0, "account", account);
         eventEmitter.emitEventLog1(
             "SetFeeReceiver",
+            actionKey,
+            eventData
+        );
+    }
+
+    function setSecondaryFeeReceiverAfterSignal(address account) external onlyTimelockAdmin nonReentrant {
+        bytes32 actionKey = _setSecondaryFeeReceiverActionKey(account);
+        _validateAndClearAction(actionKey, "setSecondaryFeeReceiver");
+
+        dataStore.setAddress(Keys.SECONDARY_FEE_RECEIVER, account);
+        EventUtils.EventLogData memory eventData;
+        eventData.addressItems.initItems(1);
+        eventData.addressItems.setItem(0, "account", account);
+        eventEmitter.emitEventLog1(
+            "SetSecondaryFeeReceiver",
             actionKey,
             eventData
         );
@@ -676,6 +709,10 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
 
     function _setFeeReceiverActionKey(address account) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked("setFeeReceiver", account));
+    }
+
+    function _setSecondaryFeeReceiverActionKey(address account) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked("setSecondaryFeeReceiver", account));
     }
 
     function _grantRoleActionKey(address account, bytes32 roleKey) internal pure returns (bytes32) {

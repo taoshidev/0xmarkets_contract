@@ -210,6 +210,8 @@ export async function initOracleConfigForTokens({ write }) {
 
   if (write) {
     const tx = await config.multicall(multicallWriteParams);
+    await tx.wait(1);
+    await new Promise((r) => setTimeout(r, 2000));
     console.log(`tx sent: ${tx.hash}`);
   } else {
     console.log("NOTE: executed in read-only mode, no transactions were sent");

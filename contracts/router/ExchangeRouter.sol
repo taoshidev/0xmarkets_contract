@@ -7,6 +7,7 @@ import "../exchange/IWithdrawalHandler.sol";
 import "../exchange/IShiftHandler.sol";
 import "../exchange/IOrderHandler.sol";
 import "../external/IExternalHandler.sol";
+import "../market/MarketCollateralUtils.sol";
 import "../shift/ShiftUtils.sol";
 import "../shift/ShiftStoreUtils.sol";
 import "../referral/ReferralUtils.sol";
@@ -126,10 +127,8 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
     function createDeposit(
         DepositUtils.CreateDepositParams calldata params
     ) external override payable nonReentrant returns (bytes32) {
-        address account = msg.sender;
-
         return depositHandler.createDeposit(
-            account,
+            msg.sender,
             params
         );
     }
@@ -164,10 +163,8 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
     function createWithdrawal(
         WithdrawalUtils.CreateWithdrawalParams calldata params
     ) external override payable nonReentrant returns (bytes32) {
-        address account = msg.sender;
-
         return withdrawalHandler.createWithdrawal(
-            account,
+            msg.sender,
             params
         );
     }
@@ -185,10 +182,8 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
         WithdrawalUtils.CreateWithdrawalParams calldata params,
         OracleUtils.SetPricesParams calldata oracleParams
     ) external override payable nonReentrant {
-        address account = msg.sender;
-
         return withdrawalHandler.executeAtomicWithdrawal(
-            account,
+            msg.sender,
             params,
             oracleParams
         );
@@ -213,10 +208,8 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
     function createShift(
         ShiftUtils.CreateShiftParams calldata params
     ) external override payable nonReentrant returns (bytes32) {
-        address account = msg.sender;
-
         return shiftHandler.createShift(
-            account,
+            msg.sender,
             params
         );
     }
@@ -253,10 +246,8 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
     function createOrder(
         IBaseOrderUtils.CreateOrderParams calldata params
     ) external override payable nonReentrant returns (bytes32) {
-        address account = msg.sender;
-
         return orderHandler.createOrder(
-            account,
+            msg.sender,
             params,
             false
         );
@@ -375,8 +366,6 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
 
         AccountUtils.validateReceiver(receiver);
 
-        address account = msg.sender;
-
         uint256[] memory claimedAmounts = new uint256[](markets.length);
 
         for (uint256 i; i < markets.length; i++) {
@@ -385,7 +374,7 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
                 eventEmitter,
                 markets[i],
                 tokens[i],
-                account,
+                msg.sender,
                 receiver
             );
         }
@@ -407,18 +396,16 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
 
         AccountUtils.validateReceiver(receiver);
 
-        address account = msg.sender;
-
         uint256[] memory claimedAmounts = new uint256[](markets.length);
 
         for (uint256 i; i < markets.length; i++) {
-            claimedAmounts[i] = MarketUtils.claimCollateral(
+            claimedAmounts[i] = MarketCollateralUtils.claimCollateral(
                 dataStore,
                 eventEmitter,
                 markets[i],
                 tokens[i],
                 timeKeys[i],
-                account,
+                msg.sender,
                 receiver
             );
         }
@@ -447,8 +434,6 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
 
         FeatureUtils.validateFeature(dataStore, Keys.claimAffiliateRewardsFeatureDisabledKey(address(this)));
 
-        address account = msg.sender;
-
         uint256[] memory claimedAmounts = new uint256[](markets.length);
 
         for (uint256 i; i < markets.length; i++) {
@@ -457,7 +442,7 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
                 eventEmitter,
                 markets[i],
                 tokens[i],
-                account,
+                msg.sender,
                 receiver
             );
         }
@@ -466,8 +451,7 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
     }
 
     function setUiFeeFactor(uint256 uiFeeFactor) external payable nonReentrant {
-        address account = msg.sender;
-        MarketUtils.setUiFeeFactor(dataStore, eventEmitter, account, uiFeeFactor);
+        MarketUtils.setUiFeeFactor(dataStore, eventEmitter, msg.sender, uiFeeFactor);
     }
 
     function claimUiFees(
@@ -481,15 +465,13 @@ contract ExchangeRouter is IExchangeRouter, BaseRouter {
 
         FeatureUtils.validateFeature(dataStore, Keys.claimUiFeesFeatureDisabledKey(address(this)));
 
-        address uiFeeReceiver = msg.sender;
-
         uint256[] memory claimedAmounts = new uint256[](markets.length);
 
         for (uint256 i; i < markets.length; i++) {
             claimedAmounts[i] = FeeUtils.claimUiFees(
                 dataStore,
                 eventEmitter,
-                uiFeeReceiver,
+                msg.sender,
                 markets[i],
                 tokens[i],
                 receiver

@@ -87,7 +87,7 @@ export default async function (hre: HardhatRuntimeEnvironment): Promise<RolesCon
       MARKET_KEEPER: { [deployer]: true },
       ORDER_KEEPER: { [deployer]: true },
       ROLE_ADMIN: { [deployer]: true },
-      ROUTER_PLUGIN: { [deployer]: true },
+      ROUTER_PLUGIN: {},
       TIMELOCK_ADMIN: { [deployer]: true },
       TIMELOCK_MULTISIG: { [deployer]: true },
     },

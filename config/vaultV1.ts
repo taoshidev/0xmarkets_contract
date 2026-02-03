@@ -8,16 +8,17 @@ export type VaultV1Config = {
 export default async function (hre: HardhatRuntimeEnvironment): Promise<VaultV1Config> {
   const config: { [network: string]: VaultV1Config } = {
     base: {
-      vaultV1: "REPLACE_ME",
+      vaultV1: ethers.constants.AddressZero,
       gmx: ethers.constants.AddressZero,
     },
     baseSepolia: {
-      vaultV1: "REPLACE_ME",
+      vaultV1: ethers.constants.AddressZero,
       gmx: ethers.constants.AddressZero,
     },
     hardhat: {},
     localhost: {
-      vaultV1: "REPLACE_ME",
+      vaultV1: ethers.constants.AddressZero,
+      gmx: ethers.constants.AddressZero,
     },
   };
 

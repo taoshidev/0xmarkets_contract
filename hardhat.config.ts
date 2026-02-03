@@ -61,8 +61,8 @@ export const getExplorerUrl = (network) => {
     arbitrumSepolia: "https://api-sepolia.arbiscan.io/",
     avalancheFuji: "https://api-testnet.snowtrace.io/",
     arbitrumBlockscout: "https://arbitrum.blockscout.com/api",
-    base: "https://base.blockscout.com/",
-    baseSepolia: "	https://sepolia-explorer.base.org/",
+    base: "https://api.basescan.org/api",
+    baseSepolia: "https://api-sepolia.basescan.org/api",
   };
 
   const url = urls[network];
@@ -224,27 +224,27 @@ const config: HardhatUserConfig = {
       url: getRpcUrl("base"),
       chainId: 8453,
       accounts: getEnvAccounts(),
+      gas: "auto",
+      gasMultiplier: 1.2,
       verify: {
         etherscan: {
           apiUrl: getExplorerUrl("base"),
           apiKey: process.env.BASESCAN_API_KEY,
         },
       },
-      gas: "auto",
-      gasMultiplier: 1.3,
     },
     baseSepolia: {
       url: getRpcUrl("baseSepolia"),
       chainId: 84532,
       accounts: getEnvAccounts(),
+      gas: "auto",
+      gasMultiplier: 2.0,
       verify: {
         etherscan: {
           apiUrl: getExplorerUrl("baseSepolia"),
           apiKey: process.env.BASESCAN_API_KEY,
         },
       },
-      gas: "auto",
-      gasMultiplier: 10.0,
     },
   },
   // hardhat-deploy has issues with some contracts
@@ -276,7 +276,7 @@ const config: HardhatUserConfig = {
         chainId: 421614,
         urls: {
           apiURL: "https://api-sepolia.arbiscan.io/api",
-          browserURL: "https://https://sepolia.arbiscan.io/",
+          browserURL: "https://sepolia.arbiscan.io/",
         },
       },
       // {
