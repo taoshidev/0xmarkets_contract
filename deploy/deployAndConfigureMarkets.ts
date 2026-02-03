@@ -10,7 +10,7 @@ import {
 } from "../utils/market";
 import { updateMarketConfig } from "../scripts/updateMarketConfigUtils";
 
-const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnvironment) => {
+const func = async ({ deployments, getNamedAccounts, ethers, gmx }: HardhatRuntimeEnvironment) => {
   const { execute, get, read, log } = deployments;
 
   if (process.env.SKIP_NEW_MARKETS) {
@@ -44,7 +44,7 @@ const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnviro
 
     const marketType = DEFAULT_MARKET_TYPE;
     log("creating market %s", marketName);
-    await execute(
+    const receipt = await execute(
       "MarketFactory",
       { from: deployer, log: true },
       "createMarket",
@@ -54,6 +54,13 @@ const func = async ({ deployments, getNamedAccounts, gmx }: HardhatRuntimeEnviro
       marketType,
       marketConfig.reversed
     );
+    if (receipt.transactionHash) {
+      const tx = await ethers.provider.getTransaction(receipt.transactionHash);
+      if (tx) {
+        await tx.wait(1);
+      }
+    }
+    await new Promise((r) => setTimeout(r, 2000));
   }
 
   onchainMarketsByTokens = await getOnchainMarkets(read, dataStore.address);

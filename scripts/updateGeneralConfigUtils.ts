@@ -423,6 +423,8 @@ export async function updateGeneralConfig({ write }) {
 
     if (write) {
       const tx = await config.multicall(multicallWriteParams);
+      await tx.wait(1);
+      await new Promise((r) => setTimeout(r, 2000));
       console.log(`tx sent: ${tx.hash}`);
     } else {
       await config.callStatic.multicall(

@@ -108,6 +108,8 @@ export async function main() {
 
   if (process.env.WRITE) {
     const tx = await config.multicall(multicallWriteParams);
+    await tx.wait(1);
+    await new Promise((r) => setTimeout(r, 2000));
     console.info(`tx sent: ${tx.hash}`);
   } else {
     console.info("NOTE: executed in read-only mode, no transactions were sent");

@@ -34,7 +34,7 @@ export function createDeployFunction({
   }) => Promise<void>;
   id?: string;
 }): DeployFunction & Required<Pick<DeployFunction, "dependencies">> {
-  const func = async ({ getNamedAccounts, deployments, gmx, network }: HardhatRuntimeEnvironment) => {
+  const func = async ({ getNamedAccounts, deployments, ethers, gmx, network }: HardhatRuntimeEnvironment) => {
     const { deploy, get } = deployments;
     const { deployer } = await getNamedAccounts();
 
@@ -72,6 +72,11 @@ export function createDeployFunction({
         args: deployArgs,
         libraries,
       });
+      if (deployedContract.transactionHash) {
+        const tx = await ethers.provider.getTransaction(deployedContract.transactionHash);
+        await tx.wait(1);
+      }
+      await new Promise((r) => setTimeout(r, 2000));
     } catch (e) {
       // the caught error might not be very informative
       // e.g. if some library dependency is missing, which library it is
@@ -89,6 +94,7 @@ export function createDeployFunction({
 
     if (afterDeploy) {
       await afterDeploy({ deployedContract, deployer, getNamedAccounts, deployments, gmx, network });
+      await new Promise((r) => setTimeout(r, 2000));
     }
 
     if (id) {

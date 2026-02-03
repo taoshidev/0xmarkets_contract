@@ -870,6 +870,8 @@ export async function updateMarketConfig({
   } else {
     await handleInBatches(multicallWriteParams, 100, async (batch) => {
       const tx = await config.multicall(batch);
+      await tx.wait(1);
+      await new Promise((r) => setTimeout(r, 2000));
       console.info(`tx sent: ${tx.hash}`);
     });
   }
