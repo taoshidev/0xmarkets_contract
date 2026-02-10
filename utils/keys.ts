@@ -167,6 +167,8 @@ export const MAX_POSITION_IMPACT_FACTOR = hashString("MAX_POSITION_IMPACT_FACTOR
 export const MAX_POSITION_IMPACT_FACTOR_FOR_LIQUIDATIONS = hashString("MAX_POSITION_IMPACT_FACTOR_FOR_LIQUIDATIONS");
 export const POSITION_FEE_FACTOR = hashString("POSITION_FEE_FACTOR");
 export const LIQUIDATION_FEE_FACTOR = hashString("LIQUIDATION_FEE_FACTOR");
+export const LIQUIDATION_FEE_SPLIT_INSURANCE = hashString("LIQUIDATION_FEE_SPLIT_INSURANCE");
+export const INSURANCE_TARGET_RATIO = hashString("INSURANCE_TARGET_RATIO");
 export const PRO_TRADER_TIER = hashString("PRO_TRADER_TIER");
 export const PRO_DISCOUNT_FACTOR = hashString("PRO_DISCOUNT_FACTOR");
 
@@ -585,6 +587,14 @@ export function proDiscountFactorKey(proTier: number) {
 
 export function liquidationFeeFactorKey(market: string) {
   return hashData(["bytes32", "address"], [LIQUIDATION_FEE_FACTOR, market]);
+}
+
+export function liquidationFeeSplitInsuranceKey(market: string) {
+  return hashData(["bytes32", "address"], [LIQUIDATION_FEE_SPLIT_INSURANCE, market]);
+}
+
+export function insuranceTargetRatioKey(market: string) {
+  return hashData(["bytes32", "address"], [INSURANCE_TARGET_RATIO, market]);
 }
 
 export function latestAdlBlockKey(market: string, isLong: boolean) {

@@ -243,6 +243,21 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         eventEmitter.emitEventLog1("SetPositionImpactPoolDistributionRate", Cast.toBytes32(market), eventData);
     }
 
+    function setInsuranceConfig(
+        address market,
+        uint256 liquidationFeeSplitInsurance,
+        uint256 insuranceTargetRatio
+    ) external onlyConfigKeeper nonReentrant {
+        // TODO: Add side-effect logic here (e.g., settle insurance fund before updating params)
+
+        dataStore.setUint(Keys.liquidationFeeSplitInsuranceKey(market), liquidationFeeSplitInsurance);
+        dataStore.setUint(Keys.insuranceTargetRatioKey(market), insuranceTargetRatio);
+
+        EventUtils.EventLogData memory eventData;
+
+        eventEmitter.emitEventLog1("SetInsuranceConfig", Cast.toBytes32(market), eventData);
+    }
+
     function setBaselineSwap(
         address market,
         uint256 baselineSwapPerDay,
@@ -527,6 +542,8 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         allowedBaseKeys[Keys.PRO_DISCOUNT_FACTOR] = true;
         allowedBaseKeys[Keys.PRO_TRADER_TIER] = true;
         allowedBaseKeys[Keys.LIQUIDATION_FEE_FACTOR] = true;
+        allowedBaseKeys[Keys.LIQUIDATION_FEE_SPLIT_INSURANCE] = true;
+        allowedBaseKeys[Keys.INSURANCE_TARGET_RATIO] = true;
 
         allowedBaseKeys[Keys.SWAP_IMPACT_FACTOR] = true;
         allowedBaseKeys[Keys.SWAP_IMPACT_EXPONENT_FACTOR] = true;
@@ -767,7 +784,9 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
             baseKey == Keys.OPTIMAL_USAGE_FACTOR ||
             baseKey == Keys.PRO_DISCOUNT_FACTOR ||
             baseKey == Keys.BUYBACK_GMX_FACTOR ||
-            baseKey == Keys.DATA_STREAM_SPREAD_REDUCTION_FACTOR
+            baseKey == Keys.DATA_STREAM_SPREAD_REDUCTION_FACTOR ||
+            baseKey == Keys.LIQUIDATION_FEE_SPLIT_INSURANCE ||
+            baseKey == Keys.INSURANCE_TARGET_RATIO
         ) {
             // revert if value > 100%
             if (value > Precision.FLOAT_PRECISION) {
