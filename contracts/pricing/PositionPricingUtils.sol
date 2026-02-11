@@ -112,6 +112,8 @@ library PositionPricingUtils {
         uint256 liquidationFeeAmountForFeeReceiver;
         uint256 liquidationFeeSecondaryReceiverFactor;
         uint256 liquidationFeeAmountForSecondaryReceiver;
+        uint256 liquidationFeeInsuranceFactor;
+        uint256 liquidationFeeAmountForInsurance;
     }
 
     // @param affiliate the referral affiliate of the trader
@@ -352,7 +354,8 @@ library PositionPricingUtils {
             fees.borrowing.borrowingFeeAmountForSecondaryReceiver +
             fees.liquidation.liquidationFeeAmount -
             fees.liquidation.liquidationFeeAmountForSecondaryReceiver -
-            fees.liquidation.liquidationFeeAmountForFeeReceiver;
+            fees.liquidation.liquidationFeeAmountForFeeReceiver -
+            fees.liquidation.liquidationFeeAmountForInsurance;
 
         fees.feeReceiverAmount +=
             fees.borrowing.borrowingFeeAmountForFeeReceiver +
@@ -597,6 +600,8 @@ library PositionPricingUtils {
         liquidationFees.liquidationFeeAmountForFeeReceiver = Precision.applyFactor(liquidationFees.liquidationFeeAmount, liquidationFees.liquidationFeeReceiverFactor);
         liquidationFees.liquidationFeeSecondaryReceiverFactor = dataStore.getUint(Keys.LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR);
         liquidationFees.liquidationFeeAmountForSecondaryReceiver = Precision.applyFactor(liquidationFees.liquidationFeeAmount, liquidationFees.liquidationFeeSecondaryReceiverFactor);
+        liquidationFees.liquidationFeeInsuranceFactor = dataStore.getUint(Keys.liquidationFeeInsuranceFactorKey(market));
+        liquidationFees.liquidationFeeAmountForInsurance = Precision.applyFactor(liquidationFees.liquidationFeeAmount, liquidationFees.liquidationFeeInsuranceFactor);
         return liquidationFees;
     }
 }

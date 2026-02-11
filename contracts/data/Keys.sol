@@ -295,9 +295,11 @@ library Keys {
     // @dev key for the liquidation fee factor
     bytes32 public constant LIQUIDATION_FEE_FACTOR = keccak256(abi.encode("LIQUIDATION_FEE_FACTOR"));
     // @dev key for the liquidation fee split to insurance fund
-    bytes32 public constant LIQUIDATION_FEE_SPLIT_INSURANCE = keccak256(abi.encode("LIQUIDATION_FEE_SPLIT_INSURANCE"));
+    bytes32 public constant LIQUIDATION_FEE_INSURANCE_FACTOR = keccak256(abi.encode("LIQUIDATION_FEE_INSURANCE_FACTOR"));
     // @dev key for the insurance fund target ratio
     bytes32 public constant INSURANCE_TARGET_RATIO = keccak256(abi.encode("INSURANCE_TARGET_RATIO"));
+    // @dev key for the insurance fund amount
+    bytes32 public constant INSURANCE_FUND_AMOUNT = keccak256(abi.encode("INSURANCE_FUND_AMOUNT"));
     // @dev key for the swap impact factor
     bytes32 public constant SWAP_IMPACT_FACTOR = keccak256(abi.encode("SWAP_IMPACT_FACTOR"));
     // @dev key for the swap impact exponent factor
@@ -1184,9 +1186,9 @@ library Keys {
     // @dev key for liquidation fee split to insurance fund
     // @param market the market address
     // @return key for liquidation fee split insurance
-    function liquidationFeeSplitInsuranceKey(address market) internal pure returns (bytes32) {
+    function liquidationFeeInsuranceFactorKey(address market) internal pure returns (bytes32) {
         return keccak256(abi.encode(
-            LIQUIDATION_FEE_SPLIT_INSURANCE,
+            LIQUIDATION_FEE_INSURANCE_FACTOR,
             market
         ));
     }
@@ -1198,6 +1200,18 @@ library Keys {
         return keccak256(abi.encode(
             INSURANCE_TARGET_RATIO,
             market
+        ));
+    }
+
+    // @dev key for insurance fund amount
+    // @param market the market address
+    // @param token the token address
+    // @return key for insurance fund amount
+    function insuranceFundAmountKey(address market, address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            INSURANCE_FUND_AMOUNT,
+            market,
+            token
         ));
     }
 

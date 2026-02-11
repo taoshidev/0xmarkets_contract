@@ -245,12 +245,12 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
 
     function setInsuranceConfig(
         address market,
-        uint256 liquidationFeeSplitInsurance,
+        uint256 liquidationFeeInsuranceFactor,
         uint256 insuranceTargetRatio
     ) external onlyConfigKeeper nonReentrant {
         // TODO: Add side-effect logic here (e.g., settle insurance fund before updating params)
 
-        dataStore.setUint(Keys.liquidationFeeSplitInsuranceKey(market), liquidationFeeSplitInsurance);
+        dataStore.setUint(Keys.liquidationFeeInsuranceFactorKey(market), liquidationFeeInsuranceFactor);
         dataStore.setUint(Keys.insuranceTargetRatioKey(market), insuranceTargetRatio);
 
         EventUtils.EventLogData memory eventData;
@@ -542,7 +542,7 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         allowedBaseKeys[Keys.PRO_DISCOUNT_FACTOR] = true;
         allowedBaseKeys[Keys.PRO_TRADER_TIER] = true;
         allowedBaseKeys[Keys.LIQUIDATION_FEE_FACTOR] = true;
-        allowedBaseKeys[Keys.LIQUIDATION_FEE_SPLIT_INSURANCE] = true;
+        allowedBaseKeys[Keys.LIQUIDATION_FEE_INSURANCE_FACTOR] = true;
         allowedBaseKeys[Keys.INSURANCE_TARGET_RATIO] = true;
 
         allowedBaseKeys[Keys.SWAP_IMPACT_FACTOR] = true;
@@ -785,7 +785,7 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
             baseKey == Keys.PRO_DISCOUNT_FACTOR ||
             baseKey == Keys.BUYBACK_GMX_FACTOR ||
             baseKey == Keys.DATA_STREAM_SPREAD_REDUCTION_FACTOR ||
-            baseKey == Keys.LIQUIDATION_FEE_SPLIT_INSURANCE ||
+            baseKey == Keys.LIQUIDATION_FEE_INSURANCE_FACTOR ||
             baseKey == Keys.INSURANCE_TARGET_RATIO
         ) {
             // revert if value > 100%

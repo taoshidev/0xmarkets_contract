@@ -155,6 +155,32 @@ library MarketEventUtils {
         );
     }
 
+    function emitInsuranceFundAmountUpdated(
+        EventEmitter eventEmitter,
+        address market,
+        address token,
+        int256 delta,
+        uint256 nextValue
+    ) external {
+        EventUtils.EventLogData memory eventData;
+
+        eventData.addressItems.initItems(2);
+        eventData.addressItems.setItem(0, "market", market);
+        eventData.addressItems.setItem(1, "token", token);
+
+        eventData.intItems.initItems(1);
+        eventData.intItems.setItem(0, "delta", delta);
+
+        eventData.uintItems.initItems(1);
+        eventData.uintItems.setItem(0, "nextValue", nextValue);
+
+        eventEmitter.emitEventLog1(
+            "InsuranceFundAmountUpdated",
+            Cast.toBytes32(market),
+            eventData
+        );
+    }
+
     function emitPositionImpactPoolDistributed(
         EventEmitter eventEmitter,
         address market,

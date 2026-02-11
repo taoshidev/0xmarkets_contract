@@ -39,7 +39,7 @@ async function main() {
     multicallReadParams.push({
       target: dataStore.address,
       allowFailure: false,
-      callData: dataStore.interface.encodeFunctionData("getUint", [keys.liquidationFeeSplitInsuranceKey(marketToken)]),
+      callData: dataStore.interface.encodeFunctionData("getUint", [keys.liquidationFeeInsuranceFactorKey(marketToken)]),
     });
     multicallReadParams.push({
       target: dataStore.address,
@@ -67,17 +67,17 @@ async function main() {
     const marketToken = onchainMarket.marketToken;
 
     if (
-      (marketConfig.liquidationFeeSplitInsurance === undefined && marketConfig.insuranceTargetRatio !== undefined) ||
-      (marketConfig.liquidationFeeSplitInsurance !== undefined && marketConfig.insuranceTargetRatio === undefined)
+      (marketConfig.liquidationFeeInsuranceFactor === undefined && marketConfig.insuranceTargetRatio !== undefined) ||
+      (marketConfig.liquidationFeeInsuranceFactor !== undefined && marketConfig.insuranceTargetRatio === undefined)
     ) {
       console.warn(
-        "WARN: only one of insurance fields is set for market %s liquidationFeeSplitInsurance=%s insuranceTargetRatio=%s",
+        "WARN: only one of insurance fields is set for market %s liquidationFeeInsuranceFactor=%s insuranceTargetRatio=%s",
         marketToken,
-        marketConfig.liquidationFeeSplitInsurance,
+        marketConfig.liquidationFeeInsuranceFactor,
         marketConfig.insuranceTargetRatio
       );
     }
-    if (marketConfig.liquidationFeeSplitInsurance === undefined || marketConfig.insuranceTargetRatio === undefined) {
+    if (marketConfig.liquidationFeeInsuranceFactor === undefined || marketConfig.insuranceTargetRatio === undefined) {
       continue;
     }
 
@@ -86,16 +86,16 @@ async function main() {
 
     let wasChanged = false;
 
-    if (!currentLiquidationFeeSplitInsurance.eq(marketConfig.liquidationFeeSplitInsurance)) {
+    if (!currentLiquidationFeeSplitInsurance.eq(marketConfig.liquidationFeeInsuranceFactor)) {
       const change = currentLiquidationFeeSplitInsurance.gt(0)
-        ? bigNumberify(marketConfig.liquidationFeeSplitInsurance).mul(10000).div(currentLiquidationFeeSplitInsurance)
+        ? bigNumberify(marketConfig.liquidationFeeInsuranceFactor).mul(10000).div(currentLiquidationFeeSplitInsurance)
         : null;
       wasChanged = true;
       console.log(
-        "liquidationFeeSplitInsurance was changed for market %s. prev value %s new value %s (%sx)",
+        "liquidationFeeInsuranceFactor was changed for market %s. prev value %s new value %s (%sx)",
         marketToken,
         currentLiquidationFeeSplitInsurance,
-        marketConfig.liquidationFeeSplitInsurance,
+        marketConfig.liquidationFeeInsuranceFactor,
         change ? formatAmount(change, 4) : "n/a "
       );
     }
@@ -118,7 +118,7 @@ async function main() {
       multicallWriteParams.push(
         config.interface.encodeFunctionData("setInsuranceConfig", [
           marketToken,
-          marketConfig.liquidationFeeSplitInsurance,
+          marketConfig.liquidationFeeInsuranceFactor,
           marketConfig.insuranceTargetRatio,
         ])
       );

@@ -31,5 +31,7 @@ library MarketPoolValueInfo {
         uint256 borrowingFeePoolFactor;
 
         uint256 impactPoolAmount;
+
+        uint256 insuranceFundUsd;
     }
 }

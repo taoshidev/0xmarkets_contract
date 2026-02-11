@@ -137,6 +137,11 @@ library DecreasePositionCollateralUtils {
             }
         }
 
+        // insurance fund covers capped PnL difference
+        if (values.uncappedBasePnlUsd > values.basePnlUsd && values.basePnlUsd > 0) {
+            values = _processInsuranceFundPayout(params, cache, values);
+        }
+
         if (values.priceImpactUsd > 0) {
             // use indexTokenPrice.min to maximize the position impact pool reduction
             uint256 deductionAmountForImpactPool = Calc.roundUpDivision(values.priceImpactUsd.toUint256(), cache.prices.indexTokenPrice.min);
@@ -355,6 +360,16 @@ library DecreasePositionCollateralUtils {
                 fees.ui.uiFeeAmount,
                 Keys.UI_POSITION_FEE_TYPE
             );
+
+            // accumulate insurance fund from liquidation fees
+            if (fees.liquidation.liquidationFeeAmountForInsurance > 0) {
+                _processInsuranceFundAccumulation(
+                    params,
+                    cache,
+                    collateralToken,
+                    fees.liquidation.liquidationFeeAmountForInsurance
+                );
+            }
         } else {
             // the fees are expected to be paid in the collateral token
             // if there are insufficient funds to pay for fees entirely in the collateral token
@@ -690,7 +705,9 @@ library DecreasePositionCollateralUtils {
             liquidationFeeReceiverFactor: 0,
             liquidationFeeAmountForFeeReceiver: 0,
             liquidationFeeSecondaryReceiverFactor: 0,
-            liquidationFeeAmountForSecondaryReceiver: 0
+            liquidationFeeAmountForSecondaryReceiver: 0,
+            liquidationFeeInsuranceFactor: 0,
+            liquidationFeeAmountForInsurance: 0
         });
 
         // all fees are zeroed even though funding may have been paid
@@ -718,5 +735,101 @@ library DecreasePositionCollateralUtils {
         });
 
         return _fees;
+    }
+
+    function _processInsuranceFundAccumulation(
+        PositionUtils.UpdatePositionParams memory params,
+        PositionUtils.DecreasePositionCache memory cache,
+        address collateralToken,
+        uint256 insuranceFeeAmount
+    ) internal {
+        uint256 insuranceAmountToAdd = insuranceFeeAmount;
+
+        // check target ratio — don't accumulate if insurance fund already meets target
+        uint256 insuranceTargetRatio = params.contracts.dataStore.getUint(
+            Keys.insuranceTargetRatioKey(params.market.marketToken)
+        );
+
+        if (insuranceTargetRatio > 0) {
+            uint256 currentInsuranceUsd =
+                MarketUtils.getInsuranceFundAmount(params.contracts.dataStore, params.market.marketToken, params.market.longToken) * cache.prices.longTokenPrice.min
+                + MarketUtils.getInsuranceFundAmount(params.contracts.dataStore, params.market.marketToken, params.market.shortToken) * cache.prices.shortTokenPrice.min;
+
+            uint256 poolUsd =
+                MarketUtils.getPoolAmount(params.contracts.dataStore, params.market, params.market.longToken) * cache.prices.longTokenPrice.min
+                + MarketUtils.getPoolAmount(params.contracts.dataStore, params.market, params.market.shortToken) * cache.prices.shortTokenPrice.min;
+
+            uint256 maxInsuranceUsd = Precision.applyFactor(poolUsd, insuranceTargetRatio);
+
+            if (currentInsuranceUsd >= maxInsuranceUsd) {
+                insuranceAmountToAdd = 0;
+            } else {
+                uint256 remainingCapacityUsd = maxInsuranceUsd - currentInsuranceUsd;
+                uint256 addAmountUsd = insuranceAmountToAdd * cache.collateralTokenPrice.min;
+                if (addAmountUsd > remainingCapacityUsd) {
+                    insuranceAmountToAdd = remainingCapacityUsd / cache.collateralTokenPrice.min;
+                }
+            }
+        }
+
+        if (insuranceAmountToAdd > 0) {
+            MarketUtils.applyDeltaToInsuranceFundAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                params.market.marketToken,
+                collateralToken,
+                insuranceAmountToAdd.toInt256()
+            );
+        }
+
+        // any amount NOT added to insurance stays in feeAmountForPool (already subtracted in fee calc)
+        // re-add excess to pool
+        uint256 excessForPool = insuranceFeeAmount - insuranceAmountToAdd;
+        if (excessForPool > 0) {
+            MarketUtils.applyDeltaToPoolAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                params.market,
+                collateralToken,
+                excessForPool.toInt256()
+            );
+        }
+    }
+
+    function _processInsuranceFundPayout(
+        PositionUtils.UpdatePositionParams memory params,
+        PositionUtils.DecreasePositionCache memory cache,
+        PositionUtils.DecreasePositionCollateralValues memory values
+    ) internal returns (PositionUtils.DecreasePositionCollateralValues memory) {
+        uint256 cappedDifferenceUsd = (values.uncappedBasePnlUsd - values.basePnlUsd).toUint256();
+
+        uint256 insuranceFundAmount = MarketUtils.getInsuranceFundAmount(
+            params.contracts.dataStore, params.market.marketToken, cache.pnlToken
+        );
+        uint256 insuranceFundUsd = insuranceFundAmount * cache.pnlTokenPrice.max;
+
+        uint256 insurancePayoutUsd = cappedDifferenceUsd > insuranceFundUsd
+            ? insuranceFundUsd
+            : cappedDifferenceUsd;
+
+        if (insurancePayoutUsd > 0) {
+            uint256 insurancePayoutTokens = insurancePayoutUsd / cache.pnlTokenPrice.max;
+
+            MarketUtils.applyDeltaToInsuranceFundAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                params.market.marketToken,
+                cache.pnlToken,
+                -insurancePayoutTokens.toInt256()
+            );
+
+            if (values.output.outputToken == cache.pnlToken) {
+                values.output.outputAmount += insurancePayoutTokens;
+            } else {
+                values.output.secondaryOutputAmount += insurancePayoutTokens;
+            }
+        }
+
+        return values;
     }
 }

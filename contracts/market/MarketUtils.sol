@@ -122,6 +122,7 @@ library MarketUtils {
         uint256 claimableFeeAmount;
         uint256 claimableUiFeeAmount;
         uint256 affiliateRewardAmount;
+        uint256 insuranceFundAmount;
     }
 
     // @dev get the market token's price
@@ -365,6 +366,13 @@ library MarketUtils {
         uint256 impactPoolUsd = result.impactPoolAmount * indexTokenPrice.pickPrice(!maximize);
 
         result.poolValue -= impactPoolUsd.toInt256();
+
+        // subtract insurance fund from pool value so LPs cannot withdraw it
+        uint256 longInsuranceFund = getInsuranceFundAmount(dataStore, market.marketToken, market.longToken);
+        uint256 shortInsuranceFund = getInsuranceFundAmount(dataStore, market.marketToken, market.shortToken);
+        result.insuranceFundUsd = longInsuranceFund * longTokenPrice.pickPrice(!maximize)
+                                + shortInsuranceFund * shortTokenPrice.pickPrice(!maximize);
+        result.poolValue -= result.insuranceFundUsd.toInt256();
 
         return result;
     }
@@ -721,6 +729,39 @@ library MarketUtils {
     // @return the position impact pool amount
     function getPositionImpactPoolAmount(DataStore dataStore, address market) internal view returns (uint256) {
         return dataStore.getUint(Keys.positionImpactPoolAmountKey(market));
+    }
+
+    // @dev get the insurance fund amount
+    // @param dataStore DataStore
+    // @param market the market to check
+    // @param token the token to check
+    // @return the insurance fund amount
+    function getInsuranceFundAmount(DataStore dataStore, address market, address token) internal view returns (uint256) {
+        return dataStore.getUint(Keys.insuranceFundAmountKey(market, token));
+    }
+
+    // @dev apply a delta to the insurance fund
+    // @param dataStore DataStore
+    // @param eventEmitter EventEmitter
+    // @param market the market to apply to
+    // @param token the token to apply to
+    // @param delta the delta amount
+    function applyDeltaToInsuranceFundAmount(
+        DataStore dataStore,
+        EventEmitter eventEmitter,
+        address market,
+        address token,
+        int256 delta
+    ) internal returns (uint256) {
+        uint256 nextValue = dataStore.applyDeltaToUint(
+            Keys.insuranceFundAmountKey(market, token),
+            delta,
+            "Invalid state, negative insuranceFundAmount"
+        );
+
+        MarketEventUtils.emitInsuranceFundAmountUpdated(eventEmitter, market, token, delta, nextValue);
+
+        return nextValue;
     }
 
     // @dev get the swap impact pool amount
@@ -2822,6 +2863,7 @@ library MarketUtils {
         cache.claimableFeeAmount = dataStore.getUint(Keys.claimableFeeAmountKey(market.marketToken, token));
         cache.claimableUiFeeAmount = dataStore.getUint(Keys.claimableUiFeeAmountKey(market.marketToken, token));
         cache.affiliateRewardAmount = dataStore.getUint(Keys.affiliateRewardKey(market.marketToken, token));
+        cache.insuranceFundAmount = getInsuranceFundAmount(dataStore, market.marketToken, token);
 
         // funding fees are excluded from this summation as claimable funding fees
         // are incremented without a corresponding decrease of the collateral of
@@ -2833,6 +2875,7 @@ library MarketUtils {
             + cache.claimableCollateralAmount
             + cache.claimableFeeAmount
             + cache.claimableUiFeeAmount
-            + cache.affiliateRewardAmount;
+            + cache.affiliateRewardAmount
+            + cache.insuranceFundAmount;
     }
 }

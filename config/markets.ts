@@ -112,7 +112,7 @@ export type BaseMarketConfig = {
   positionImpactPoolDistributionRate: BigNumberish;
   minPositionImpactPoolAmount: BigNumberish;
 
-  liquidationFeeSplitInsurance: BigNumberish;
+  liquidationFeeInsuranceFactor: BigNumberish;
   insuranceTargetRatio: BigNumberish;
 
   virtualMarketId?: string;
@@ -320,7 +320,7 @@ const baseMarketConfig: Partial<BaseMarketConfig> = {
 
   liquidationFeeFactor: percentageToFloat("50%"),
 
-  liquidationFeeSplitInsurance: bigNumberify(0),
+  liquidationFeeInsuranceFactor: bigNumberify(0),
   insuranceTargetRatio: bigNumberify(0),
 };
 
@@ -413,7 +413,7 @@ const hardhatBaseMarketConfig: Partial<BaseMarketConfig> = {
 
   maxFundingFactorPerSecond: "100000000000000000000000",
 
-  liquidationFeeSplitInsurance: bigNumberify(0),
+  liquidationFeeInsuranceFactor: bigNumberify(0),
   insuranceTargetRatio: bigNumberify(0),
 };
 
