@@ -169,7 +169,7 @@ const config: {
       isAsset: true,
     },
     USDC: {
-      address: "0xA36a6765cc50b1F4678fA91770dcfCf48727730F", // Mock USDC
+      address: "0xFDDFE40Ade3eE9aDE4A2e185C750cf28025BFd6b", // Mock USDC
       decimals: 6,
       transferGasLimit: 200 * 1000,
       pythLazerFeedId: 7,
