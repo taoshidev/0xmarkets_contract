@@ -260,6 +260,14 @@ const baseMarketConfig: Partial<BaseMarketConfig> = {
   minMaintainCollateralFactor: percentageToFloat("0.2%"),
   minCollateralFactorForOpenInterestMultiplier: 0,
 
+  maxLongTokenPoolAmount: expandDecimals(100_000_000, 6),
+  maxShortTokenPoolAmount: expandDecimals(100_000_000, 6),
+
+  maxLongTokenPoolUsdForDeposit: decimalToFloat(100_000_000),
+  maxShortTokenPoolUsdForDeposit: decimalToFloat(100_000_000),
+
+  maxOpenInterest: decimalToFloat(1_000_000),
+
   maxPnlFactorForTraders: percentageToFloat("90%"),
 
   maxPnlFactorForAdl: percentageToFloat("85%"),
@@ -272,6 +280,7 @@ const baseMarketConfig: Partial<BaseMarketConfig> = {
 
   positionFeeFactorForPositiveImpact: decimalToFloat(1, 4), // 0.0001
   positionFeeFactorForNegativeImpact: decimalToFloat(15, 5), // 0.00015
+  liquidationFeeFactor: percentageToFloat("50%"),
 
   negativePositionImpactFactor: decimalToFloat(1, 7), // 0.0000001
   positivePositionImpactFactor: decimalToFloat(8, 8), // 0.00000008
@@ -314,8 +323,6 @@ const baseMarketConfig: Partial<BaseMarketConfig> = {
 
   positionImpactPoolDistributionRate: bigNumberify(0),
   minPositionImpactPoolAmount: 0,
-
-  liquidationFeeFactor: percentageToFloat("50%"),
 };
 
 const singleTokenMarketConfig: Partial<BaseMarketConfig> = {
