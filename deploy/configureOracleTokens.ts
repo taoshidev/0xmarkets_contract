@@ -11,6 +11,7 @@ const func = async ({ gmx, deployments, network }: HardhatRuntimeEnvironment) =>
   const oracleProviders = {
     gmOracle: (await get("GmOracleProvider")).address,
     pythLazerFeed: (await get("PythLazerFeedProvider")).address,
+    pythHermesFeed: (await get("PythHermesFeedProvider")).address,
   };
 
   for (const tokenSymbol of Object.keys(tokens)) {
@@ -55,7 +56,14 @@ const func = async ({ gmx, deployments, network }: HardhatRuntimeEnvironment) =>
   }
 };
 
-func.dependencies = ["Tokens", "PriceFeeds", "DataStore", "GmOracleProvider", "PythLazerFeedProvider"];
+func.dependencies = [
+  "Tokens",
+  "PriceFeeds",
+  "DataStore",
+  "GmOracleProvider",
+  "PythLazerFeedProvider",
+  "PythHermesFeedProvider",
+];
 func.tags = ["ConfigureOracleTokens"];
 
 export default func;

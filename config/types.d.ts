@@ -8,7 +8,7 @@ import { VaultV1Config } from "./vaultV1";
 import { GlvConfig } from "./glvs";
 import { BuybackConfig } from "./buyback";
 
-export type OracleProvider = "gmOracle" | "chainlinkDataStream" | "chainlinkPriceFeed";
+export type OracleProvider = "gmOracle" | "chainlinkDataStream" | "chainlinkPriceFeed" | "pythHermesFeed";
 
 // extend hardhat config with custom gmx property
 declare module "hardhat/types/runtime" {

@@ -433,67 +433,67 @@ const config: {
     },
   ],
   baseSepolia: [
-    // Forex markets — use syntheticMarketConfig + capacity limits (500K USDC pool, 250K OI)
+    // Forex markets — use syntheticMarketConfig + capacity limits (25M USDC pool, 12.5M OI)
     {
       tokens: { indexToken: "EUR", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
       ...syntheticMarketConfig,
-      maxLongTokenPoolAmount: expandDecimals(500_000, 6), // 500K USDC (6 decimals)
-      maxShortTokenPoolAmount: expandDecimals(500_000, 6), // 500K USDC
-      maxPoolUsdForDeposit: decimalToFloat(500_000), // 500K USD
-      maxOpenInterestForLongs: decimalToFloat(250_000), // 250K USD
-      maxOpenInterestForShorts: decimalToFloat(250_000), // 250K USD
+      maxLongTokenPoolAmount: expandDecimals(25_000_000, 6), // 25M USDC (6 decimals)
+      maxShortTokenPoolAmount: expandDecimals(25_000_000, 6), // 25M USDC
+      maxPoolUsdForDeposit: decimalToFloat(25_000_000), // 25M USD
+      maxOpenInterestForLongs: decimalToFloat(12_500_000), // 12.5M USD
+      maxOpenInterestForShorts: decimalToFloat(12_500_000), // 12.5M USD
     },
     {
       tokens: { indexToken: "GBP", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
       ...syntheticMarketConfig,
-      maxLongTokenPoolAmount: expandDecimals(500_000, 6), // 500K USDC (6 decimals)
-      maxShortTokenPoolAmount: expandDecimals(500_000, 6), // 500K USDC
-      maxPoolUsdForDeposit: decimalToFloat(500_000), // 500K USD
-      maxOpenInterestForLongs: decimalToFloat(250_000), // 250K USD
-      maxOpenInterestForShorts: decimalToFloat(250_000), // 250K USD
+      maxLongTokenPoolAmount: expandDecimals(25_000_000, 6), // 25M USDC (6 decimals)
+      maxShortTokenPoolAmount: expandDecimals(25_000_000, 6), // 25M USDC
+      maxPoolUsdForDeposit: decimalToFloat(25_000_000), // 25M USD
+      maxOpenInterestForLongs: decimalToFloat(12_500_000), // 12.5M USD
+      maxOpenInterestForShorts: decimalToFloat(12_500_000), // 12.5M USD
     },
-    // Commodity market — use syntheticMarketConfig + slightly higher limits (750K USDC pool, 375K OI)
+    // Commodity market — use syntheticMarketConfig + slightly higher limits (37.5M USDC pool, 18.75M OI)
     {
       tokens: { indexToken: "GOLD", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
       ...syntheticMarketConfig,
-      maxLongTokenPoolAmount: expandDecimals(750_000, 6), // 750K USDC (6 decimals)
-      maxShortTokenPoolAmount: expandDecimals(750_000, 6), // 750K USDC
-      maxPoolUsdForDeposit: decimalToFloat(750_000), // 750K USD
-      maxOpenInterestForLongs: decimalToFloat(375_000), // 375K USD
-      maxOpenInterestForShorts: decimalToFloat(375_000), // 375K USD
+      maxLongTokenPoolAmount: expandDecimals(37_500_000, 6), // 37.5M USDC (6 decimals)
+      maxShortTokenPoolAmount: expandDecimals(37_500_000, 6), // 37.5M USDC
+      maxPoolUsdForDeposit: decimalToFloat(37_500_000), // 37.5M USD
+      maxOpenInterestForLongs: decimalToFloat(18_750_000), // 18.75M USD
+      maxOpenInterestForShorts: decimalToFloat(18_750_000), // 18.75M USD
     },
     // JPY — forex, reversed: true (price expressed as USD/JPY)
     {
       tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
       reversed: true,
       ...syntheticMarketConfig,
-      maxLongTokenPoolAmount: expandDecimals(500_000, 6), // 500K USDC (6 decimals)
-      maxShortTokenPoolAmount: expandDecimals(500_000, 6), // 500K USDC
-      maxPoolUsdForDeposit: decimalToFloat(500_000), // 500K USD
-      maxOpenInterestForLongs: decimalToFloat(250_000), // 250K USD
-      maxOpenInterestForShorts: decimalToFloat(250_000), // 250K USD
+      maxLongTokenPoolAmount: expandDecimals(25_000_000, 6), // 25M USDC (6 decimals)
+      maxShortTokenPoolAmount: expandDecimals(25_000_000, 6), // 25M USDC
+      maxPoolUsdForDeposit: decimalToFloat(25_000_000), // 25M USD
+      maxOpenInterestForLongs: decimalToFloat(12_500_000), // 12.5M USD
+      maxOpenInterestForShorts: decimalToFloat(12_500_000), // 12.5M USD
     },
-    // Crypto markets — use baseMarketConfig defaults + capacity limits (1M USDC pool, 500K OI)
+    // Crypto markets — use baseMarketConfig defaults + capacity limits (50M USDC pool, 25M OI)
     {
       tokens: { indexToken: "WBTC", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
-      maxLongTokenPoolAmount: expandDecimals(1_000_000, 6), // 1M USDC (6 decimals)
-      maxShortTokenPoolAmount: expandDecimals(1_000_000, 6), // 1M USDC
-      maxPoolUsdForDeposit: decimalToFloat(1_000_000), // 1M USD
-      maxOpenInterestForLongs: decimalToFloat(500_000), // 500K USD
-      maxOpenInterestForShorts: decimalToFloat(500_000), // 500K USD
+      maxLongTokenPoolAmount: expandDecimals(50_000_000, 6), // 50M USDC (6 decimals)
+      maxShortTokenPoolAmount: expandDecimals(50_000_000, 6), // 50M USDC
+      maxPoolUsdForDeposit: decimalToFloat(50_000_000), // 50M USD
+      maxOpenInterestForLongs: decimalToFloat(25_000_000), // 25M USD
+      maxOpenInterestForShorts: decimalToFloat(25_000_000), // 25M USD
     },
     {
       tokens: { indexToken: "WETH", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
-      maxLongTokenPoolAmount: expandDecimals(1_000_000, 6), // 1M USDC (6 decimals)
-      maxShortTokenPoolAmount: expandDecimals(1_000_000, 6), // 1M USDC
-      maxPoolUsdForDeposit: decimalToFloat(1_000_000), // 1M USD
-      maxOpenInterestForLongs: decimalToFloat(500_000), // 500K USD
-      maxOpenInterestForShorts: decimalToFloat(500_000), // 500K USD
+      maxLongTokenPoolAmount: expandDecimals(50_000_000, 6), // 50M USDC (6 decimals)
+      maxShortTokenPoolAmount: expandDecimals(50_000_000, 6), // 50M USDC
+      maxPoolUsdForDeposit: decimalToFloat(50_000_000), // 50M USD
+      maxOpenInterestForLongs: decimalToFloat(25_000_000), // 25M USD
+      maxOpenInterestForShorts: decimalToFloat(25_000_000), // 25M USD
     },
   ],
   hardhat: [
