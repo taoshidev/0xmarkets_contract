@@ -19,39 +19,18 @@ contract PythLazerFeedProvider is IOracleProvider {
     DataStore public immutable dataStore;
     PythLazer public immutable pythLazer;
 
-    mapping(address => OracleUtils.ValidatedPrice) public storedPrices;
-
     constructor(DataStore _dataStore, address pythLazerFeedVerifier) {
         dataStore = _dataStore;
         pythLazer = PythLazer(pythLazerFeedVerifier);
     }
 
+    // Accept ETH to cover Pyth verification fees
+    receive() external payable {}
+
     function getOraclePrice(
         address token,
-        bytes memory /* data */
-    ) external view returns (OracleUtils.ValidatedPrice memory) {
-        OracleUtils.ValidatedPrice memory storedPrice = storedPrices[token];
-
-        uint256 maxAge = dataStore.getUint(Keys.MAX_ORACLE_PRICE_AGE);
-        if (maxAge > 0 && Chain.currentTimestamp() - storedPrice.timestamp >= maxAge) {
-            revert Errors.MaxPriceAgeExceeded(storedPrice.timestamp, Chain.currentTimestamp());
-        }
-
-        return storedPrice;
-    }
-
-    function getStoredPrice(address token) external view returns (bool, OracleUtils.ValidatedPrice memory) {
-        OracleUtils.ValidatedPrice memory storedPrice = storedPrices[token];
-
-        bool ok = false;
-        if (storedPrice.timestamp > 0) {
-            ok = true;
-        }
-
-        return (ok, storedPrice);
-    }
-
-    function updatePrice(address token, bytes calldata rawUpdate) external payable {
+        bytes memory data
+    ) external returns (OracleUtils.ValidatedPrice memory) {
         uint32 feedId = uint32(dataStore.getUint(Keys.pythLazerFeedIdKey(token)));
         if (feedId == 0) revert Errors.EmptyPythLazerFeedId(token);
 
@@ -60,53 +39,56 @@ contract PythLazerFeedProvider is IOracleProvider {
 
         bool inverted = dataStore.getBool(Keys.pythLazerFeedInvertedKey(token));
 
-        (, PythLazerStructs.Update memory parsedUpdate) = pythLazer.verifyAndParseUpdate{
-            value: pythLazer.verification_fee()
-        }(rawUpdate);
-
-        if (parsedUpdate.timestamp < storedPrices[token].timestamp) {
-            revert Errors.StaleOraclePrice(token, parsedUpdate.timestamp, storedPrices[token].timestamp);
-        }
+        // Verify signature via verifyUpdate (v0.1.1 compatible), then parse locally
+        uint256 fee = pythLazer.verification_fee();
+        (bytes memory payload, ) = pythLazer.verifyUpdate{value: fee}(data);
+        PythLazerStructs.Update memory parsedUpdate = PythLazerLib.parseUpdateFromPayload(payload);
 
         for (uint256 i = 0; i < parsedUpdate.feeds.length; i++) {
-            PythLazerStructs.Feed memory feed = parsedUpdate.feeds[i];
-
-            if (feed.feedId == feedId) {
-                int64 askPrice = PythLazerLib.getBestAskPrice(feed);
-                if (askPrice < 0) revert Errors.InvalidFeedPrice(token, int256(askPrice));
-
-                int64 bidPrice = PythLazerLib.getBestBidPrice(feed);
-                if (bidPrice < 0) revert Errors.InvalidFeedPrice(token, int256(bidPrice));
-
-                uint256 minPrice = Precision.mulDiv(
-                    uint256(uint64(bidPrice)),
-                    feedMultiplier,
-                    Precision.FLOAT_PRECISION
-                );
-                uint256 maxPrice = Precision.mulDiv(
-                    uint256(uint64(askPrice)),
-                    feedMultiplier,
-                    Precision.FLOAT_PRECISION
-                );
-
-                if (inverted) {
-                    uint256 temp = minPrice;
-                    minPrice = Precision.mulDiv(Precision.FLOAT_PRECISION, Precision.FLOAT_PRECISION, maxPrice);
-                    maxPrice = Precision.mulDiv(Precision.FLOAT_PRECISION, Precision.FLOAT_PRECISION, temp);
-                }
-
-                storedPrices[token] = OracleUtils.ValidatedPrice({
-                    token: token,
-                    min: minPrice,
-                    max: maxPrice,
-                    timestamp: parsedUpdate.timestamp,
-                    provider: address(this)
-                });
-
-                return;
+            if (parsedUpdate.feeds[i].feedId == feedId) {
+                return _buildPrice(token, parsedUpdate.feeds[i], feedMultiplier, inverted, parsedUpdate.timestamp);
             }
         }
 
         revert Errors.EmptyPythLazerFeedData(token);
+    }
+
+    function _buildPrice(
+        address token,
+        PythLazerStructs.Feed memory feed,
+        uint256 feedMultiplier,
+        bool inverted,
+        uint64 timestamp
+    ) internal view returns (OracleUtils.ValidatedPrice memory) {
+        int64 askPrice = PythLazerLib.getBestAskPrice(feed);
+        if (askPrice < 0) revert Errors.InvalidFeedPrice(token, int256(askPrice));
+
+        int64 bidPrice = PythLazerLib.getBestBidPrice(feed);
+        if (bidPrice < 0) revert Errors.InvalidFeedPrice(token, int256(bidPrice));
+
+        uint256 minPrice = Precision.mulDiv(
+            uint256(uint64(bidPrice)),
+            feedMultiplier,
+            Precision.FLOAT_PRECISION
+        );
+        uint256 maxPrice = Precision.mulDiv(
+            uint256(uint64(askPrice)),
+            feedMultiplier,
+            Precision.FLOAT_PRECISION
+        );
+
+        if (inverted) {
+            uint256 temp = minPrice;
+            minPrice = Precision.mulDiv(Precision.FLOAT_PRECISION, Precision.FLOAT_PRECISION, maxPrice);
+            maxPrice = Precision.mulDiv(Precision.FLOAT_PRECISION, Precision.FLOAT_PRECISION, temp);
+        }
+
+        return OracleUtils.ValidatedPrice({
+            token: token,
+            min: minPrice,
+            max: maxPrice,
+            timestamp: timestamp / 1000000,
+            provider: address(this)
+        });
     }
 }
