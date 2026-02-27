@@ -48,8 +48,16 @@ contract OrderHandler is IOrderHandler, BaseOrderHandler {
             Market.Props memory market = MarketUtils.getEnabledMarket(dataStore, params.addresses.market);
 
             if (market.reversed) {
-                params.numbers.triggerPrice = Precision.mulDiv(Precision.FLOAT_PRECISION, Precision.FLOAT_PRECISION, params.numbers.triggerPrice);
-                params.numbers.acceptablePrice = Precision.mulDiv(Precision.FLOAT_PRECISION, Precision.FLOAT_PRECISION, params.numbers.acceptablePrice);
+                if (params.numbers.triggerPrice != 0) {
+                    params.numbers.triggerPrice = Precision.mulDiv(
+                        Precision.FLOAT_PRECISION, Precision.FLOAT_PRECISION, params.numbers.triggerPrice
+                    );
+                }
+                if (params.numbers.acceptablePrice != 0) {
+                    params.numbers.acceptablePrice = Precision.mulDiv(
+                        Precision.FLOAT_PRECISION, Precision.FLOAT_PRECISION, params.numbers.acceptablePrice
+                    );
+                }
                 params.isLong = !params.isLong;
             }
         }
