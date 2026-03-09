@@ -14,6 +14,7 @@ export type BaseMarketConfig = {
   openInterestReserveFactorShorts?: BigNumberish;
 
   minCollateralFactor: BigNumberish;
+  minMaintainCollateralFactor?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplier?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplierLong?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplierShort?: BigNumberish;
@@ -252,6 +253,7 @@ const borrowingRateConfig_HighMax_WithHigherBase: BorrowingRateConfig = {
 
 const baseMarketConfig: Partial<BaseMarketConfig> = {
   minCollateralFactor: percentageToFloat("1%"), // 1%
+  minMaintainCollateralFactor: percentageToFloat("1%"), // 1%
 
   minCollateralFactorForOpenInterestMultiplier: 0,
 
@@ -268,8 +270,8 @@ const baseMarketConfig: Partial<BaseMarketConfig> = {
   positionFeeFactorForPositiveImpact: percentageToFloat("0.04%"),
   positionFeeFactorForNegativeImpact: percentageToFloat("0.06%"),
 
-  negativePositionImpactFactor: percentageToFloat("0.00001%"),
-  positivePositionImpactFactor: percentageToFloat("0.000005%"),
+  negativePositionImpactFactor: bigNumberify(0),
+  positivePositionImpactFactor: bigNumberify(0),
   positionImpactExponentFactor: exponentToFloat("2e0"), // 2
 
   negativeMaxPositionImpactFactor: percentageToFloat("0.5%"),
@@ -281,8 +283,8 @@ const baseMarketConfig: Partial<BaseMarketConfig> = {
   atomicSwapFeeFactor: percentageToFloat("0.5%"),
   atomicWithdrawalFeeFactor: percentageToFloat("0.5%"),
 
-  negativeSwapImpactFactor: percentageToFloat("0.001%"),
-  positiveSwapImpactFactor: percentageToFloat("0.0005%"),
+  negativeSwapImpactFactor: bigNumberify(0),
+  positiveSwapImpactFactor: bigNumberify(0),
   swapImpactExponentFactor: exponentToFloat("2e0"), // 2
 
   minCollateralUsd: decimalToFloat(1, 0), // 1 USD
@@ -380,6 +382,7 @@ const hardhatBaseMarketConfig: Partial<BaseMarketConfig> = {
   openInterestReserveFactor: decimalToFloat(5, 1), // 50%,
 
   minCollateralFactor: percentageToFloat("1%"), // 1%
+  minMaintainCollateralFactor: percentageToFloat("1%"), // 1%
   minCollateralFactorForOpenInterestMultiplier: 0,
 
   maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 18),
@@ -422,6 +425,10 @@ const config: {
     {
       tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
       reversed: true,
+    },
+    {
+      tokens: { indexToken: "WTI", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
     },
     {
       tokens: { indexToken: "WBTC", longToken: "USDC", shortToken: "USDC" },
@@ -476,6 +483,17 @@ const config: {
       maxOpenInterestForLongs: decimalToFloat(12_500_000), // 12.5M USD
       maxOpenInterestForShorts: decimalToFloat(12_500_000), // 12.5M USD
     },
+    // WTI/USD [USDC-USDC] — commodity market
+    {
+      tokens: { indexToken: "WTI", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+      ...syntheticMarketConfig,
+      maxLongTokenPoolAmount: expandDecimals(37_500_000, 6), // 37.5M USDC (6 decimals)
+      maxShortTokenPoolAmount: expandDecimals(37_500_000, 6), // 37.5M USDC
+      maxPoolUsdForDeposit: decimalToFloat(37_500_000), // 37.5M USD
+      maxOpenInterestForLongs: decimalToFloat(18_750_000), // 18.75M USD
+      maxOpenInterestForShorts: decimalToFloat(18_750_000), // 18.75M USD
+    },
     // Crypto markets — use baseMarketConfig defaults + capacity limits (50M USDC pool, 25M OI)
     {
       tokens: { indexToken: "WBTC", longToken: "USDC", shortToken: "USDC" },
@@ -512,6 +530,10 @@ const config: {
     {
       tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
       reversed: true,
+    },
+    {
+      tokens: { indexToken: "WTI", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
     },
     {
       tokens: { indexToken: "WBTC", longToken: "USDC", shortToken: "USDC" },
@@ -564,6 +586,10 @@ const config: {
     {
       tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
       reversed: true,
+    },
+    {
+      tokens: { indexToken: "WTI", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
     },
     {
       tokens: { indexToken: "WBTC", longToken: "USDC", shortToken: "USDC" },
