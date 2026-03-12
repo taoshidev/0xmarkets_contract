@@ -14,6 +14,7 @@ export type BaseMarketConfig = {
   openInterestReserveFactorShorts?: BigNumberish;
 
   minCollateralFactor: BigNumberish;
+  minMaintainCollateralFactor?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplier?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplierLong?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplierShort?: BigNumberish;
@@ -252,6 +253,7 @@ const borrowingRateConfig_HighMax_WithHigherBase: BorrowingRateConfig = {
 
 const baseMarketConfig: Partial<BaseMarketConfig> = {
   minCollateralFactor: percentageToFloat("1%"), // 1%
+  minMaintainCollateralFactor: percentageToFloat("0.5%"), // 0.5% (liquidation threshold)
 
   minCollateralFactorForOpenInterestMultiplier: 0,
 
