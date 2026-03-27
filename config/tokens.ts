@@ -112,12 +112,29 @@ const config: {
       pythLazerFeedDecimals: 3,
       isAsset: true,
     },
+    XAG: {
+      decimals: 6,
+      pythLazerFeedId: 345, // XAGUSD
+      pythLazerFeedDecimals: 5,
+      isAsset: true,
+    },
     JPY: {
       decimals: 6,
       pythLazerFeedId: 340,
       pythLazerFeedDecimals: 3,
-      pythLazerFeedInverted: true,
       isAsset: true,
+    },
+    WTI: {
+      decimals: 6,
+      pythLazerFeedId: 657, // USOILSPOT
+      pythLazerFeedDecimals: 3,
+      isAsset: true,
+    },
+    TAO: {
+      decimals: 18,
+      pythLazerFeedId: 36, // TAOUSD
+      pythLazerFeedDecimals: 8,
+      isSynthetic: true,
     },
     USDC: {
       address: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
@@ -161,18 +178,35 @@ const config: {
       pythLazerFeedDecimals: 3,
       isAsset: true,
     },
+    XAG: {
+      decimals: 6,
+      pythLazerFeedId: 345, // XAGUSD
+      pythLazerFeedDecimals: 5,
+      isAsset: true,
+    },
     JPY: {
       decimals: 6,
       pythLazerFeedId: 340,
       pythLazerFeedDecimals: 3,
-      pythLazerFeedInverted: true,
       isAsset: true,
     },
-    USDC: {
-      address: "0xFDDFE40Ade3eE9aDE4A2e185C750cf28025BFd6b", // Mock USDC
+    WTI: {
+      decimals: 6,
+      pythLazerFeedId: 657, // USOILSPOT
+      pythLazerFeedDecimals: 3,
+      isAsset: true,
+    },
+    TAO: {
+      decimals: 18,
+      pythLazerFeedId: 36, // TAOUSD
+      pythLazerFeedDecimals: 8,
+      isSynthetic: true,
+    },
+    USD0: {
+      address: "0x3ae4474579d24a743c9016f017e76185a834d837", // USD0 stablecoin
       decimals: 6,
       transferGasLimit: 200 * 1000,
-      pythLazerFeedId: 7,
+      pythLazerFeedId: 7, // Uses USDC/USD feed (1:1 peg)
       pythLazerFeedDecimals: 8,
     },
     WBTC: {
@@ -215,9 +249,21 @@ const config: {
       decimals: 6,
       isAsset: true,
     },
+    XAG: {
+      decimals: 6,
+      isAsset: true,
+    },
     JPY: {
       decimals: 6,
       isAsset: true,
+    },
+    WTI: {
+      decimals: 6,
+      isAsset: true,
+    },
+    TAO: {
+      decimals: 18,
+      isSynthetic: true,
     },
     SOL: {
       decimals: 18,
@@ -282,9 +328,21 @@ const config: {
       decimals: 6,
       isAsset: true,
     },
+    XAG: {
+      decimals: 6,
+      isAsset: true,
+    },
     JPY: {
       decimals: 6,
       isAsset: true,
+    },
+    WTI: {
+      decimals: 6,
+      isAsset: true,
+    },
+    TAO: {
+      decimals: 18,
+      isSynthetic: true,
     },
     USDC: {
       decimals: 6,

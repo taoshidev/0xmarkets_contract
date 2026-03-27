@@ -1,7 +1,7 @@
 import { BigNumberish } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
-import { SECONDS_PER_HOUR, SECONDS_PER_YEAR } from "../utils/constants";
+import { SECONDS_PER_DAY, SECONDS_PER_HOUR, SECONDS_PER_YEAR } from "../utils/constants";
 import { bigNumberify, decimalToFloat, expandDecimals, exponentToFloat, percentageToFloat } from "../utils/math";
 
 export type BaseMarketConfig = {
@@ -270,9 +270,9 @@ const baseMarketConfig: Partial<BaseMarketConfig> = {
   positionFeeFactorForPositiveImpact: percentageToFloat("0.04%"),
   positionFeeFactorForNegativeImpact: percentageToFloat("0.06%"),
 
-  negativePositionImpactFactor: bigNumberify(0),
-  positivePositionImpactFactor: bigNumberify(0),
-  positionImpactExponentFactor: exponentToFloat("2e0"), // 2
+  negativePositionImpactFactor: exponentToFloat("1e-7"),
+  positivePositionImpactFactor: exponentToFloat("8e-8"),
+  positionImpactExponentFactor: exponentToFloat("1.45e0"),
 
   negativeMaxPositionImpactFactor: percentageToFloat("0.5%"),
   positiveMaxPositionImpactFactor: percentageToFloat("0.5%"),
@@ -289,17 +289,16 @@ const baseMarketConfig: Partial<BaseMarketConfig> = {
 
   minCollateralUsd: decimalToFloat(1, 0), // 1 USD
 
-  // factor in open interest reserve factor 80%
-  borrowingFactor: decimalToFloat(625, 11), // 0.00000000625 * 80% = 0.000000005, 0.0000005% / second, 15.77% per year if the pool is 100% utilized
+  borrowingFactor: exponentToFloat("3.6e-8").div(SECONDS_PER_DAY), // 0.000000036 / 86400 per second
 
   optimalUsageFactor: 0,
   baseBorrowingFactor: 0,
-  aboveOptimalUsageBorrowingFactor: 0,
+  aboveOptimalUsageBorrowingFactor: decimalToFloat(3), // 3.0 (kink model disabled with optimalUsageFactor=0)
 
-  borrowingExponentFactor: decimalToFloat(1),
+  borrowingExponentFactor: exponentToFloat("1.52e0"),
 
-  fundingFactor: exponentToFloat("2e-8"), // ~63% per year for a 100% skew
-  fundingExponentFactor: decimalToFloat(1),
+  fundingFactor: exponentToFloat("4.32e-7").div(SECONDS_PER_DAY), // 0.000000432 / 86400 per second
+  fundingExponentFactor: exponentToFloat("1.48e0"),
 
   minFundingFactorPerSecond: percentageToFloat("1%").div(SECONDS_PER_YEAR),
   maxFundingFactorPerSecond: percentageToFloat("90%").div(SECONDS_PER_YEAR), // ~0.246% per day
@@ -312,7 +311,7 @@ const baseMarketConfig: Partial<BaseMarketConfig> = {
   positionImpactPoolDistributionRate: bigNumberify(0),
   minPositionImpactPoolAmount: 0,
 
-  liquidationFeeFactor: percentageToFloat("0.20%"),
+  liquidationFeeFactor: percentageToFloat("0.50%"),
 };
 
 const singleTokenMarketConfig: Partial<BaseMarketConfig> = {
@@ -349,8 +348,6 @@ const syntheticMarketConfig: Partial<BaseMarketConfig> = {
 
   maxPnlFactorForDeposits: percentageToFloat("60%"),
   maxPnlFactorForWithdrawals: percentageToFloat("45%"),
-
-  liquidationFeeFactor: percentageToFloat("0.30%"),
 };
 
 const synthethicMarketConfig_IncreasedCapacity: Partial<BaseMarketConfig> = {
@@ -365,6 +362,28 @@ const synthethicMarketConfig_IncreasedCapacity: Partial<BaseMarketConfig> = {
 
   maxPnlFactorForDeposits: percentageToFloat("70%"),
   maxPnlFactorForWithdrawals: percentageToFloat("55%"),
+};
+
+// Asset-class-specific overrides (position fees + collateral factors for leverage limits)
+const fxMarketOverrides: Partial<BaseMarketConfig> = {
+  positionFeeFactorForPositiveImpact: percentageToFloat("0.01%"),
+  positionFeeFactorForNegativeImpact: percentageToFloat("0.015%"),
+  minCollateralFactor: percentageToFloat("0.1333%"), // 500x max leverage
+  minMaintainCollateralFactor: percentageToFloat("0.1333%"),
+};
+
+const commodityMarketOverrides: Partial<BaseMarketConfig> = {
+  positionFeeFactorForPositiveImpact: percentageToFloat("0.005%"),
+  positionFeeFactorForNegativeImpact: percentageToFloat("0.01%"),
+  minCollateralFactor: percentageToFloat("0.3333%"), // 200x max leverage
+  minMaintainCollateralFactor: percentageToFloat("0.3333%"),
+};
+
+const cryptoMarketOverrides: Partial<BaseMarketConfig> = {
+  positionFeeFactorForPositiveImpact: percentageToFloat("0.02%"),
+  positionFeeFactorForNegativeImpact: percentageToFloat("0.025%"),
+  minCollateralFactor: percentageToFloat("0.6666%"), // 100x max leverage
+  minMaintainCollateralFactor: percentageToFloat("0.6666%"),
 };
 
 const stablecoinSwapMarketConfig: Partial<SpotMarketConfig> = {
@@ -423,8 +442,12 @@ const config: {
       reversed: false,
     },
     {
+      tokens: { indexToken: "XAG", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
       tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
-      reversed: true,
+      reversed: false,
     },
     {
       tokens: { indexToken: "WTI", longToken: "USDC", shortToken: "USDC" },
@@ -436,82 +459,119 @@ const config: {
     },
     {
       tokens: { indexToken: "WETH", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "TAO", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
     },
   ],
   baseSepolia: [
-    // Forex markets — use syntheticMarketConfig + capacity limits (25M USDC pool, 12.5M OI)
+    // Forex markets — syntheticMarketConfig + FX fees + 100M USD0 pool, 50M OI
     {
-      tokens: { indexToken: "EUR", longToken: "USDC", shortToken: "USDC" },
+      tokens: { indexToken: "EUR", longToken: "USD0", shortToken: "USD0" },
       reversed: false,
       ...syntheticMarketConfig,
-      maxLongTokenPoolAmount: expandDecimals(25_000_000, 6), // 25M USDC (6 decimals)
-      maxShortTokenPoolAmount: expandDecimals(25_000_000, 6), // 25M USDC
-      maxPoolUsdForDeposit: decimalToFloat(25_000_000), // 25M USD
-      maxOpenInterestForLongs: decimalToFloat(12_500_000), // 12.5M USD
-      maxOpenInterestForShorts: decimalToFloat(12_500_000), // 12.5M USD
+      ...fxMarketOverrides,
+      maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxShortTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxPoolUsdForDeposit: decimalToFloat(1_000_000_000), // 1B USD
+      maxOpenInterestForLongs: decimalToFloat(50_000_000),
+      maxOpenInterestForShorts: decimalToFloat(50_000_000),
     },
     {
-      tokens: { indexToken: "GBP", longToken: "USDC", shortToken: "USDC" },
+      tokens: { indexToken: "GBP", longToken: "USD0", shortToken: "USD0" },
       reversed: false,
       ...syntheticMarketConfig,
-      maxLongTokenPoolAmount: expandDecimals(25_000_000, 6), // 25M USDC (6 decimals)
-      maxShortTokenPoolAmount: expandDecimals(25_000_000, 6), // 25M USDC
-      maxPoolUsdForDeposit: decimalToFloat(25_000_000), // 25M USD
-      maxOpenInterestForLongs: decimalToFloat(12_500_000), // 12.5M USD
-      maxOpenInterestForShorts: decimalToFloat(12_500_000), // 12.5M USD
+      ...fxMarketOverrides,
+      maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxShortTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxPoolUsdForDeposit: decimalToFloat(1_000_000_000), // 1B USD
+      maxOpenInterestForLongs: decimalToFloat(50_000_000),
+      maxOpenInterestForShorts: decimalToFloat(50_000_000),
     },
-    // Commodity market — use syntheticMarketConfig + slightly higher limits (37.5M USDC pool, 18.75M OI)
+    // Commodity markets — syntheticMarketConfig + commodity fees + 100M USD0 pool, 50M OI
     {
-      tokens: { indexToken: "GOLD", longToken: "USDC", shortToken: "USDC" },
+      tokens: { indexToken: "GOLD", longToken: "USD0", shortToken: "USD0" },
       reversed: false,
       ...syntheticMarketConfig,
-      maxLongTokenPoolAmount: expandDecimals(37_500_000, 6), // 37.5M USDC (6 decimals)
-      maxShortTokenPoolAmount: expandDecimals(37_500_000, 6), // 37.5M USDC
-      maxPoolUsdForDeposit: decimalToFloat(37_500_000), // 37.5M USD
-      maxOpenInterestForLongs: decimalToFloat(18_750_000), // 18.75M USD
-      maxOpenInterestForShorts: decimalToFloat(18_750_000), // 18.75M USD
+      ...commodityMarketOverrides,
+      maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxShortTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxPoolUsdForDeposit: decimalToFloat(1_000_000_000), // 1B USD
+      maxOpenInterestForLongs: decimalToFloat(50_000_000),
+      maxOpenInterestForShorts: decimalToFloat(50_000_000),
     },
-    // JPY — forex, reversed: true (price expressed as USD/JPY)
+    // XAG/USD [USD0-USD0] — commodity market
     {
-      tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
-      reversed: true,
-      ...syntheticMarketConfig,
-      maxLongTokenPoolAmount: expandDecimals(25_000_000, 6), // 25M USDC (6 decimals)
-      maxShortTokenPoolAmount: expandDecimals(25_000_000, 6), // 25M USDC
-      maxPoolUsdForDeposit: decimalToFloat(25_000_000), // 25M USD
-      maxOpenInterestForLongs: decimalToFloat(12_500_000), // 12.5M USD
-      maxOpenInterestForShorts: decimalToFloat(12_500_000), // 12.5M USD
-    },
-    // WTI/USD [USDC-USDC] — commodity market
-    {
-      tokens: { indexToken: "WTI", longToken: "USDC", shortToken: "USDC" },
+      tokens: { indexToken: "XAG", longToken: "USD0", shortToken: "USD0" },
       reversed: false,
       ...syntheticMarketConfig,
-      maxLongTokenPoolAmount: expandDecimals(37_500_000, 6), // 37.5M USDC (6 decimals)
-      maxShortTokenPoolAmount: expandDecimals(37_500_000, 6), // 37.5M USDC
-      maxPoolUsdForDeposit: decimalToFloat(37_500_000), // 37.5M USD
-      maxOpenInterestForLongs: decimalToFloat(18_750_000), // 18.75M USD
-      maxOpenInterestForShorts: decimalToFloat(18_750_000), // 18.75M USD
+      ...commodityMarketOverrides,
+      maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxShortTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxPoolUsdForDeposit: decimalToFloat(1_000_000_000), // 1B USD
+      maxOpenInterestForLongs: decimalToFloat(50_000_000),
+      maxOpenInterestForShorts: decimalToFloat(50_000_000),
     },
-    // Crypto markets — use baseMarketConfig defaults + capacity limits (50M USDC pool, 25M OI)
+    // USD/JPY — forex (Pyth feed natively provides USD/JPY)
     {
-      tokens: { indexToken: "WBTC", longToken: "USDC", shortToken: "USDC" },
+      tokens: { indexToken: "JPY", longToken: "USD0", shortToken: "USD0" },
       reversed: false,
-      maxLongTokenPoolAmount: expandDecimals(50_000_000, 6), // 50M USDC (6 decimals)
-      maxShortTokenPoolAmount: expandDecimals(50_000_000, 6), // 50M USDC
-      maxPoolUsdForDeposit: decimalToFloat(50_000_000), // 50M USD
-      maxOpenInterestForLongs: decimalToFloat(25_000_000), // 25M USD
-      maxOpenInterestForShorts: decimalToFloat(25_000_000), // 25M USD
+      ...syntheticMarketConfig,
+      ...fxMarketOverrides,
+      maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxShortTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxPoolUsdForDeposit: decimalToFloat(1_000_000_000), // 1B USD
+      maxOpenInterestForLongs: decimalToFloat(50_000_000),
+      maxOpenInterestForShorts: decimalToFloat(50_000_000),
+    },
+    // WTI/USD [USD0-USD0] — commodity market
+    {
+      tokens: { indexToken: "WTI", longToken: "USD0", shortToken: "USD0" },
+      reversed: false,
+      ...syntheticMarketConfig,
+      ...commodityMarketOverrides,
+      maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxShortTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxPoolUsdForDeposit: decimalToFloat(1_000_000_000), // 1B USD
+      maxOpenInterestForLongs: decimalToFloat(50_000_000),
+      maxOpenInterestForShorts: decimalToFloat(50_000_000),
+    },
+    // Crypto markets — syntheticMarketConfig + crypto fees + 100M USD0 pool, 50M OI
+    {
+      tokens: { indexToken: "WBTC", longToken: "USD0", shortToken: "USD0" },
+      reversed: false,
+      ...syntheticMarketConfig,
+      ...cryptoMarketOverrides,
+      maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxShortTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxPoolUsdForDeposit: decimalToFloat(1_000_000_000), // 1B USD
+      maxOpenInterestForLongs: decimalToFloat(50_000_000),
+      maxOpenInterestForShorts: decimalToFloat(50_000_000),
     },
     {
-      tokens: { indexToken: "WETH", longToken: "USDC", shortToken: "USDC" },
+      tokens: { indexToken: "WETH", longToken: "USD0", shortToken: "USD0" },
       reversed: false,
-      maxLongTokenPoolAmount: expandDecimals(50_000_000, 6), // 50M USDC (6 decimals)
-      maxShortTokenPoolAmount: expandDecimals(50_000_000, 6), // 50M USDC
-      maxPoolUsdForDeposit: decimalToFloat(50_000_000), // 50M USD
-      maxOpenInterestForLongs: decimalToFloat(25_000_000), // 25M USD
-      maxOpenInterestForShorts: decimalToFloat(25_000_000), // 25M USD
+      ...syntheticMarketConfig,
+      ...cryptoMarketOverrides,
+      maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxShortTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxPoolUsdForDeposit: decimalToFloat(1_000_000_000), // 1B USD
+      maxOpenInterestForLongs: decimalToFloat(50_000_000),
+      maxOpenInterestForShorts: decimalToFloat(50_000_000),
+    },
+    // TAO/USD [USD0-USD0] — crypto market
+    {
+      tokens: { indexToken: "TAO", longToken: "USD0", shortToken: "USD0" },
+      reversed: false,
+      ...syntheticMarketConfig,
+      ...cryptoMarketOverrides,
+      maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxShortTokenPoolAmount: expandDecimals(1_000_000_000, 6), // 1B USD0
+      maxPoolUsdForDeposit: decimalToFloat(1_000_000_000), // 1B USD
+      maxOpenInterestForLongs: decimalToFloat(50_000_000),
+      maxOpenInterestForShorts: decimalToFloat(50_000_000),
     },
   ],
   hardhat: [
@@ -528,8 +588,12 @@ const config: {
       reversed: false,
     },
     {
+      tokens: { indexToken: "XAG", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
       tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
-      reversed: true,
+      reversed: false,
     },
     {
       tokens: { indexToken: "WTI", longToken: "USDC", shortToken: "USDC" },
@@ -541,6 +605,10 @@ const config: {
     },
     {
       tokens: { indexToken: "WETH", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "TAO", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
     },
 
@@ -584,8 +652,12 @@ const config: {
       reversed: false,
     },
     {
+      tokens: { indexToken: "XAG", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
       tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
-      reversed: true,
+      reversed: false,
     },
     {
       tokens: { indexToken: "WTI", longToken: "USDC", shortToken: "USDC" },
@@ -597,6 +669,10 @@ const config: {
     },
     {
       tokens: { indexToken: "WETH", longToken: "USDC", shortToken: "USDC" },
+      reversed: false,
+    },
+    {
+      tokens: { indexToken: "TAO", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
     },
   ],
