@@ -11,7 +11,7 @@ const func = createDeployFunction({
   getDeployArgs: async ({ dependencyContracts, get, gmx, network }) => {
     const oracleConfig = await gmx.getOracle();
     let pythLazerFeedVerifierAddress = oracleConfig.pythLazerFeedVerifier;
-    if (network.name === "hardhat") {
+    if (network.name === "hardhat" || network.name === "localhost") {
       const pythLazerFeedVerifier = await get("MockPythLazer");
       pythLazerFeedVerifierAddress = pythLazerFeedVerifier.address;
     }

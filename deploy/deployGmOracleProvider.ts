@@ -20,4 +20,6 @@ const func = createDeployFunction({
   id: "GmOracleProvider_2",
 });
 
+func.skip = async ({ network }: any) => network.name === "localhost";
+
 export default func;

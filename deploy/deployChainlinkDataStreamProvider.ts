@@ -11,7 +11,7 @@ const func = createDeployFunction({
   getDeployArgs: async ({ dependencyContracts, gmx, network, get }) => {
     const oracleConfig = await gmx.getOracle();
     let dataStreamFeedVerifierAddress = oracleConfig.dataStreamFeedVerifier;
-    if (network.name === "hardhat") {
+    if (network.name === "hardhat" || network.name === "localhost") {
       const dataStreamFeedVerifier = await get("MockDataStreamVerifier");
       dataStreamFeedVerifierAddress = dataStreamFeedVerifier.address;
     }
@@ -35,7 +35,7 @@ const func = createDeployFunction({
 func.dependencies = func.dependencies.concat(["MockDataStreamVerifier"]);
 
 func.skip = async ({ network }: HardhatRuntimeEnvironment) => {
-  return network.name === "base" || network.name === "baseSepolia";
+  return network.name === "base" || network.name === "baseSepolia" || network.name === "localhost";
 };
 
 export default func;

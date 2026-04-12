@@ -552,28 +552,18 @@ const config: {
   ],
   localhost: [
     {
-      tokens: { indexToken: "EUR", longToken: "USDC", shortToken: "USDC" },
-      reversed: false,
-    },
-    {
-      tokens: { indexToken: "GBP", longToken: "USDC", shortToken: "USDC" },
-      reversed: false,
-    },
-    {
-      tokens: { indexToken: "GOLD", longToken: "USDC", shortToken: "USDC" },
-      reversed: false,
-    },
-    {
-      tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
-      reversed: true,
-    },
-    {
-      tokens: { indexToken: "WBTC", longToken: "USDC", shortToken: "USDC" },
-      reversed: false,
-    },
-    {
       tokens: { indexToken: "WETH", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
+      maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 6),
+      maxShortTokenPoolAmount: expandDecimals(1_000_000_000, 6),
+      maxLongTokenPoolUsdForDeposit: decimalToFloat(1_000_000_000),
+      maxShortTokenPoolUsdForDeposit: decimalToFloat(1_000_000_000),
+      maxOpenInterest: decimalToFloat(1_000_000_000),
+      maxPnlFactorForTraders: decimalToFloat(5, 1),
+      maxPnlFactorForAdl: decimalToFloat(45, 2),
+      minPnlFactorAfterAdl: decimalToFloat(4, 1),
+      maxPnlFactorForDeposits: decimalToFloat(6, 1),
+      maxPnlFactorForWithdrawals: decimalToFloat(3, 1),
     },
   ],
 };

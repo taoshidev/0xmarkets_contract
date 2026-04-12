@@ -33,4 +33,6 @@ const func = async ({ deployments, getNamedAccounts }: HardhatRuntimeEnvironment
 func.tags = ["Assets"];
 func.dependencies = ["DataStore", "RoleStore"];
 
+func.skip = async ({ network }: any) => network.name === "localhost";
+
 export default func;

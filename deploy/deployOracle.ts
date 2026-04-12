@@ -46,6 +46,6 @@ const func = createDeployFunction({
   id: "Oracle_5",
 });
 
-func.dependencies = func.dependencies.concat(["Tokens", "MockDataStreamVerifier", "ChainlinkPriceFeedProvider"]);
+func.dependencies = func.dependencies.concat(["Tokens", "ChainlinkPriceFeedProvider"]);
 
 export default func;

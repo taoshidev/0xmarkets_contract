@@ -16,4 +16,6 @@ const func = createDeployFunction({
   },
 });
 
+func.skip = async ({ network }: any) => network.name === "localhost";
+
 export default func;
