@@ -19,4 +19,6 @@ const func = async ({ getNamedAccounts }) => {
 func.dependencies = ["GovTimelockController", "ProtocolGovernor"];
 func.tags = ["ConfigureGovTimelockController"];
 
+func.skip = async ({ network }: any) => network.name === "localhost";
+
 export default func;

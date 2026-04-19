@@ -151,8 +151,8 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
       estimatedGasPerOraclePrice: false,
       executionGasFeeBaseAmount: false,
       executionGasPerOraclePrice: false,
-      feeReceiver: "REPLACE_ME",
-      holdingAddress: "REPLACE_ME",
+      feeReceiver: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      holdingAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     },
   }[network.name];
 

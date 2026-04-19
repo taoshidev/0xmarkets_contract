@@ -16,4 +16,6 @@ const func = createDeployFunction({
   id: "GlvFactory_2",
 });
 
+func.skip = async ({ network }: any) => network.name === "localhost";
+
 export default func;

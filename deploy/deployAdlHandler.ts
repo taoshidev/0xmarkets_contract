@@ -31,8 +31,10 @@ const func = createDeployFunction({
   },
 });
 
-func.skip = async () => {
-  return process.env.SKIP_HANDLER_DEPLOYMENTS ? true : false;
+func.skip = async (hre: any) => {
+  if (process.env.SKIP_HANDLER_DEPLOYMENTS) return true;
+  if (hre.network.name === "localhost") return true;
+  return false;
 };
 
 export default func;

@@ -8,11 +8,13 @@ const func = async ({ gmx, deployments, network }: HardhatRuntimeEnvironment) =>
   const { get } = deployments;
 
   const defaultOracleProvider = network.name === "hardhat" ? "gmOracle" : "pythLazerFeed";
-  const oracleProviders = {
-    gmOracle: (await get("GmOracleProvider")).address,
+  const oracleProviders: Record<string, string> = {
     pythLazerFeed: (await get("PythLazerFeedProvider")).address,
     pythHermesFeed: (await get("PythHermesFeedProvider")).address,
   };
+  if (network.name === "hardhat") {
+    oracleProviders.gmOracle = (await get("GmOracleProvider")).address;
+  }
 
   for (const tokenSymbol of Object.keys(tokens)) {
     const token = tokens[tokenSymbol];
