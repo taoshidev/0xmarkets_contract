@@ -109,7 +109,10 @@ describe("MarketUtils", () => {
       mmrTuning: percentageToFloat("0.5%"),
     };
 
-    it("returns max_mmr when collateralUsd is 0 (defensive)", async () => {
+    it("returns min_mmr when collateralUsd is 0 (transient fee-deduction state)", async () => {
+      // Zero collateral can occur mid-decrease when fees eat the entire position
+      // collateral but positive PnL still covers costs. Returning min_mmr allows
+      // validatePosition to pass when PnL covers the minimum buffer.
       const marketUtilsTest = await deployContract("MarketUtilsTest", []);
       await setMmrParams(ethUsdMarket.marketToken, cryptoCfg);
 
@@ -119,10 +122,10 @@ describe("MarketUtils", () => {
         decimalToFloat(1_000_000), // $1M size
         0
       );
-      expect(mmr).eq(cryptoCfg.maxMmr);
+      expect(mmr).eq(cryptoCfg.minMmr);
     });
 
-    it("returns max_mmr when max_leverage is 0 (defensive)", async () => {
+    it("returns max_mmr when max_leverage is 0 (misconfiguration defensive)", async () => {
       const marketUtilsTest = await deployContract("MarketUtilsTest", []);
       await setMmrParams(ethUsdMarket.marketToken, { ...cryptoCfg, maxLeverage: 0 });
 

@@ -266,8 +266,9 @@ const baseMarketConfig: Partial<BaseMarketConfig> = {
   // the trader can absorb ~50% of collateral loss before liquidation:
   //   mmr_tuning = 0.5 / maxLeverage
   // At low leverage, min_mmr floors the required buffer.
+  // min_leverage is opt-in (0 = no lower bound). Set it per-market to enforce.
   maxLeverage: decimalToFloat(50), // conservative default for markets without an asset-class override
-  minLeverage: decimalToFloat(1),
+  minLeverage: 0,
   minMmr: percentageToFloat("0.3%"),
   maxMmr: percentageToFloat("10%"),
   mmrTuning: percentageToFloat("1%"), // 0.5 / 50x
@@ -388,7 +389,7 @@ const fxMarketOverrides: Partial<BaseMarketConfig> = {
   minMaintainCollateralFactor: percentageToFloat("0.1333%"),
 
   maxLeverage: decimalToFloat(500),
-  minLeverage: decimalToFloat(1),
+  minLeverage: 0,
   minMmr: percentageToFloat("0.1%"),
   maxMmr: percentageToFloat("10%"),
   mmrTuning: percentageToFloat("0.1%"), // 0.5 / 500x
@@ -401,7 +402,7 @@ const commodityMarketOverrides: Partial<BaseMarketConfig> = {
   minMaintainCollateralFactor: percentageToFloat("0.3333%"),
 
   maxLeverage: decimalToFloat(200),
-  minLeverage: decimalToFloat(1),
+  minLeverage: 0,
   minMmr: percentageToFloat("0.2%"),
   maxMmr: percentageToFloat("10%"),
   mmrTuning: percentageToFloat("0.25%"), // 0.5 / 200x
@@ -414,7 +415,7 @@ const cryptoMarketOverrides: Partial<BaseMarketConfig> = {
   minMaintainCollateralFactor: percentageToFloat("0.6666%"),
 
   maxLeverage: decimalToFloat(100),
-  minLeverage: decimalToFloat(1),
+  minLeverage: 0,
   minMmr: percentageToFloat("0.3%"),
   maxMmr: percentageToFloat("10%"),
   mmrTuning: percentageToFloat("0.5%"), // 0.5 / 100x
@@ -437,12 +438,17 @@ const hardhatBaseMarketConfig: Partial<BaseMarketConfig> = {
   minCollateralFactor: percentageToFloat("1%"), // 1%
   minMaintainCollateralFactor: percentageToFloat("1%"), // 1%
 
-  // Dynamic MMR defaults for hardhat
-  maxLeverage: decimalToFloat(50),
-  minLeverage: decimalToFloat(1),
-  minMmr: percentageToFloat("0.5%"),
+  // Dynamic MMR defaults for hardhat — 100x cap + 1% min_mmr replicate the legacy
+  // `minMaintainCollateralFactor = 1%` flat MMR that existing tests were written against.
+  // Under the new formula, tuning 0.5% at max leverage is below the 1% floor, so MMR
+  // clamps to 1% across all leverages — effectively flat, matching old behavior.
+  // Prod markets (fx/commodity/crypto) use sub-floor tuning to expose the dynamic curve.
+  // min_leverage stays 0 (opt-in); tests that want the lower-bound gate set it per-market.
+  maxLeverage: decimalToFloat(100),
+  minLeverage: 0,
+  minMmr: percentageToFloat("1%"),
   maxMmr: percentageToFloat("10%"),
-  mmrTuning: percentageToFloat("1%"), // 0.5 / 50x
+  mmrTuning: percentageToFloat("0.5%"), // 0.5 / 100x
 
   minCollateralFactorForOpenInterestMultiplier: 0,
 

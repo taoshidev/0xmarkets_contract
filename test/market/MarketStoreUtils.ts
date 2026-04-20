@@ -58,7 +58,8 @@ describe("MarketStoreUtils", () => {
     });
 
     const initialItemCount = await getItemCount(dataStore);
-    const initialItemKeys = await getItemKeys(dataStore, 0, 12);
+    const initialCount = initialItemCount.toNumber();
+    const initialItemKeys = await getItemKeys(dataStore, 0, initialCount);
 
     await logGasUsage({
       tx: setItem(dataStore, itemKey, sampleItem),
@@ -77,7 +78,7 @@ describe("MarketStoreUtils", () => {
     });
 
     expect(await getItemCount(dataStore)).eq(initialItemCount.add(1));
-    expect(await getItemKeys(dataStore, 0, 13)).deep.equal(initialItemKeys.concat(itemKey));
+    expect(await getItemKeys(dataStore, 0, initialCount + 1)).deep.equal(initialItemKeys.concat(itemKey));
 
     await removeItem(dataStore, itemKey, sampleItem);
 
@@ -93,6 +94,6 @@ describe("MarketStoreUtils", () => {
     });
 
     expect(await getItemCount(dataStore)).eq(initialItemCount);
-    expect(await getItemKeys(dataStore, 0, 12)).deep.equal(initialItemKeys);
+    expect(await getItemKeys(dataStore, 0, initialCount)).deep.equal(initialItemKeys);
   });
 });

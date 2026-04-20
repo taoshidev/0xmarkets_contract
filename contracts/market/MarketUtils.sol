@@ -1954,10 +1954,18 @@ library MarketUtils {
         uint256 minMmr = getMinMmr(dataStore, market);
         uint256 maxMmr = getMaxMmr(dataStore, market);
 
-        // Defensive: a post-validation position cannot have zero collateral, but
-        // if one ever reaches here it is unambiguously liquidatable.
-        if (collateralUsd == 0 || maxLeverage == 0) {
+        // Defensive: if maxLeverage is misconfigured (0), fall back to the hard
+        // ceiling — the position cannot be validated under any sensible ratio.
+        if (maxLeverage == 0) {
             return maxMmr;
+        }
+
+        // Transient zero-collateral states occur during fee deduction inside a
+        // decrease flow (fees eat the entire collateral; PnL covers the rest).
+        // Returning `minMmr` here lets validatePosition pass when PnL can cover
+        // the minimum required buffer, and still fails otherwise.
+        if (collateralUsd == 0) {
+            return minMmr;
         }
 
         uint256 currLeverage = Precision.toFactor(sizeInUsd, collateralUsd);
