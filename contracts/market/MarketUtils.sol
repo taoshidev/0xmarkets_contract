@@ -1898,6 +1898,81 @@ library MarketUtils {
         return dataStore.getUint(Keys.minMaintainCollateralFactorKey(market));
     }
 
+    // @dev get the max leverage allowed for the market
+    // @param dataStore DataStore
+    // @param market the market to check
+    function getMaxLeverage(DataStore dataStore, address market) internal view returns (uint256) {
+        return dataStore.getUint(Keys.maxLeverageKey(market));
+    }
+
+    // @dev get the min leverage allowed for the market
+    // @param dataStore DataStore
+    // @param market the market to check
+    function getMinLeverage(DataStore dataStore, address market) internal view returns (uint256) {
+        return dataStore.getUint(Keys.minLeverageKey(market));
+    }
+
+    // @dev get the lower clamp of the dynamic MMR
+    // @param dataStore DataStore
+    // @param market the market to check
+    function getMinMmr(DataStore dataStore, address market) internal view returns (uint256) {
+        return dataStore.getUint(Keys.minMmrKey(market));
+    }
+
+    // @dev get the upper clamp of the dynamic MMR
+    // @param dataStore DataStore
+    // @param market the market to check
+    function getMaxMmr(DataStore dataStore, address market) internal view returns (uint256) {
+        return dataStore.getUint(Keys.maxMmrKey(market));
+    }
+
+    // @dev get the tuning multiplier applied to the leverage ratio in the dynamic MMR formula
+    // @param dataStore DataStore
+    // @param market the market to check
+    function getMmrTuning(DataStore dataStore, address market) internal view returns (uint256) {
+        return dataStore.getUint(Keys.mmrTuningKey(market));
+    }
+
+    // @dev compute the dynamic maintenance margin ratio (MMR) for a position
+    // MMR scales with the position's leverage at its last modification:
+    //   currLeverage = sizeInUsd / collateralUsd
+    //   rawMmr       = (currLeverage / maxLeverage) * mmrTuning
+    //   mmr          = clamp(rawMmr, minMmr, maxMmr)
+    // @param dataStore DataStore
+    // @param market the market address
+    // @param sizeInUsd the position's size in USD
+    // @param collateralUsd the position's collateral in USD as of its last modification
+    // @return the dynamic MMR as a factor
+    function getDynamicMmr(
+        DataStore dataStore,
+        address market,
+        uint256 sizeInUsd,
+        uint256 collateralUsd
+    ) internal view returns (uint256) {
+        uint256 maxLeverage = getMaxLeverage(dataStore, market);
+        uint256 mmrTuning = getMmrTuning(dataStore, market);
+        uint256 minMmr = getMinMmr(dataStore, market);
+        uint256 maxMmr = getMaxMmr(dataStore, market);
+
+        // Defensive: a post-validation position cannot have zero collateral, but
+        // if one ever reaches here it is unambiguously liquidatable.
+        if (collateralUsd == 0 || maxLeverage == 0) {
+            return maxMmr;
+        }
+
+        uint256 currLeverage = Precision.toFactor(sizeInUsd, collateralUsd);
+        uint256 leverageRatio = Precision.toFactor(currLeverage, maxLeverage);
+        uint256 rawMmr = Precision.applyFactor(leverageRatio, mmrTuning);
+
+        if (rawMmr < minMmr) {
+            return minMmr;
+        }
+        if (rawMmr > maxMmr) {
+            return maxMmr;
+        }
+        return rawMmr;
+    }
+
     // @dev get the min collateral factor for open interest multiplier
     // @param dataStore DataStore
     // @param market the market to check

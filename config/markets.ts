@@ -19,6 +19,13 @@ export type BaseMarketConfig = {
   minCollateralFactorForOpenInterestMultiplierLong?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplierShort?: BigNumberish;
 
+  // Dynamic MMR parameters. mmr = clamp((sizeInUsd/collateralUsd)/maxLeverage * mmrTuning, minMmr, maxMmr)
+  maxLeverage?: BigNumberish;
+  minLeverage?: BigNumberish;
+  minMmr?: BigNumberish;
+  maxMmr?: BigNumberish;
+  mmrTuning?: BigNumberish;
+
   maxLongTokenPoolAmount: BigNumberish;
   maxShortTokenPoolAmount: BigNumberish;
 
@@ -253,7 +260,17 @@ const borrowingRateConfig_HighMax_WithHigherBase: BorrowingRateConfig = {
 
 const baseMarketConfig: Partial<BaseMarketConfig> = {
   minCollateralFactor: percentageToFloat("1%"), // 1%
-  minMaintainCollateralFactor: percentageToFloat("0.5%"), // 0.5% (liquidation threshold)
+  minMaintainCollateralFactor: percentageToFloat("0.5%"), // 0.5% (liquidation threshold, legacy — superseded by dynamic MMR)
+
+  // Dynamic MMR defaults. Sized so that at currLeverage == maxLeverage,
+  // the trader can absorb ~50% of collateral loss before liquidation:
+  //   mmr_tuning = 0.5 / maxLeverage
+  // At low leverage, min_mmr floors the required buffer.
+  maxLeverage: decimalToFloat(50), // conservative default for markets without an asset-class override
+  minLeverage: decimalToFloat(1),
+  minMmr: percentageToFloat("0.3%"),
+  maxMmr: percentageToFloat("10%"),
+  mmrTuning: percentageToFloat("1%"), // 0.5 / 50x
 
   minCollateralFactorForOpenInterestMultiplier: 0,
 
@@ -364,12 +381,17 @@ const synthethicMarketConfig_IncreasedCapacity: Partial<BaseMarketConfig> = {
   maxPnlFactorForWithdrawals: percentageToFloat("55%"),
 };
 
-// Asset-class-specific overrides (position fees + collateral factors for leverage limits)
 const fxMarketOverrides: Partial<BaseMarketConfig> = {
   positionFeeFactorForPositiveImpact: percentageToFloat("0.01%"),
   positionFeeFactorForNegativeImpact: percentageToFloat("0.015%"),
   minCollateralFactor: percentageToFloat("0.1333%"), // 500x max leverage
   minMaintainCollateralFactor: percentageToFloat("0.1333%"),
+
+  maxLeverage: decimalToFloat(500),
+  minLeverage: decimalToFloat(1),
+  minMmr: percentageToFloat("0.1%"),
+  maxMmr: percentageToFloat("10%"),
+  mmrTuning: percentageToFloat("0.1%"), // 0.5 / 500x
 };
 
 const commodityMarketOverrides: Partial<BaseMarketConfig> = {
@@ -377,6 +399,12 @@ const commodityMarketOverrides: Partial<BaseMarketConfig> = {
   positionFeeFactorForNegativeImpact: percentageToFloat("0.01%"),
   minCollateralFactor: percentageToFloat("0.3333%"), // 200x max leverage
   minMaintainCollateralFactor: percentageToFloat("0.3333%"),
+
+  maxLeverage: decimalToFloat(200),
+  minLeverage: decimalToFloat(1),
+  minMmr: percentageToFloat("0.2%"),
+  maxMmr: percentageToFloat("10%"),
+  mmrTuning: percentageToFloat("0.25%"), // 0.5 / 200x
 };
 
 const cryptoMarketOverrides: Partial<BaseMarketConfig> = {
@@ -384,6 +412,12 @@ const cryptoMarketOverrides: Partial<BaseMarketConfig> = {
   positionFeeFactorForNegativeImpact: percentageToFloat("0.025%"),
   minCollateralFactor: percentageToFloat("0.6666%"), // 100x max leverage
   minMaintainCollateralFactor: percentageToFloat("0.6666%"),
+
+  maxLeverage: decimalToFloat(100),
+  minLeverage: decimalToFloat(1),
+  minMmr: percentageToFloat("0.3%"),
+  maxMmr: percentageToFloat("10%"),
+  mmrTuning: percentageToFloat("0.5%"), // 0.5 / 100x
 };
 
 const stablecoinSwapMarketConfig: Partial<SpotMarketConfig> = {
@@ -402,6 +436,14 @@ const hardhatBaseMarketConfig: Partial<BaseMarketConfig> = {
 
   minCollateralFactor: percentageToFloat("1%"), // 1%
   minMaintainCollateralFactor: percentageToFloat("1%"), // 1%
+
+  // Dynamic MMR defaults for hardhat
+  maxLeverage: decimalToFloat(50),
+  minLeverage: decimalToFloat(1),
+  minMmr: percentageToFloat("0.5%"),
+  maxMmr: percentageToFloat("10%"),
+  mmrTuning: percentageToFloat("1%"), // 0.5 / 50x
+
   minCollateralFactorForOpenInterestMultiplier: 0,
 
   maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 18),

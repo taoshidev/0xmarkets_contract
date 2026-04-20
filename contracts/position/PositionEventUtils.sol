@@ -169,6 +169,45 @@ library PositionEventUtils {
         );
     }
 
+    // @dev emitted when a liquidation order closes a position that could not pay all costs
+    // from collateral. remainingCostUsd is the bad debt socialized to the pool.
+    function emitInsolventLiquidation(
+        EventEmitter eventEmitter,
+        bytes32 orderKey,
+        bytes32 positionKey,
+        address market,
+        address collateralToken,
+        uint256 positionCollateralAmount,
+        int256 basePnlUsd,
+        uint256 remainingCostUsd,
+        string memory step
+    ) external {
+        EventUtils.EventLogData memory eventData;
+
+        eventData.addressItems.initItems(2);
+        eventData.addressItems.setItem(0, "market", market);
+        eventData.addressItems.setItem(1, "collateralToken", collateralToken);
+
+        eventData.bytes32Items.initItems(2);
+        eventData.bytes32Items.setItem(0, "orderKey", orderKey);
+        eventData.bytes32Items.setItem(1, "positionKey", positionKey);
+
+        eventData.uintItems.initItems(2);
+        eventData.uintItems.setItem(0, "positionCollateralAmount", positionCollateralAmount);
+        eventData.uintItems.setItem(1, "remainingCostUsd", remainingCostUsd);
+
+        eventData.intItems.initItems(1);
+        eventData.intItems.setItem(0, "basePnlUsd", basePnlUsd);
+
+        eventData.stringItems.initItems(1);
+        eventData.stringItems.setItem(0, "step", step);
+
+        eventEmitter.emitEventLog(
+            "InsolventLiquidation",
+            eventData
+        );
+    }
+
     function emitInsufficientFundingFeePayment(
         EventEmitter eventEmitter,
         address market,

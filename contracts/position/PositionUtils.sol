@@ -129,20 +129,21 @@ library PositionUtils {
     struct IsPositionLiquidatableInfo {
         int256 remainingCollateralUsd;
         int256 minCollateralUsd;
-        int256 minCollateralUsdForLeverage;
+        int256 requiredCollateralUsd;
+        uint256 mmr;
     }
 
     // @dev IsPositionLiquidatableCache struct used in isPositionLiquidatable
     // to avoid stack too deep errors
     // @param positionPnlUsd the position's pnl in USD
-    // @param minCollateralFactor the min collateral factor
+    // @param mmr the dynamic maintenance margin ratio for the position
     // @param collateralTokenPrice the collateral token price
     // @param collateralUsd the position's collateral in USD
     // @param usdDeltaForPriceImpact the usdDelta value for the price impact calculation
     // @param priceImpactUsd the price impact of closing the position in USD
     struct IsPositionLiquidatableCache {
         int256 positionPnlUsd;
-        uint256 minCollateralFactor;
+        uint256 mmr;
         Price.Props collateralTokenPrice;
         uint256 collateralUsd;
         int256 usdDeltaForPriceImpact;
@@ -280,6 +281,23 @@ library PositionUtils {
             }
         }
 
+        // enforce min_leverage lower bound when configured (> 0 is opt-in)
+        uint256 minLeverage = MarketUtils.getMinLeverage(dataStore, market.marketToken);
+        if (minLeverage > 0) {
+            Price.Props memory collateralTokenPrice = MarketUtils.getCachedTokenPrice(
+                position.collateralToken(),
+                market,
+                prices
+            );
+            uint256 collateralUsd = position.collateralAmount() * collateralTokenPrice.min;
+            if (collateralUsd > 0) {
+                uint256 currLeverage = Precision.toFactor(position.sizeInUsd(), collateralUsd);
+                if (currLeverage < minLeverage) {
+                    revert Errors.InvalidLeverage(currLeverage, minLeverage);
+                }
+            }
+        }
+
         (bool isLiquidatable, string memory reason, IsPositionLiquidatableInfo memory info) = isPositionLiquidatable(
             dataStore,
             referralStorage,
@@ -294,7 +312,8 @@ library PositionUtils {
                 reason,
                 info.remainingCollateralUsd,
                 info.minCollateralUsd,
-                info.minCollateralUsdForLeverage
+                info.requiredCollateralUsd,
+                info.mmr
             );
         }
     }
@@ -400,13 +419,7 @@ library PositionUtils {
             + cache.priceImpactUsd
             - collateralCostUsd.toInt256();
 
-        cache.minCollateralFactor = MarketUtils.getMinMaintainCollateralFactor(dataStore, market.marketToken);
-
-        // validate if (remaining collateral) / position.size is less than the min collateral factor (max leverage exceeded)
-        // this validation includes the position fee to be paid when closing the position
-        // i.e. if the position does not have sufficient collateral after closing fees it is considered a liquidatable position
-        info.minCollateralUsdForLeverage = Precision.applyFactor(position.sizeInUsd(), cache.minCollateralFactor).toInt256();
-
+        // absolute USD floor on remaining collateral (independent of leverage)
         if (shouldValidateMinCollateralUsd) {
             info.minCollateralUsd = dataStore.getUint(Keys.MIN_COLLATERAL_USD).toInt256();
             if (info.remainingCollateralUsd < info.minCollateralUsd) {
@@ -414,12 +427,24 @@ library PositionUtils {
             }
         }
 
+        // insolvent — liquidatable regardless of MMR
         if (info.remainingCollateralUsd <= 0) {
-            return (true, "< 0", info);
+            return (true, "insolvent", info);
         }
 
-        if (info.remainingCollateralUsd < info.minCollateralUsdForLeverage) {
-            return (true, "min collateral for leverage", info);
+        // MMR is computed from leverage at last modification (sizeInUsd / collateralUsd),
+        // not from the current mark price. Stable between user-initiated modifications.
+        cache.mmr = MarketUtils.getDynamicMmr(
+            dataStore,
+            market.marketToken,
+            position.sizeInUsd(),
+            cache.collateralUsd
+        );
+        info.mmr = cache.mmr;
+        info.requiredCollateralUsd = Precision.applyFactor(position.sizeInUsd(), cache.mmr).toInt256();
+
+        if (info.remainingCollateralUsd < info.requiredCollateralUsd) {
+            return (true, "mmr breach", info);
         }
 
         return (false, "", info);
@@ -471,26 +496,32 @@ library PositionUtils {
             return (false, remainingCollateralUsd);
         }
 
-        // the min collateral factor will increase as the open interest for a market increases
-        // this may lead to previously created limit increase orders not being executable
-        //
-        // the position's pnl is not factored into the remainingCollateralUsd value, since
-        // factoring in a positive pnl may allow the user to manipulate price and bypass this check
-        // it may be useful to factor in a negative pnl for this check, this can be added if required
-        uint256 minCollateralFactor = MarketUtils.getMinCollateralFactorForOpenInterest(
+        // the open-interest-based floor grows as OI expands; kept to discourage concentration.
+        // the position's pnl is not factored into remainingCollateralUsd, since factoring in a
+        // positive pnl may allow the user to manipulate price and bypass this check.
+        uint256 openInterestMinCollateralFactor = MarketUtils.getMinCollateralFactorForOpenInterest(
             dataStore,
             market,
             values.openInterestDelta,
             isLong
         );
 
-        uint256 minCollateralFactorForMarket = MarketUtils.getMinCollateralFactor(dataStore, market.marketToken);
-        // use the minCollateralFactor for the market if it is larger
-        if (minCollateralFactorForMarket > minCollateralFactor) {
-            minCollateralFactor = minCollateralFactorForMarket;
-        }
+        int256 minCollateralUsdForOpenInterest = Precision.applyFactor(values.positionSizeInUsd, openInterestMinCollateralFactor).toInt256();
 
-        int256 minCollateralUsdForLeverage = Precision.applyFactor(values.positionSizeInUsd, minCollateralFactor).toInt256();
+        // max_leverage-derived floor: required collateral >= sizeInUsd / max_leverage.
+        // If max_leverage is unset (0), the position cannot be validated — reject to avoid
+        // accidentally opening with no leverage cap.
+        uint256 maxLeverage = MarketUtils.getMaxLeverage(dataStore, market.marketToken);
+        if (maxLeverage == 0) {
+            return (false, remainingCollateralUsd);
+        }
+        int256 minCollateralUsdForMaxLeverage = Precision.toFactor(values.positionSizeInUsd, maxLeverage).toInt256();
+
+        // take the tighter of the two floors
+        int256 minCollateralUsdForLeverage = minCollateralUsdForMaxLeverage > minCollateralUsdForOpenInterest
+            ? minCollateralUsdForMaxLeverage
+            : minCollateralUsdForOpenInterest;
+
         bool willBeSufficient = remainingCollateralUsd >= minCollateralUsdForLeverage;
 
         return (willBeSufficient, remainingCollateralUsd);

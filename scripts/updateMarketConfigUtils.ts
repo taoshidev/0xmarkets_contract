@@ -303,6 +303,56 @@ const processMarkets = async ({
       `minMaintainCollateralFactor ${marketLabel} (${marketToken})`
     );
 
+    if (marketConfig.maxLeverage !== undefined) {
+      await handleConfig(
+        "uint",
+        keys.MAX_LEVERAGE,
+        encodeData(["address"], [marketToken]),
+        marketConfig.maxLeverage,
+        `maxLeverage ${marketLabel} (${marketToken})`
+      );
+    }
+
+    if (marketConfig.minLeverage !== undefined) {
+      await handleConfig(
+        "uint",
+        keys.MIN_LEVERAGE,
+        encodeData(["address"], [marketToken]),
+        marketConfig.minLeverage,
+        `minLeverage ${marketLabel} (${marketToken})`
+      );
+    }
+
+    if (marketConfig.minMmr !== undefined) {
+      await handleConfig(
+        "uint",
+        keys.MIN_MMR,
+        encodeData(["address"], [marketToken]),
+        marketConfig.minMmr,
+        `minMmr ${marketLabel} (${marketToken})`
+      );
+    }
+
+    if (marketConfig.maxMmr !== undefined) {
+      await handleConfig(
+        "uint",
+        keys.MAX_MMR,
+        encodeData(["address"], [marketToken]),
+        marketConfig.maxMmr,
+        `maxMmr ${marketLabel} (${marketToken})`
+      );
+    }
+
+    if (marketConfig.mmrTuning !== undefined) {
+      await handleConfig(
+        "uint",
+        keys.MMR_TUNING,
+        encodeData(["address"], [marketToken]),
+        marketConfig.mmrTuning,
+        `mmrTuning ${marketLabel} (${marketToken})`
+      );
+    }
+
     await handleConfig(
       "uint",
       keys.MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER,

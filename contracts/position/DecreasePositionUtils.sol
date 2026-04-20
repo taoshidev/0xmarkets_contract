@@ -224,7 +224,8 @@ library DecreasePositionUtils {
                     reason,
                     info.remainingCollateralUsd,
                     info.minCollateralUsd,
-                    info.minCollateralUsdForLeverage
+                    info.requiredCollateralUsd,
+                    info.mmr
                 );
             }
         }

@@ -15,7 +15,9 @@ const func = async ({ deployments, getNamedAccounts }: HardhatRuntimeEnvironment
     ["British Pound", "GBP"],
     ["Euro", "EUR"],
     ["Gold", "GOLD"],
+    ["Silver", "XAG"],
     ["Japaness Yen", "JPY"],
+    ["West Texas Intermediate", "WTI"],
   ]) {
     const nonce = await ethers.provider.getTransactionCount(deployer, "pending");
     const deployment = await deploy(name, {
