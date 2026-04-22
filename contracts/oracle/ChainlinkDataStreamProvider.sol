@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import "../data/DataStore.sol";
 import "../data/Keys.sol";
+import "../error/Errors.sol";
 import "./IOracleProvider.sol";
 import "./IChainlinkDataStreamVerifier.sol";
 import "../utils/Precision.sol";
@@ -29,8 +30,15 @@ contract ChainlinkDataStreamProvider is IOracleProvider {
         int192 ask; // Simulated price impact of a sell order up to the X% depth of liquidity utilisation
     }
 
+    // @dev Permits the Oracle contract or any address flagged via
+    //      Keys.isDataStreamAuthorizedCallerKey(caller) in DataStore.
+    //      The allowlist lets composite providers (e.g. CircuitBreakerOracleProvider)
+    //      delegate here without making the Oracle contract the sole caller.
     modifier onlyOracle() {
-        if (msg.sender != oracle) {
+        if (
+            msg.sender != oracle &&
+            !dataStore.getBool(Keys.isDataStreamAuthorizedCallerKey(msg.sender))
+        ) {
             revert Errors.Unauthorized(msg.sender, "Oracle");
         }
         _;
