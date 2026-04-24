@@ -6,5 +6,5 @@ export function getExistingContractAddresses(network) {
     hardhat: {},
   };
 
-  return config[network.name];
+  return config[network.name === "baseSepoliaFork" ? "baseSepolia" : network.name];
 }

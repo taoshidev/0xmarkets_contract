@@ -126,8 +126,9 @@ export default async function (hre: HardhatRuntimeEnvironment): Promise<RolesCon
     }
   }
 
+  const networkName = hre.network.name === "baseSepoliaFork" ? "baseSepolia" : hre.network.name;
   return {
-    roles: roles[hre.network.name],
+    roles: roles[networkName],
     requiredRolesForContracts,
   };
 }

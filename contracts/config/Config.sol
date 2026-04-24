@@ -510,8 +510,6 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         allowedBaseKeys[Keys.NATIVE_TOKEN_TRANSFER_GAS_LIMIT] = true;
 
         allowedBaseKeys[Keys.REQUEST_EXPIRATION_TIME] = true;
-        allowedBaseKeys[Keys.MIN_COLLATERAL_FACTOR] = true;
-        allowedBaseKeys[Keys.MIN_MAINTAIN_COLLATERAL_FACTOR] = true;
         allowedBaseKeys[Keys.MAX_LEVERAGE] = true;
         allowedBaseKeys[Keys.MIN_LEVERAGE] = true;
         allowedBaseKeys[Keys.MIN_MMR] = true;
@@ -723,8 +721,7 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
             baseKey == Keys.FUNDING_FACTOR ||
             baseKey == Keys.BORROWING_FACTOR ||
             baseKey == Keys.FUNDING_INCREASE_FACTOR_PER_SECOND ||
-            baseKey == Keys.FUNDING_DECREASE_FACTOR_PER_SECOND ||
-            baseKey == Keys.MIN_COLLATERAL_FACTOR
+            baseKey == Keys.FUNDING_DECREASE_FACTOR_PER_SECOND
         ) {
             // revert if value > 1%
             if (value > (1 * Precision.FLOAT_PRECISION) / 100) {

@@ -348,7 +348,7 @@ async function getAssetAddress(hre, key: string) {
 }
 
 export default async function (hre: HardhatRuntimeEnvironment): Promise<TokensConfig> {
-  const tokens = config[hre.network.name];
+  const tokens = config[hre.network.name === "baseSepoliaFork" ? "baseSepolia" : hre.network.name];
 
   for (const [tokenSymbol, token] of Object.entries(tokens as TokensConfig)) {
     (token as any).symbol = tokenSymbol;

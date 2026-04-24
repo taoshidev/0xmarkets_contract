@@ -287,22 +287,6 @@ const processMarkets = async ({
       continue;
     }
 
-    await handleConfig(
-      "uint",
-      keys.MIN_COLLATERAL_FACTOR,
-      encodeData(["address"], [marketToken]),
-      marketConfig.minCollateralFactor,
-      `minCollateralFactor ${marketLabel} (${marketToken})`
-    );
-
-    await handleConfig(
-      "uint",
-      keys.MIN_MAINTAIN_COLLATERAL_FACTOR,
-      encodeData(["address"], [marketToken]),
-      marketConfig.minMaintainCollateralFactor ?? marketConfig.minCollateralFactor,
-      `minMaintainCollateralFactor ${marketLabel} (${marketToken})`
-    );
-
     if (marketConfig.maxLeverage !== undefined) {
       await handleConfig(
         "uint",

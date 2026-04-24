@@ -45,7 +45,8 @@ export default async function (hre: HardhatRuntimeEnvironment): Promise<BuybackC
     localhost: defaultEmptyConfig,
   };
 
-  const networkConfig: BuybackConfig = config[hre.network.name];
+  const networkConfig: BuybackConfig =
+    config[hre.network.name === "baseSepoliaFork" ? "baseSepolia" : hre.network.name];
 
   return networkConfig;
 }

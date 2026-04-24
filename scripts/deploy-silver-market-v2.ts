@@ -32,16 +32,17 @@ const XAG_TOKEN = "0x25f79151C3E00ba7710EcF02192836994E36b440";
 // MCF of 3.333e27 in 1e30 precision = 0.003333 = 1/300x
 // Actually 3333e24 / 1e30 = 0.003333 → 1/0.003333 = 300x
 // GOLD docs say 200x but MCF gives 300x. Using the actual on-chain value.
-const MCF = ethers.BigNumber.from("3333000000000000000000000000"); // 3.333e27 — matches GOLD
-
 const MARKET_CONFIG = {
   // Pool limits
   MAX_POOL_AMOUNT_USD0: ethers.BigNumber.from("100000000000000"), // 1e14 (100M USD0)
   MAX_POOL_AMOUNT_INDEX: ethers.BigNumber.from(0), // index token not used as collateral
 
-  // Leverage & collateral
-  MIN_COLLATERAL_FACTOR: MCF,
-  MIN_MAINTAIN_COLLATERAL_FACTOR: MCF,
+  // Dynamic MMR (commodity defaults — 200x max leverage with 50% buffer at the cap)
+  MAX_LEVERAGE: ethers.BigNumber.from("200000000000000000000000000000000"), // 200 in FLOAT_PRECISION
+  MIN_LEVERAGE: ethers.BigNumber.from(0), // opt-in
+  MIN_MMR: ethers.BigNumber.from("2000000000000000000000000000"), // 0.2% = 2e27
+  MAX_MMR: ethers.BigNumber.from("100000000000000000000000000000"), // 10% = 1e29
+  MMR_TUNING: ethers.BigNumber.from("2500000000000000000000000000"), // 0.25% = 2.5e27 (0.5 / 200x)
 
   // Reserve factors
   RESERVE_FACTOR: ethers.BigNumber.from("950000000000000000000000000000"), // 9.5e29
@@ -173,22 +174,19 @@ async function main() {
   );
   console.log("  MAX_POOL_AMOUNT (USD0): 1e14");
 
-  // Leverage
+  // Dynamic MMR (leverage band + MMR curve)
   calls.push(
-    config.interface.encodeFunctionData("setUint", [
-      keys.MIN_COLLATERAL_FACTOR,
-      marketKeyData,
-      MARKET_CONFIG.MIN_COLLATERAL_FACTOR,
-    ])
+    config.interface.encodeFunctionData("setUint", [keys.MAX_LEVERAGE, marketKeyData, MARKET_CONFIG.MAX_LEVERAGE])
   );
   calls.push(
-    config.interface.encodeFunctionData("setUint", [
-      keys.MIN_MAINTAIN_COLLATERAL_FACTOR,
-      marketKeyData,
-      MARKET_CONFIG.MIN_MAINTAIN_COLLATERAL_FACTOR,
-    ])
+    config.interface.encodeFunctionData("setUint", [keys.MIN_LEVERAGE, marketKeyData, MARKET_CONFIG.MIN_LEVERAGE])
   );
-  console.log("  MIN_COLLATERAL_FACTOR: 3.333e27 (200x)");
+  calls.push(config.interface.encodeFunctionData("setUint", [keys.MIN_MMR, marketKeyData, MARKET_CONFIG.MIN_MMR]));
+  calls.push(config.interface.encodeFunctionData("setUint", [keys.MAX_MMR, marketKeyData, MARKET_CONFIG.MAX_MMR]));
+  calls.push(
+    config.interface.encodeFunctionData("setUint", [keys.MMR_TUNING, marketKeyData, MARKET_CONFIG.MMR_TUNING])
+  );
+  console.log("  Dynamic MMR: max_leverage=200x, min_mmr=0.2%, max_mmr=10%, tuning=0.25% (50% buffer at cap)");
 
   // Reserve factors
   calls.push(

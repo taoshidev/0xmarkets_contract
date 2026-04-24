@@ -60,7 +60,7 @@ export default async function (hre: HardhatRuntimeEnvironment): Promise<OracleCo
     },
   };
 
-  const oracleConfig: OracleConfig = config[hre.network.name];
+  const oracleConfig: OracleConfig = config[hre.network.name === "baseSepoliaFork" ? "baseSepolia" : hre.network.name];
 
   return oracleConfig;
 }

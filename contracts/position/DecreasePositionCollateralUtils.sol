@@ -622,30 +622,14 @@ library DecreasePositionCollateralUtils {
             fees
         );
 
-        if (BaseOrderUtils.isLiquidationOrder(params.order.orderType())) {
-            // specific event for insolvent liquidations so off-chain keepers / indexers
-            // can track bad debt socialized to the pool separately from other insolvent closes.
-            PositionEventUtils.emitInsolventLiquidation(
-                params.contracts.eventEmitter,
-                params.orderKey,
-                params.positionKey,
-                params.market.marketToken,
-                params.position.collateralToken(),
-                params.position.collateralAmount(),
-                values.basePnlUsd,
-                collateralCache.result.remainingCostUsd,
-                step
-            );
-        } else {
-            PositionEventUtils.emitInsolventClose(
-                params.contracts.eventEmitter,
-                params.orderKey,
-                params.position.collateralAmount(),
-                values.basePnlUsd,
-                collateralCache.result.remainingCostUsd,
-                step
-            );
-        }
+        PositionEventUtils.emitInsolventClose(
+            params.contracts.eventEmitter,
+            params.orderKey,
+            params.position.collateralAmount(),
+            values.basePnlUsd,
+            collateralCache.result.remainingCostUsd,
+            step
+        );
 
         return (values, getEmptyFees(fees));
     }

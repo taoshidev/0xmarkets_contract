@@ -260,10 +260,6 @@ library Keys {
     bytes32 public constant REFUND_EXECUTION_FEE_GAS_LIMIT = keccak256(abi.encode("REFUND_EXECUTION_FEE_GAS_LIMIT"));
     bytes32 public constant SAVED_CALLBACK_CONTRACT = keccak256(abi.encode("SAVED_CALLBACK_CONTRACT"));
 
-    // @dev key for the min collateral factor
-    bytes32 public constant MIN_COLLATERAL_FACTOR = keccak256(abi.encode("MIN_COLLATERAL_FACTOR"));
-    // @dev key for the min maintain collateral factor
-    bytes32 public constant MIN_MAINTAIN_COLLATERAL_FACTOR = keccak256(abi.encode("MIN_MAINTAIN_COLLATERAL_FACTOR"));
     // @dev key for the max allowed leverage per market (used as denominator in dynamic MMR)
     bytes32 public constant MAX_LEVERAGE = keccak256(abi.encode("MAX_LEVERAGE"));
     // @dev key for the min allowed leverage per market
@@ -1034,24 +1030,6 @@ library Keys {
        return keccak256(abi.encode(
            SAVED_CALLBACK_CONTRACT,
            account,
-           market
-       ));
-   }
-
-   // @dev the min collateral factor key
-   // @param the market for the min collateral factor
-   function minCollateralFactorKey(address market) internal pure returns (bytes32) {
-       return keccak256(abi.encode(
-           MIN_COLLATERAL_FACTOR,
-           market
-       ));
-   }
-
-   // @dev the min maintain collateral factor key
-   // @param the market for the min maintain collateral factor
-   function minMaintainCollateralFactorKey(address market) internal pure returns (bytes32) {
-       return keccak256(abi.encode(
-           MIN_MAINTAIN_COLLATERAL_FACTOR,
            market
        ));
    }

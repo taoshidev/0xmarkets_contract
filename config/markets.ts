@@ -13,8 +13,6 @@ export type BaseMarketConfig = {
   openInterestReserveFactorLongs?: BigNumberish;
   openInterestReserveFactorShorts?: BigNumberish;
 
-  minCollateralFactor: BigNumberish;
-  minMaintainCollateralFactor?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplier?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplierLong?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplierShort?: BigNumberish;
@@ -259,9 +257,6 @@ const borrowingRateConfig_HighMax_WithHigherBase: BorrowingRateConfig = {
 };
 
 const baseMarketConfig: Partial<BaseMarketConfig> = {
-  minCollateralFactor: percentageToFloat("1%"), // 1%
-  minMaintainCollateralFactor: percentageToFloat("0.5%"), // 0.5% (liquidation threshold, legacy — superseded by dynamic MMR)
-
   // Dynamic MMR defaults. Sized so that at currLeverage == maxLeverage,
   // the trader can absorb ~50% of collateral loss before liquidation:
   //   mmr_tuning = 0.5 / maxLeverage
@@ -385,8 +380,6 @@ const synthethicMarketConfig_IncreasedCapacity: Partial<BaseMarketConfig> = {
 const fxMarketOverrides: Partial<BaseMarketConfig> = {
   positionFeeFactorForPositiveImpact: percentageToFloat("0.01%"),
   positionFeeFactorForNegativeImpact: percentageToFloat("0.015%"),
-  minCollateralFactor: percentageToFloat("0.1333%"), // 500x max leverage
-  minMaintainCollateralFactor: percentageToFloat("0.1333%"),
 
   maxLeverage: decimalToFloat(500),
   minLeverage: 0,
@@ -398,8 +391,6 @@ const fxMarketOverrides: Partial<BaseMarketConfig> = {
 const commodityMarketOverrides: Partial<BaseMarketConfig> = {
   positionFeeFactorForPositiveImpact: percentageToFloat("0.005%"),
   positionFeeFactorForNegativeImpact: percentageToFloat("0.01%"),
-  minCollateralFactor: percentageToFloat("0.3333%"), // 200x max leverage
-  minMaintainCollateralFactor: percentageToFloat("0.3333%"),
 
   maxLeverage: decimalToFloat(200),
   minLeverage: 0,
@@ -411,8 +402,6 @@ const commodityMarketOverrides: Partial<BaseMarketConfig> = {
 const cryptoMarketOverrides: Partial<BaseMarketConfig> = {
   positionFeeFactorForPositiveImpact: percentageToFloat("0.02%"),
   positionFeeFactorForNegativeImpact: percentageToFloat("0.025%"),
-  minCollateralFactor: percentageToFloat("0.6666%"), // 100x max leverage
-  minMaintainCollateralFactor: percentageToFloat("0.6666%"),
 
   maxLeverage: decimalToFloat(100),
   minLeverage: 0,
@@ -435,13 +424,8 @@ const hardhatBaseMarketConfig: Partial<BaseMarketConfig> = {
   reserveFactor: decimalToFloat(5, 1), // 50%,
   openInterestReserveFactor: decimalToFloat(5, 1), // 50%,
 
-  minCollateralFactor: percentageToFloat("1%"), // 1%
-  minMaintainCollateralFactor: percentageToFloat("1%"), // 1%
-
-  // Dynamic MMR defaults for hardhat — 100x cap + 1% min_mmr replicate the legacy
-  // `minMaintainCollateralFactor = 1%` flat MMR that existing tests were written against.
-  // Under the new formula, tuning 0.5% at max leverage is below the 1% floor, so MMR
-  // clamps to 1% across all leverages — effectively flat, matching old behavior.
+  // Dynamic MMR defaults for hardhat — 100x cap + 1% min_mmr give tests a flat 1%
+  // effective MMR across all leverages (tuning 0.5% at max is below the floor).
   // Prod markets (fx/commodity/crypto) use sub-floor tuning to expose the dynamic curve.
   // min_leverage stays 0 (opt-in); tests that want the lower-bound gate set it per-market.
   maxLeverage: decimalToFloat(100),
@@ -719,7 +703,7 @@ function fillLongShortValues(market, key, longKey, shortKey) {
 }
 
 export default async function (hre: HardhatRuntimeEnvironment) {
-  const markets = config[hre.network.name];
+  const markets = config[hre.network.name === "baseSepoliaFork" ? "baseSepolia" : hre.network.name];
   const tokens = await hre.gmx.getTokens();
   const defaultMarketConfig = hre.network.name === "hardhat" ? hardhatBaseMarketConfig : baseMarketConfig;
   if (markets) {

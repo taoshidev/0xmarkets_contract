@@ -246,6 +246,13 @@ const config: HardhatUserConfig = {
         },
       },
     },
+    baseSepoliaFork: {
+      url: process.env.ANVIL_RPC_URL || "http://127.0.0.1:8545",
+      chainId: 84532,
+      accounts: process.env.FORK_DEPLOYER_KEY ? [process.env.FORK_DEPLOYER_KEY] : getEnvAccounts(),
+      gas: "auto",
+      gasMultiplier: 2.0,
+    },
   },
   // hardhat-deploy has issues with some contracts
   // https://github.com/wighawag/hardhat-deploy/issues/264

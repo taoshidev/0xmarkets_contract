@@ -23,7 +23,12 @@ const MARKET_TYPE = hashString("silver-v2"); // different from old market's byte
 const CFG = {
   MAX_POOL_AMOUNT: ethers.BigNumber.from("100000000000000"), // 1e14
   MAX_POOL_USD_FOR_DEPOSIT: ethers.BigNumber.from("100000000000000000000000000000000000000"), // 1e38
-  MCF: ethers.BigNumber.from("3333000000000000000000000000"), // 3.333e27 → 200x
+  // Dynamic MMR (commodity defaults — 200x max leverage, 50% collateral buffer at the cap)
+  MAX_LEVERAGE: ethers.BigNumber.from("200000000000000000000000000000000"), // 200 in FLOAT_PRECISION
+  MIN_LEVERAGE: ethers.BigNumber.from(0), // opt-in
+  MIN_MMR: ethers.BigNumber.from("2000000000000000000000000000"), // 0.2% = 2e27
+  MAX_MMR: ethers.BigNumber.from("100000000000000000000000000000"), // 10% = 1e29
+  MMR_TUNING: ethers.BigNumber.from("2500000000000000000000000000"), // 0.25% = 2.5e27 (0.5 / 200x)
   RESERVE_FACTOR: ethers.BigNumber.from("950000000000000000000000000000"), // 9.5e29
   OI_RESERVE: ethers.BigNumber.from("900000000000000000000000000000"), // 9e29
   MAX_OI: ethers.BigNumber.from("1000000000000000000000000000000000000000"), // 1e39
@@ -108,18 +113,19 @@ async function main() {
   );
   console.log("  Pool limits: MAX_POOL=1e14, MAX_USD_DEPOSIT=1e38");
 
-  // Leverage (keyed by market)
+  // Dynamic MMR (leverage band + MMR curve, keyed by market)
   calls.push(
-    config.interface.encodeFunctionData("setUint", [keys.MIN_COLLATERAL_FACTOR, encodeData(["address"], [m]), CFG.MCF])
+    config.interface.encodeFunctionData("setUint", [keys.MAX_LEVERAGE, encodeData(["address"], [m]), CFG.MAX_LEVERAGE])
   );
   calls.push(
-    config.interface.encodeFunctionData("setUint", [
-      keys.MIN_MAINTAIN_COLLATERAL_FACTOR,
-      encodeData(["address"], [m]),
-      CFG.MCF,
-    ])
+    config.interface.encodeFunctionData("setUint", [keys.MIN_LEVERAGE, encodeData(["address"], [m]), CFG.MIN_LEVERAGE])
   );
-  console.log("  Leverage: 200x (MCF=3.333e27)");
+  calls.push(config.interface.encodeFunctionData("setUint", [keys.MIN_MMR, encodeData(["address"], [m]), CFG.MIN_MMR]));
+  calls.push(config.interface.encodeFunctionData("setUint", [keys.MAX_MMR, encodeData(["address"], [m]), CFG.MAX_MMR]));
+  calls.push(
+    config.interface.encodeFunctionData("setUint", [keys.MMR_TUNING, encodeData(["address"], [m]), CFG.MMR_TUNING])
+  );
+  console.log("  Dynamic MMR: max_leverage=200x, min_mmr=0.2%, max_mmr=10%, tuning=0.25% (50% buffer at cap)");
 
   // Reserve factors (keyed by market + isLong)
   calls.push(

@@ -1884,20 +1884,6 @@ library MarketUtils {
         return dataStore.getUint(Keys.maxPositionImpactFactorForLiquidationsKey(market));
     }
 
-    // @dev get the min collateral factor
-    // @param dataStore DataStore
-    // @param market the market to check
-    function getMinCollateralFactor(DataStore dataStore, address market) internal view returns (uint256) {
-        return dataStore.getUint(Keys.minCollateralFactorKey(market));
-    }
-
-    // @dev get the min maintain collateral factor
-    // @param dataStore DataStore
-    // @param market the market to check
-    function getMinMaintainCollateralFactor(DataStore dataStore, address market) internal view returns (uint256) {
-        return dataStore.getUint(Keys.minMaintainCollateralFactorKey(market));
-    }
-
     // @dev get the max leverage allowed for the market
     // @param dataStore DataStore
     // @param market the market to check
