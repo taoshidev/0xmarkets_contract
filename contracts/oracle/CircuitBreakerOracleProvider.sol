@@ -10,20 +10,30 @@ import "./IOracleProvider.sol";
 import "./OracleUtils.sol";
 
 // @title CircuitBreakerOracleProvider
-// @dev Dual-oracle wrapper. Fetches a price from two underlying providers
-//      (primary + secondary, e.g. Pyth Lazer + Chainlink Data Streams),
-//      reconciles them via a deviation check + timestamp skew check, and
-//      returns a defensive ValidatedPrice (widened spread) if accepted.
+// @dev Hybrid dual-oracle wrapper. Three modes per-call, selected by which payloads
+//      the keeper provides:
 //
-//      Reverts the trade if either check fails.
+//        1. BOTH feeds available (circuit breaker):
+//           Deviation + timestamp-skew checks; revert if either fails.
+//           On pass, return a defensive price (wider min/max, older timestamp).
 //
-//      The keeper packs `data` as:
+//        2. ONE feed available (graceful degradation):
+//           Return that feed's price directly, emit OracleDegradedMode.
+//           ONLY allowed when Keys.allowSingleOracleFallbackKey(token) is true.
+//           Otherwise reverts with OracleSingleFallbackDisabled.
+//
+//        3. NEITHER feed available:
+//           Reverts with NoOracleData.
+//
+//      Keeper signals "unavailable" by sending an empty bytes payload (length 0)
+//      on that side. The keeper packs `data` as:
 //          abi.encode(bytes primaryData, bytes secondaryData)
-//      which is unpacked here and routed to each underlying provider.
 //
 // @dev Per-token config in DataStore (governance via Config.sol):
-//        Keys.circuitBreakerDeviationBpsKey(token)   — REQUIRED, bps (uint)
-//        Keys.circuitBreakerTimestampSkewKey(token)  — OPTIONAL, seconds (uint), default 5
+//        Keys.circuitBreakerDeviationBpsKey(token)   — REQUIRED when both feeds present
+//        Keys.circuitBreakerTimestampSkewKey(token)  — OPTIONAL, seconds, default 5
+//        Keys.allowSingleOracleFallbackKey(token)    — OPTIONAL, bool, default false
+//                                                      (must be true to allow mode 2)
 //
 // @dev If `secondary` is ChainlinkDataStreamProvider, this wrapper's address
 //      must be flagged via Keys.isDataStreamAuthorizedCallerKey(wrapper) = true
@@ -35,6 +45,11 @@ contract CircuitBreakerOracleProvider is IOracleProvider {
     DataStore public immutable dataStore;
     IOracleProvider public immutable primary;
     IOracleProvider public immutable secondary;
+
+    // @dev Emitted whenever the wrapper serves a price based on a single underlying
+    //      feed because the other was unavailable. Wire this up to monitoring — if it
+    //      fires frequently the market is effectively running single-oracle.
+    event OracleDegradedMode(address indexed token, bool usedSecondary);
 
     constructor(
         DataStore _dataStore,
@@ -58,16 +73,42 @@ contract CircuitBreakerOracleProvider is IOracleProvider {
             (bytes, bytes)
         );
 
-        OracleUtils.ValidatedPrice memory primaryPrice = primary.getOraclePrice(
-            token,
-            primaryData
-        );
-        OracleUtils.ValidatedPrice memory secondaryPrice = secondary.getOraclePrice(
-            token,
-            secondaryData
-        );
+        bool primaryAvailable = primaryData.length > 0;
+        bool secondaryAvailable = secondaryData.length > 0;
 
-        return _reconcilePrices(token, primaryPrice, secondaryPrice);
+        if (!primaryAvailable && !secondaryAvailable) {
+            revert Errors.NoOracleData(token);
+        }
+
+        if (primaryAvailable && secondaryAvailable) {
+            OracleUtils.ValidatedPrice memory primaryPrice = primary.getOraclePrice(
+                token,
+                primaryData
+            );
+            OracleUtils.ValidatedPrice memory secondaryPrice = secondary.getOraclePrice(
+                token,
+                secondaryData
+            );
+            return _reconcilePrices(token, primaryPrice, secondaryPrice);
+        }
+
+        // Degraded mode: exactly one feed present.
+        if (!dataStore.getBool(Keys.allowSingleOracleFallbackKey(token))) {
+            revert Errors.OracleSingleFallbackDisabled(token);
+        }
+
+        OracleUtils.ValidatedPrice memory single;
+        if (primaryAvailable) {
+            single = primary.getOraclePrice(token, primaryData);
+            emit OracleDegradedMode(token, false);
+        } else {
+            single = secondary.getOraclePrice(token, secondaryData);
+            emit OracleDegradedMode(token, true);
+        }
+
+        // Re-attribute so downstream provider-based logic sees the wrapper uniformly.
+        single.provider = address(this);
+        return single;
     }
 
     // @dev Reconciliation policy:

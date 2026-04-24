@@ -257,6 +257,8 @@ library Errors {
         uint256 secondaryTimestamp,
         uint256 maxSkew
     );
+    error NoOracleData(address token);
+    error OracleSingleFallbackDisabled(address token);
 
     // OracleModule errors
     error InvalidPrimaryPricesForSimulation(uint256 primaryTokensLength, uint256 primaryPricesLength);

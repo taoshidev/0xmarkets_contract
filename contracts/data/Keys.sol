@@ -507,6 +507,8 @@ library Keys {
     bytes32 public constant CIRCUIT_BREAKER_TIMESTAMP_SKEW = keccak256(abi.encode("CIRCUIT_BREAKER_TIMESTAMP_SKEW"));
     // @dev key for marking an address as an authorized caller of ChainlinkDataStreamProvider (in addition to the Oracle contract)
     bytes32 public constant IS_DATA_STREAM_AUTHORIZED_CALLER = keccak256(abi.encode("IS_DATA_STREAM_AUTHORIZED_CALLER"));
+    // @dev key for allowing a per-token hybrid oracle to fall back to a single feed when the other is unavailable
+    bytes32 public constant ALLOW_SINGLE_ORACLE_FALLBACK = keccak256(abi.encode("ALLOW_SINGLE_ORACLE_FALLBACK"));
 
 
     // @dev function used to calculate fullKey for a given market parameter
@@ -2248,6 +2250,16 @@ library Keys {
         return keccak256(abi.encode(
             IS_DATA_STREAM_AUTHORIZED_CALLER,
             caller
+        ));
+    }
+
+    // @dev key for allowing the hybrid oracle to fall back to a single feed for this token
+    // @param token the token to check
+    // @return key for the per-token single-oracle-fallback allow flag
+    function allowSingleOracleFallbackKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            ALLOW_SINGLE_ORACLE_FALLBACK,
+            token
         ));
     }
 }
