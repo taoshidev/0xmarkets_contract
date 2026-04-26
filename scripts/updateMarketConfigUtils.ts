@@ -287,21 +287,55 @@ const processMarkets = async ({
       continue;
     }
 
-    await handleConfig(
-      "uint",
-      keys.MIN_COLLATERAL_FACTOR,
-      encodeData(["address"], [marketToken]),
-      marketConfig.minCollateralFactor,
-      `minCollateralFactor ${marketLabel} (${marketToken})`
-    );
+    if (marketConfig.maxLeverage !== undefined) {
+      await handleConfig(
+        "uint",
+        keys.MAX_LEVERAGE,
+        encodeData(["address"], [marketToken]),
+        marketConfig.maxLeverage,
+        `maxLeverage ${marketLabel} (${marketToken})`
+      );
+    }
 
-    await handleConfig(
-      "uint",
-      keys.MIN_MAINTAIN_COLLATERAL_FACTOR,
-      encodeData(["address"], [marketToken]),
-      marketConfig.minMaintainCollateralFactor,
-      `minMaintainCollateralFactor ${marketLabel} (${marketToken})`
-    );
+    if (marketConfig.minLeverage !== undefined) {
+      await handleConfig(
+        "uint",
+        keys.MIN_LEVERAGE,
+        encodeData(["address"], [marketToken]),
+        marketConfig.minLeverage,
+        `minLeverage ${marketLabel} (${marketToken})`
+      );
+    }
+
+    if (marketConfig.minMmr !== undefined) {
+      await handleConfig(
+        "uint",
+        keys.MIN_MMR,
+        encodeData(["address"], [marketToken]),
+        marketConfig.minMmr,
+        `minMmr ${marketLabel} (${marketToken})`
+      );
+    }
+
+    if (marketConfig.maxMmr !== undefined) {
+      await handleConfig(
+        "uint",
+        keys.MAX_MMR,
+        encodeData(["address"], [marketToken]),
+        marketConfig.maxMmr,
+        `maxMmr ${marketLabel} (${marketToken})`
+      );
+    }
+
+    if (marketConfig.mmrTuning !== undefined) {
+      await handleConfig(
+        "uint",
+        keys.MMR_TUNING,
+        encodeData(["address"], [marketToken]),
+        marketConfig.mmrTuning,
+        `mmrTuning ${marketLabel} (${marketToken})`
+      );
+    }
 
     await handleConfig(
       "uint",
@@ -734,7 +768,7 @@ export async function updateMarketConfig({
   includePositionImpact = false,
   includeMaxOpenInterest = false,
 }) {
-  if (!["arbitrumGoerli", "avalancheFuji", "baseSepolia", "hardhat"].includes(hre.network.name)) {
+  if (!["arbitrumGoerli", "avalancheFuji", "baseSepolia", "hardhat", "localhost"].includes(hre.network.name)) {
     const { errors } = await validateMarketConfigs();
     if (errors.length !== 0) {
       throw new Error("Invalid market configs");

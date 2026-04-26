@@ -260,10 +260,16 @@ library Keys {
     bytes32 public constant REFUND_EXECUTION_FEE_GAS_LIMIT = keccak256(abi.encode("REFUND_EXECUTION_FEE_GAS_LIMIT"));
     bytes32 public constant SAVED_CALLBACK_CONTRACT = keccak256(abi.encode("SAVED_CALLBACK_CONTRACT"));
 
-    // @dev key for the min collateral factor
-    bytes32 public constant MIN_COLLATERAL_FACTOR = keccak256(abi.encode("MIN_COLLATERAL_FACTOR"));
-    // @dev key for the min maintain collateral factor
-    bytes32 public constant MIN_MAINTAIN_COLLATERAL_FACTOR = keccak256(abi.encode("MIN_MAINTAIN_COLLATERAL_FACTOR"));
+    // @dev key for the max allowed leverage per market (used as denominator in dynamic MMR)
+    bytes32 public constant MAX_LEVERAGE = keccak256(abi.encode("MAX_LEVERAGE"));
+    // @dev key for the min allowed leverage per market
+    bytes32 public constant MIN_LEVERAGE = keccak256(abi.encode("MIN_LEVERAGE"));
+    // @dev key for the lower clamp of the dynamic maintenance margin ratio
+    bytes32 public constant MIN_MMR = keccak256(abi.encode("MIN_MMR"));
+    // @dev key for the upper clamp of the dynamic maintenance margin ratio
+    bytes32 public constant MAX_MMR = keccak256(abi.encode("MAX_MMR"));
+    // @dev key for the tuning multiplier applied to the leverage ratio in the dynamic MMR formula
+    bytes32 public constant MMR_TUNING = keccak256(abi.encode("MMR_TUNING"));
     // @dev key for the min collateral factor for open interest multiplier
     bytes32 public constant MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER = keccak256(abi.encode("MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER"));
     // @dev key for the min allowed collateral in USD
@@ -1028,20 +1034,47 @@ library Keys {
        ));
    }
 
-   // @dev the min collateral factor key
-   // @param the market for the min collateral factor
-   function minCollateralFactorKey(address market) internal pure returns (bytes32) {
+   // @dev the max leverage key
+   // @param market the market for the max leverage
+   function maxLeverageKey(address market) internal pure returns (bytes32) {
        return keccak256(abi.encode(
-           MIN_COLLATERAL_FACTOR,
+           MAX_LEVERAGE,
            market
        ));
    }
 
-   // @dev the min maintain collateral factor key
-   // @param the market for the min maintain collateral factor
-   function minMaintainCollateralFactorKey(address market) internal pure returns (bytes32) {
+   // @dev the min leverage key
+   // @param market the market for the min leverage
+   function minLeverageKey(address market) internal pure returns (bytes32) {
        return keccak256(abi.encode(
-           MIN_MAINTAIN_COLLATERAL_FACTOR,
+           MIN_LEVERAGE,
+           market
+       ));
+   }
+
+   // @dev the min mmr key 
+   // @param market the market for the min mmr
+   function minMmrKey(address market) internal pure returns (bytes32) {
+       return keccak256(abi.encode(
+           MIN_MMR,
+           market
+       ));
+   }
+
+   // @dev the max mmr key
+   // @param market the market for the max mmr
+   function maxMmrKey(address market) internal pure returns (bytes32) {
+       return keccak256(abi.encode(
+           MAX_MMR,
+           market
+       ));
+   }
+
+   // @dev the mmr tuning key
+   // @param market the market for the mmr tuning
+   function mmrTuningKey(address market) internal pure returns (bytes32) {
+       return keccak256(abi.encode(
+           MMR_TUNING,
            market
        ));
    }

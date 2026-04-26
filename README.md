@@ -1,6 +1,6 @@
-# GMX Synthetics
+# 0xMarkets
 
-Contracts for GMX Synthetics.
+Contracts for 0xMarkets.
 
 # General Overview
 
@@ -87,10 +87,6 @@ Majority of data is stored using the DataStore contract.
 EnumberableSets are used to allow order lists and position lists to be easily queried by interfaces or keepers, this is used over indexers as there may be a lag for indexers to sync the latest block. Having the lists stored directly in the contract also helps to ensure that accurate data can be retrieved and verified when needed.
 
 \*eventUtils contracts emit events using the event emitter, the events are generalized to allow new key-values to be added to events without requiring an update of ABIs.
-
-## GLV
-
-Short for GMX Liquidity Vault: a wrapper of multiple markets with the same long and short tokens. Liquidity is automatically rebalanced between underlying markets based on markets utilisation.
 
 # Technical Overview
 
@@ -636,19 +632,9 @@ After the initial setup:
 
 - There is a dependency on the accuracy of the block timestamp because oracle prices are validated against this value, for blockchains where the blockchain nodes have some control over the timestamp, care should be taken to set the oracleTimestampAdjustment to a value that would make manipulation of the timestamp unprofitable
 
-## GLV
-
-- The GLV shift feature can be exploited by temporarily increasing the utilization in a market that typically has low utilization. Once the keeper executes the shift, the attacker can lower the utilization back to its normal levels. Position fees and price impact should be configured in a way that makes this attack expensive enough to cover the GLV loss.
-
-- In GLV there may be GM markets which are above their maximum pnlToPoolFactorForTraders. If this GM market's maxPnlFactorForDeposits is higher than maxPnlFactorForTraders then the GM market is valued lower during deposits than it will be once traders have realized their capped profits. Malicious user may observe a GM market in such a condition and deposit into the GLV containing it in order to gain from ADLs which will soon follow. To avoid this maxPnlFactorForDeposits should be less than or equal to maxPnlFactorForTraders.
-
-- It's technically possible for market value to become negative. In this case the GLV would be unusable until the market value becomes positive.
-
-- GM tokens could become illiquid due to high pnl factor or high reserved usd. Users can deposit illiquid GM tokens into GVL and withdraw liquidity from a different market, leaving the GLV with illiquid tokens. The glvMaxMarketTokenBalanceUsd and glvMaxMarketTokenBalanceAmount parameters should account for the riskiness of a market to avoid having too many GM tokens from a risky market.
-
 ## Factories
 
-- Upon adding a Market with the MarketStoreUtils.set function, the Market is given a lookup where the Market address can be obtained with the Market salt. This lookup is not cleared upon market deletion. The same applies to GLV.
+- Upon adding a Market with the MarketStoreUtils.set function, the Market is given a lookup where the Market address can be obtained with the Market salt. This lookup is not cleared upon market deletion.
 
 # Notes
 
@@ -665,7 +651,7 @@ After the initial setup:
 
 - If new contracts are added that may lead to a difference in pricing, e.g. of market tokens between the old and new contracts, then care should be taken to disable the old contracts before the new contracts are enabled
 
-- Any external protocols that use the Reader contract or potentially outdated calculations for pricing should be reminded to use the latest contracts and calculations, e.g. Chainlink price feeds for GM tokens
+- Any external protocols that use the Reader contract or potentially outdated calculations for pricing should be reminded to use the latest contracts and calculations, e.g. Chainlink price feeds for market tokens
 
 - It is recommended to publish a best effort Changelog documenting important changes that integrations should be aware about, e.g. if a field is added to a struct that is passed into a callback function, this change may not be obvious to integrations
 
@@ -709,7 +695,7 @@ After the initial setup:
 
 - While the code has been structured to minimize the risk of [read-only reentrancy](https://officercia.mirror.xyz/DBzFiDuxmDOTQEbfXhvLdK0DXVpKu1Nkurk0Cqk3QKc), care should be taken to guard against this possibility
 
-- Token airdrops may occur to the accounts of GM token holders, integrating contracts holding GM tokens must be able to claim these tokens otherwise the tokens would be locked, the exact implementation for this will vary depending on the integrating contract, one possibility is to allow claiming of tokens that are not market tokens, this can be checked using the `Keys.MARKET_LIST` value
+- Token airdrops may occur to the accounts of market token holders, integrating contracts holding market tokens must be able to claim these tokens otherwise the tokens would be locked, the exact implementation for this will vary depending on the integrating contract, one possibility is to allow claiming of tokens that are not market tokens, this can be checked using the `Keys.MARKET_LIST` value
 
 - ETH transfers are sent with NATIVE_TOKEN_TRANSFER_GAS_LIMIT for the gas limit, if the transfer fails due to insufficient gas or other errors, the ETH is sent as WETH instead
 
@@ -747,7 +733,7 @@ After the initial setup:
 
 ### Deposits
 
-- Consider PnL Factor when estimating GM price
+- Consider PnL Factor when estimating market token price
 
 - Handle deposit cancellations
 

@@ -316,34 +316,6 @@ const config: {
     },
   },
   localhost: {
-    EUR: {
-      decimals: 6,
-      isAsset: true,
-    },
-    GBP: {
-      decimals: 6,
-      isAsset: true,
-    },
-    GOLD: {
-      decimals: 6,
-      isAsset: true,
-    },
-    XAG: {
-      decimals: 6,
-      isAsset: true,
-    },
-    JPY: {
-      decimals: 6,
-      isAsset: true,
-    },
-    WTI: {
-      decimals: 6,
-      isAsset: true,
-    },
-    TAO: {
-      decimals: 18,
-      isSynthetic: true,
-    },
     USDC: {
       decimals: 6,
       transferGasLimit: 200 * 1000,
@@ -352,17 +324,6 @@ const config: {
         heartbeatDuration: 24 * 60 * 60,
         deploy: true,
         initPrice: "100000000",
-      },
-      deploy: true,
-    },
-    WBTC: {
-      decimals: 8,
-      transferGasLimit: 200 * 1000,
-      priceFeed: {
-        decimals: 8,
-        heartbeatDuration: 24 * 60 * 60,
-        deploy: true,
-        initPrice: "10000000000000",
       },
       deploy: true,
     },
@@ -387,7 +348,7 @@ async function getAssetAddress(hre, key: string) {
 }
 
 export default async function (hre: HardhatRuntimeEnvironment): Promise<TokensConfig> {
-  const tokens = config[hre.network.name];
+  const tokens = config[hre.network.name === "baseSepoliaFork" ? "baseSepolia" : hre.network.name];
 
   for (const [tokenSymbol, token] of Object.entries(tokens as TokensConfig)) {
     (token as any).symbol = tokenSymbol;

@@ -31,7 +31,7 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
     baseSepolia: [],
     hardhat: [],
     localhost: [],
-  }[network.name]!;
+  }[network.name === "baseSepoliaFork" ? "baseSepolia" : network.name]!;
 
   if (!config) {
     throw new Error(`Network config not defined for ${network.name}`);

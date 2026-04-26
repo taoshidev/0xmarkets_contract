@@ -421,7 +421,9 @@ describe("Exchange.MarketIncreaseOrder", () => {
 
     await handleOrder(fixture, { create: params });
 
-    await dataStore.setUint(keys.minCollateralFactorKey(ethUsdMarket.marketToken), decimalToFloat(1, 1)); // 10x
+    // Dynamic MMR: the leverage cap is enforced via max_leverage (not minCollateralFactor).
+    // Setting max_leverage to 10x makes a 20x position (1000 USDC collateral / 20k size) exceed the cap.
+    await dataStore.setUint(keys.maxLeverageKey(ethUsdMarket.marketToken), decimalToFloat(10));
 
     await handleOrder(fixture, {
       create: params,

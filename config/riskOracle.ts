@@ -23,7 +23,8 @@ export default async function (hre: HardhatRuntimeEnvironment): Promise<RiskOrac
     localhost: {},
   };
 
-  const riskOracleConfig: RiskOracleConfig = config[hre.network.name];
+  const riskOracleConfig: RiskOracleConfig =
+    config[hre.network.name === "baseSepoliaFork" ? "baseSepolia" : hre.network.name];
 
   if (riskOracleConfig.markets) {
     for (const [marketAddress, marketConfig] of Object.entries(riskOracleConfig.markets)) {

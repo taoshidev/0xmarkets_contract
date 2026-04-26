@@ -13,11 +13,16 @@ export type BaseMarketConfig = {
   openInterestReserveFactorLongs?: BigNumberish;
   openInterestReserveFactorShorts?: BigNumberish;
 
-  minCollateralFactor: BigNumberish;
-  minMaintainCollateralFactor?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplier?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplierLong?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplierShort?: BigNumberish;
+
+  // Dynamic MMR parameters. mmr = clamp((sizeInUsd/collateralUsd)/maxLeverage * mmrTuning, minMmr, maxMmr)
+  maxLeverage?: BigNumberish;
+  minLeverage?: BigNumberish;
+  minMmr?: BigNumberish;
+  maxMmr?: BigNumberish;
+  mmrTuning?: BigNumberish;
 
   maxLongTokenPoolAmount: BigNumberish;
   maxShortTokenPoolAmount: BigNumberish;
@@ -252,8 +257,16 @@ const borrowingRateConfig_HighMax_WithHigherBase: BorrowingRateConfig = {
 };
 
 const baseMarketConfig: Partial<BaseMarketConfig> = {
-  minCollateralFactor: percentageToFloat("1%"), // 1%
-  minMaintainCollateralFactor: percentageToFloat("1%"), // 1%
+  // Dynamic MMR defaults. Sized so that at currLeverage == maxLeverage,
+  // the trader can absorb ~50% of collateral loss before liquidation:
+  //   mmr_tuning = 0.5 / maxLeverage
+  // At low leverage, min_mmr floors the required buffer.
+  // min_leverage is opt-in (0 = no lower bound). Set it per-market to enforce.
+  maxLeverage: decimalToFloat(50), // conservative default for markets without an asset-class override
+  minLeverage: 0,
+  minMmr: percentageToFloat("0.3%"),
+  maxMmr: percentageToFloat("10%"),
+  mmrTuning: percentageToFloat("1%"), // 0.5 / 50x
 
   minCollateralFactorForOpenInterestMultiplier: 0,
 
@@ -364,26 +377,37 @@ const synthethicMarketConfig_IncreasedCapacity: Partial<BaseMarketConfig> = {
   maxPnlFactorForWithdrawals: percentageToFloat("55%"),
 };
 
-// Asset-class-specific overrides (position fees + collateral factors for leverage limits)
 const fxMarketOverrides: Partial<BaseMarketConfig> = {
   positionFeeFactorForPositiveImpact: percentageToFloat("0.01%"),
   positionFeeFactorForNegativeImpact: percentageToFloat("0.015%"),
-  minCollateralFactor: percentageToFloat("0.1333%"), // 500x max leverage
-  minMaintainCollateralFactor: percentageToFloat("0.1333%"),
+
+  maxLeverage: decimalToFloat(500),
+  minLeverage: 0,
+  minMmr: percentageToFloat("0.1%"),
+  maxMmr: percentageToFloat("10%"),
+  mmrTuning: percentageToFloat("0.1%"), // 0.5 / 500x
 };
 
 const commodityMarketOverrides: Partial<BaseMarketConfig> = {
   positionFeeFactorForPositiveImpact: percentageToFloat("0.005%"),
   positionFeeFactorForNegativeImpact: percentageToFloat("0.01%"),
-  minCollateralFactor: percentageToFloat("0.3333%"), // 200x max leverage
-  minMaintainCollateralFactor: percentageToFloat("0.3333%"),
+
+  maxLeverage: decimalToFloat(200),
+  minLeverage: 0,
+  minMmr: percentageToFloat("0.2%"),
+  maxMmr: percentageToFloat("10%"),
+  mmrTuning: percentageToFloat("0.25%"), // 0.5 / 200x
 };
 
 const cryptoMarketOverrides: Partial<BaseMarketConfig> = {
   positionFeeFactorForPositiveImpact: percentageToFloat("0.02%"),
   positionFeeFactorForNegativeImpact: percentageToFloat("0.025%"),
-  minCollateralFactor: percentageToFloat("0.6666%"), // 100x max leverage
-  minMaintainCollateralFactor: percentageToFloat("0.6666%"),
+
+  maxLeverage: decimalToFloat(100),
+  minLeverage: 0,
+  minMmr: percentageToFloat("0.3%"),
+  maxMmr: percentageToFloat("10%"),
+  mmrTuning: percentageToFloat("0.5%"), // 0.5 / 100x
 };
 
 const stablecoinSwapMarketConfig: Partial<SpotMarketConfig> = {
@@ -400,8 +424,16 @@ const hardhatBaseMarketConfig: Partial<BaseMarketConfig> = {
   reserveFactor: decimalToFloat(5, 1), // 50%,
   openInterestReserveFactor: decimalToFloat(5, 1), // 50%,
 
-  minCollateralFactor: percentageToFloat("1%"), // 1%
-  minMaintainCollateralFactor: percentageToFloat("1%"), // 1%
+  // Dynamic MMR defaults for hardhat — 100x cap + 1% min_mmr give tests a flat 1%
+  // effective MMR across all leverages (tuning 0.5% at max is below the floor).
+  // Prod markets (fx/commodity/crypto) use sub-floor tuning to expose the dynamic curve.
+  // min_leverage stays 0 (opt-in); tests that want the lower-bound gate set it per-market.
+  maxLeverage: decimalToFloat(100),
+  minLeverage: 0,
+  minMmr: percentageToFloat("1%"),
+  maxMmr: percentageToFloat("10%"),
+  mmrTuning: percentageToFloat("0.5%"), // 0.5 / 100x
+
   minCollateralFactorForOpenInterestMultiplier: 0,
 
   maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 18),
@@ -640,36 +672,18 @@ const config: {
   ],
   localhost: [
     {
-      tokens: { indexToken: "EUR", longToken: "USDC", shortToken: "USDC" },
-      reversed: false,
-    },
-    {
-      tokens: { indexToken: "GBP", longToken: "USDC", shortToken: "USDC" },
-      reversed: false,
-    },
-    {
-      tokens: { indexToken: "GOLD", longToken: "USDC", shortToken: "USDC" },
-      reversed: false,
-    },
-    {
-      tokens: { indexToken: "XAG", longToken: "USDC", shortToken: "USDC" },
-      reversed: false,
-    },
-    {
-      tokens: { indexToken: "JPY", longToken: "USDC", shortToken: "USDC" },
-      reversed: false,
-    },
-    {
-      tokens: { indexToken: "WTI", longToken: "USDC", shortToken: "USDC" },
-      reversed: false,
-    },
-    {
-      tokens: { indexToken: "WBTC", longToken: "USDC", shortToken: "USDC" },
-      reversed: false,
-    },
-    {
       tokens: { indexToken: "WETH", longToken: "USDC", shortToken: "USDC" },
       reversed: false,
+      maxLongTokenPoolAmount: expandDecimals(1_000_000_000, 6),
+      maxShortTokenPoolAmount: expandDecimals(1_000_000_000, 6),
+      maxLongTokenPoolUsdForDeposit: decimalToFloat(1_000_000_000),
+      maxShortTokenPoolUsdForDeposit: decimalToFloat(1_000_000_000),
+      maxOpenInterest: decimalToFloat(1_000_000_000),
+      maxPnlFactorForTraders: decimalToFloat(5, 1),
+      maxPnlFactorForAdl: decimalToFloat(45, 2),
+      minPnlFactorAfterAdl: decimalToFloat(4, 1),
+      maxPnlFactorForDeposits: decimalToFloat(6, 1),
+      maxPnlFactorForWithdrawals: decimalToFloat(3, 1),
     },
     {
       tokens: { indexToken: "TAO", longToken: "USDC", shortToken: "USDC" },
@@ -689,7 +703,7 @@ function fillLongShortValues(market, key, longKey, shortKey) {
 }
 
 export default async function (hre: HardhatRuntimeEnvironment) {
-  const markets = config[hre.network.name];
+  const markets = config[hre.network.name === "baseSepoliaFork" ? "baseSepolia" : hre.network.name];
   const tokens = await hre.gmx.getTokens();
   const defaultMarketConfig = hre.network.name === "hardhat" ? hardhatBaseMarketConfig : baseMarketConfig;
   if (markets) {

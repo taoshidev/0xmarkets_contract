@@ -15,7 +15,9 @@ const func = async ({ deployments, getNamedAccounts }: HardhatRuntimeEnvironment
     ["British Pound", "GBP"],
     ["Euro", "EUR"],
     ["Gold", "GOLD"],
+    ["Silver", "XAG"],
     ["Japaness Yen", "JPY"],
+    ["West Texas Intermediate", "WTI"],
   ]) {
     const nonce = await ethers.provider.getTransactionCount(deployer, "pending");
     const deployment = await deploy(name, {
@@ -32,5 +34,7 @@ const func = async ({ deployments, getNamedAccounts }: HardhatRuntimeEnvironment
 
 func.tags = ["Assets"];
 func.dependencies = ["DataStore", "RoleStore"];
+
+func.skip = async ({ network }: any) => network.name === "localhost";
 
 export default func;

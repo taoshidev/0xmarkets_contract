@@ -4,4 +4,6 @@ const func = createDeployFunction({
   contractName: "GlvWithdrawalEventUtils",
 });
 
+func.skip = async ({ network }: any) => network.name === "localhost";
+
 export default func;

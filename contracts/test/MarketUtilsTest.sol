@@ -33,4 +33,13 @@ contract MarketUtilsTest {
     ) public view returns (uint256) {
         return MarketUtils.getReservedUsd(dataStore, market, prices, isLong);
     }
+
+    function getDynamicMmr(
+        DataStore dataStore,
+        address market,
+        uint256 sizeInUsd,
+        uint256 collateralUsd
+    ) public view returns (uint256) {
+        return MarketUtils.getDynamicMmr(dataStore, market, sizeInUsd, collateralUsd);
+    }
 }

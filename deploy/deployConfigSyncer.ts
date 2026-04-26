@@ -10,7 +10,7 @@ const func = createDeployFunction({
   getDeployArgs: async ({ dependencyContracts, gmx, network, get }) => {
     const riskOracleConfig = await gmx.getRiskOracle();
     let riskOracleAddress = riskOracleConfig.riskOracle;
-    if (network.name === "hardhat") {
+    if (network.name === "hardhat" || network.name === "localhost") {
       const riskOracle = await get("MockRiskOracle");
       riskOracleAddress = riskOracle.address;
     }
@@ -30,7 +30,7 @@ const func = createDeployFunction({
 func.dependencies = func.dependencies.concat(["MockRiskOracle"]);
 
 func.skip = async ({ network }: HardhatRuntimeEnvironment) => {
-  return network.name === "base" || network.name === "baseSepolia";
+  return network.name === "base" || network.name === "baseSepolia" || network.name === "localhost";
 };
 
 export default func;

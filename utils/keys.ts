@@ -99,8 +99,11 @@ export const IS_ORACLE_PROVIDER_ENABLED = hashString("IS_ORACLE_PROVIDER_ENABLED
 export const IS_ATOMIC_ORACLE_PROVIDER = hashString("IS_ATOMIC_ORACLE_PROVIDER");
 export const CHAINLINK_PAYMENT_TOKEN = hashString("CHAINLINK_PAYMENT_TOKEN");
 
-export const MIN_COLLATERAL_FACTOR = hashString("MIN_COLLATERAL_FACTOR");
-export const MIN_MAINTAIN_COLLATERAL_FACTOR = hashString("MIN_MAINTAIN_COLLATERAL_FACTOR");
+// MAX_LEVERAGE already declared at the top of this file — do not redeclare
+export const MIN_LEVERAGE = hashString("MIN_LEVERAGE");
+export const MIN_MMR = hashString("MIN_MMR");
+export const MAX_MMR = hashString("MAX_MMR");
+export const MMR_TUNING = hashString("MMR_TUNING");
 export const MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER = hashString(
   "MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER"
 );
@@ -463,12 +466,24 @@ export function isAtomicOracleProviderKey(provider: string) {
   return hashData(["bytes32", "address"], [IS_ATOMIC_ORACLE_PROVIDER, provider]);
 }
 
-export function minCollateralFactorKey(market: string) {
-  return hashData(["bytes32", "address"], [MIN_COLLATERAL_FACTOR, market]);
+export function maxLeverageKey(market: string) {
+  return hashData(["bytes32", "address"], [MAX_LEVERAGE, market]);
 }
 
-export function minMaintainCollateralFactorKey(market: string) {
-  return hashData(["bytes32", "address"], [MIN_MAINTAIN_COLLATERAL_FACTOR, market]);
+export function minLeverageKey(market: string) {
+  return hashData(["bytes32", "address"], [MIN_LEVERAGE, market]);
+}
+
+export function minMmrKey(market: string) {
+  return hashData(["bytes32", "address"], [MIN_MMR, market]);
+}
+
+export function maxMmrKey(market: string) {
+  return hashData(["bytes32", "address"], [MAX_MMR, market]);
+}
+
+export function mmrTuningKey(market: string) {
+  return hashData(["bytes32", "address"], [MMR_TUNING, market]);
 }
 
 export function minCollateralFactorForOpenInterestMultiplierKey(market: string, isLong: boolean) {

@@ -297,7 +297,8 @@ library Errors {
         string reason,
         int256 remainingCollateralUsd,
         int256 minCollateralUsd,
-        int256 minCollateralUsdForLeverage
+        int256 requiredCollateralUsd,
+        uint256 mmr
     );
 
     // IncreasePositionUtils errors
@@ -312,12 +313,14 @@ library Errors {
         string reason,
         int256 remainingCollateralUsd,
         int256 minCollateralUsd,
-        int256 minCollateralUsdForLeverage
+        int256 requiredCollateralUsd,
+        uint256 mmr
     );
 
     error EmptyPosition();
     error InvalidPositionSizeValues(uint256 sizeInUsd, uint256 sizeInTokens);
     error MinPositionSize(uint256 positionSizeInUsd, uint256 minPositionSizeUsd);
+    error InvalidLeverage(uint256 currLeverage, uint256 minLeverage);
 
     // PositionPricingUtils errors
     error UsdDeltaExceedsLongOpenInterest(int256 usdDelta, uint256 longOpenInterest);
