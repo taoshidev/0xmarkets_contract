@@ -13,6 +13,7 @@ import "../data/Keys.sol";
 
 import "../pricing/PositionPricingUtils.sol";
 import "../order/BaseOrderUtils.sol";
+import "./LeverageLadderUtils.sol";
 
 // @title PositionUtils
 // @dev Library for position functions
@@ -517,10 +518,27 @@ library PositionUtils {
         }
         int256 minCollateralUsdForMaxLeverage = Precision.toFactor(values.positionSizeInUsd, maxLeverage).toInt256();
 
-        // take the tighter of the two floors
-        int256 minCollateralUsdForLeverage = minCollateralUsdForMaxLeverage > minCollateralUsdForOpenInterest
-            ? minCollateralUsdForMaxLeverage
-            : minCollateralUsdForOpenInterest;
+        // ladder-derived floor: required collateral >= sizeInUsd / ladderMaxLeverage,
+        // where ladderMaxLeverage is the cap of the tier the post-trade notional falls into.
+        // Returns type(uint256).max when no ladder is configured for this market, in which
+        // case the floor contributes 0 and the comparison is unchanged from pre-ladder behaviour.
+        uint256 ladderMaxLeverage = LeverageLadderUtils.getMaxLeverageForNotional(
+            dataStore,
+            market.marketToken,
+            values.positionSizeInUsd
+        );
+        int256 minCollateralUsdForLadderTier = ladderMaxLeverage == type(uint256).max
+            ? int256(0)
+            : Precision.toFactor(values.positionSizeInUsd, ladderMaxLeverage).toInt256();
+
+        // take the tightest of the three floors (max_leverage, OI multiplier, ladder)
+        int256 minCollateralUsdForLeverage = minCollateralUsdForMaxLeverage;
+        if (minCollateralUsdForOpenInterest > minCollateralUsdForLeverage) {
+            minCollateralUsdForLeverage = minCollateralUsdForOpenInterest;
+        }
+        if (minCollateralUsdForLadderTier > minCollateralUsdForLeverage) {
+            minCollateralUsdForLeverage = minCollateralUsdForLadderTier;
+        }
 
         bool willBeSufficient = remainingCollateralUsd >= minCollateralUsdForLeverage;
 

@@ -270,6 +270,14 @@ library Keys {
     bytes32 public constant MAX_MMR = keccak256(abi.encode("MAX_MMR"));
     // @dev key for the tuning multiplier applied to the leverage ratio in the dynamic MMR formula
     bytes32 public constant MMR_TUNING = keccak256(abi.encode("MMR_TUNING"));
+
+    // @dev key for the number of leverage ladder tiers configured per market
+    bytes32 public constant LEVERAGE_LADDER_TIER_COUNT = keccak256(abi.encode("LEVERAGE_LADDER_TIER_COUNT"));
+    // @dev key for the upper notional bound of a leverage ladder tier
+    bytes32 public constant LEVERAGE_LADDER_MAX_NOTIONAL = keccak256(abi.encode("LEVERAGE_LADDER_MAX_NOTIONAL"));
+    // @dev key for the max leverage allowed within a leverage ladder tier
+    bytes32 public constant LEVERAGE_LADDER_MAX_LEVERAGE = keccak256(abi.encode("LEVERAGE_LADDER_MAX_LEVERAGE"));
+
     // @dev key for the min collateral factor for open interest multiplier
     bytes32 public constant MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER = keccak256(abi.encode("MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER"));
     // @dev key for the min allowed collateral in USD
@@ -1076,6 +1084,37 @@ library Keys {
        return keccak256(abi.encode(
            MMR_TUNING,
            market
+       ));
+   }
+
+   // @dev the leverage ladder tier count key
+   // @param market the market the ladder is configured for
+   function leverageLadderTierCountKey(address market) internal pure returns (bytes32) {
+       return keccak256(abi.encode(
+           LEVERAGE_LADDER_TIER_COUNT,
+           market
+       ));
+   }
+
+   // @dev the leverage ladder max notional key for a given tier
+   // @param market the market the ladder is configured for
+   // @param tierIndex the zero-based index of the tier
+   function leverageLadderMaxNotionalKey(address market, uint256 tierIndex) internal pure returns (bytes32) {
+       return keccak256(abi.encode(
+           LEVERAGE_LADDER_MAX_NOTIONAL,
+           market,
+           tierIndex
+       ));
+   }
+
+   // @dev the leverage ladder max leverage key for a given tier
+   // @param market the market the ladder is configured for
+   // @param tierIndex the zero-based index of the tier
+   function leverageLadderMaxLeverageKey(address market, uint256 tierIndex) internal pure returns (bytes32) {
+       return keccak256(abi.encode(
+           LEVERAGE_LADDER_MAX_LEVERAGE,
+           market,
+           tierIndex
        ));
    }
 
