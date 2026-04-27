@@ -253,6 +253,18 @@ library Keys {
     bytes32 public constant REFUND_EXECUTION_FEE_GAS_LIMIT = keccak256(abi.encode("REFUND_EXECUTION_FEE_GAS_LIMIT"));
     bytes32 public constant SAVED_CALLBACK_CONTRACT = keccak256(abi.encode("SAVED_CALLBACK_CONTRACT"));
 
+    // @dev key for the per-market max leverage 
+    bytes32 public constant MAX_LEVERAGE = keccak256(abi.encode("MAX_LEVERAGE"));
+    // @dev key for the per-market min leverage
+    bytes32 public constant MIN_LEVERAGE = keccak256(abi.encode("MIN_LEVERAGE"));
+
+    // @dev key for the leverage ladder tier count per market
+    bytes32 public constant LEVERAGE_LADDER_TIER_COUNT = keccak256(abi.encode("LEVERAGE_LADDER_TIER_COUNT"));
+    // @dev key for the leverage ladder tier max notional
+    bytes32 public constant LEVERAGE_LADDER_MAX_NOTIONAL = keccak256(abi.encode("LEVERAGE_LADDER_MAX_NOTIONAL"));
+    // @dev key for the leverage ladder tier max leverage
+    bytes32 public constant LEVERAGE_LADDER_MAX_LEVERAGE = keccak256(abi.encode("LEVERAGE_LADDER_MAX_LEVERAGE"));
+
     // @dev key for the min collateral factor
     bytes32 public constant MIN_COLLATERAL_FACTOR = keccak256(abi.encode("MIN_COLLATERAL_FACTOR"));
     // @dev key for the min collateral factor for open interest multiplier
@@ -993,6 +1005,55 @@ library Keys {
            SAVED_CALLBACK_CONTRACT,
            account,
            market
+       ));
+   }
+
+   // @dev the per-market max leverage key
+   // @param market the market for the max leverage
+   function maxLeverageKey(address market) internal pure returns (bytes32) {
+       return keccak256(abi.encode(
+           MAX_LEVERAGE,
+           market
+       ));
+   }
+
+   // @dev the per-market min leverage key 
+   // @param market the market for the min leverage
+   function minLeverageKey(address market) internal pure returns (bytes32) {
+       return keccak256(abi.encode(
+           MIN_LEVERAGE,
+           market
+       ));
+   }
+
+   // @dev the leverage ladder tier count key
+   // @param market the market for the leverage ladder
+   function leverageLadderTierCountKey(address market) internal pure returns (bytes32) {
+       return keccak256(abi.encode(
+           LEVERAGE_LADDER_TIER_COUNT,
+           market
+       ));
+   }
+
+   // @dev the leverage ladder max notional key for a given tier
+   // @param market the market for the leverage ladder
+   // @param tierIndex the tier index
+   function leverageLadderMaxNotionalKey(address market, uint256 tierIndex) internal pure returns (bytes32) {
+       return keccak256(abi.encode(
+           LEVERAGE_LADDER_MAX_NOTIONAL,
+           market,
+           tierIndex
+       ));
+   }
+
+   // @dev the leverage ladder max leverage key for a given tier
+   // @param market the market for the leverage ladder
+   // @param tierIndex the tier index
+   function leverageLadderMaxLeverageKey(address market, uint256 tierIndex) internal pure returns (bytes32) {
+       return keccak256(abi.encode(
+           LEVERAGE_LADDER_MAX_LEVERAGE,
+           market,
+           tierIndex
        ));
    }
 

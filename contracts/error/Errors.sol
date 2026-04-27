@@ -300,6 +300,17 @@ library Errors {
     error InsufficientCollateralAmount(uint256 collateralAmount, int256 collateralDeltaAmount);
     error InsufficientCollateralUsd(int256 remainingCollateralUsd);
 
+    // Dynamic MMR errors 
+    error MaxLeverageExceeded(uint256 currentLeverage, uint256 maxLeverage);
+
+    // LeverageLadder errors
+    error LeverageLadderMisconfigured();
+    error MaxLeverageExceededForTier(
+        uint256 notionalUsd,
+        uint256 attemptedLeverage,
+        uint256 tierMaxLeverage
+    );
+
     // PositionStoreUtils errors
     error PositionNotFound(bytes32 key);
 

@@ -1,3 +1,5 @@
+import { BigNumberish } from "ethers";
+
 import { hashString, hashData } from "./hash";
 
 export const WNT = hashString("WNT");
@@ -96,6 +98,12 @@ export const MAX_ORACLE_TIMESTAMP_RANGE = hashString("MAX_ORACLE_TIMESTAMP_RANGE
 export const IS_ORACLE_PROVIDER_ENABLED = hashString("IS_ORACLE_PROVIDER_ENABLED");
 export const IS_ATOMIC_ORACLE_PROVIDER = hashString("IS_ATOMIC_ORACLE_PROVIDER");
 export const CHAINLINK_PAYMENT_TOKEN = hashString("CHAINLINK_PAYMENT_TOKEN");
+
+export const MIN_LEVERAGE = hashString("MIN_LEVERAGE");
+
+export const LEVERAGE_LADDER_TIER_COUNT = hashString("LEVERAGE_LADDER_TIER_COUNT");
+export const LEVERAGE_LADDER_MAX_NOTIONAL = hashString("LEVERAGE_LADDER_MAX_NOTIONAL");
+export const LEVERAGE_LADDER_MAX_LEVERAGE = hashString("LEVERAGE_LADDER_MAX_LEVERAGE");
 
 export const MIN_COLLATERAL_FACTOR = hashString("MIN_COLLATERAL_FACTOR");
 export const MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER = hashString(
@@ -440,6 +448,26 @@ export function isOracleProviderEnabledKey(provider: string) {
 
 export function isAtomicOracleProviderKey(provider: string) {
   return hashData(["bytes32", "address"], [IS_ATOMIC_ORACLE_PROVIDER, provider]);
+}
+
+export function maxLeverageKey(market: string) {
+  return hashData(["bytes32", "address"], [MAX_LEVERAGE, market]);
+}
+
+export function minLeverageKey(market: string) {
+  return hashData(["bytes32", "address"], [MIN_LEVERAGE, market]);
+}
+
+export function leverageLadderTierCountKey(market: string) {
+  return hashData(["bytes32", "address"], [LEVERAGE_LADDER_TIER_COUNT, market]);
+}
+
+export function leverageLadderMaxNotionalKey(market: string, tierIndex: BigNumberish) {
+  return hashData(["bytes32", "address", "uint256"], [LEVERAGE_LADDER_MAX_NOTIONAL, market, tierIndex]);
+}
+
+export function leverageLadderMaxLeverageKey(market: string, tierIndex: BigNumberish) {
+  return hashData(["bytes32", "address", "uint256"], [LEVERAGE_LADDER_MAX_LEVERAGE, market, tierIndex]);
 }
 
 export function minCollateralFactorKey(market: string) {

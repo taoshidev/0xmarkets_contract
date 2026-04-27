@@ -19,6 +19,13 @@ export type BaseMarketConfig = {
   minCollateralFactorForOpenInterestMultiplierLong?: BigNumberish;
   minCollateralFactorForOpenInterestMultiplierShort?: BigNumberish;
 
+  // Dynamic MMR
+  maxLeverage?: BigNumberish;
+  minLeverage?: BigNumberish;
+
+  // Leverage ladder
+  leverageLadder?: { maxNotionalUsd: BigNumberish; maxLeverage: BigNumberish }[];
+
   maxLongTokenPoolAmount: BigNumberish;
   maxShortTokenPoolAmount: BigNumberish;
 
