@@ -278,6 +278,65 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         eventEmitter.emitEventLog1("SetBaselineSwap", Cast.toBytes32(market), eventData);
     }
 
+    // @param market the market the ladder is configured for
+    // @param maxNotionals the upper notional bound for each tier (in USD, 30 decimals)
+    // @param maxLeverages the max leverage for each tier (same precision as MAX_LEVERAGE)
+    function setLeverageLadder(
+        address market,
+        uint256[] calldata maxNotionals,
+        uint256[] calldata maxLeverages
+    ) external onlyConfigKeeper nonReentrant {
+        uint256 n = maxNotionals.length;
+        if (n == 0 || n != maxLeverages.length) {
+            revert Errors.LeverageLadderMisconfigured();
+        }
+
+        uint256 marketMaxLev = MarketUtils.getMaxLeverage(dataStore, market);
+        uint256 marketMinLev = MarketUtils.getMinLeverage(dataStore, market);
+
+        for (uint256 i = 0; i < n; i++) {
+            // strictly ascending notionals
+            if (i > 0 && maxNotionals[i] <= maxNotionals[i - 1]) {
+                revert Errors.LeverageLadderMisconfigured();
+            }
+            // non-increasing leverages (larger tiers never get more leverage)
+            if (i > 0 && maxLeverages[i] > maxLeverages[i - 1]) {
+                revert Errors.LeverageLadderMisconfigured();
+            }
+            // respect market-level band; min_leverage > 0 is opt-in
+            if (maxLeverages[i] > marketMaxLev) {
+                revert Errors.LeverageLadderMisconfigured();
+            }
+            if (marketMinLev > 0 && maxLeverages[i] < marketMinLev) {
+                revert Errors.LeverageLadderMisconfigured();
+            }
+
+            dataStore.setUint(Keys.leverageLadderMaxNotionalKey(market, i), maxNotionals[i]);
+            dataStore.setUint(Keys.leverageLadderMaxLeverageKey(market, i), maxLeverages[i]);
+        }
+
+        // tail row must be the catch-all
+        if (maxNotionals[n - 1] != type(uint256).max) {
+            revert Errors.LeverageLadderMisconfigured();
+        }
+
+        // clear stale tier rows from any previous (longer) ladder
+        uint256 oldCount = dataStore.getUint(Keys.leverageLadderTierCountKey(market));
+        for (uint256 i = n; i < oldCount; i++) {
+            dataStore.setUint(Keys.leverageLadderMaxNotionalKey(market, i), 0);
+            dataStore.setUint(Keys.leverageLadderMaxLeverageKey(market, i), 0);
+        }
+
+        dataStore.setUint(Keys.leverageLadderTierCountKey(market), n);
+
+        EventUtils.EventLogData memory eventData;
+        eventData.uintItems.initArrayItems(2);
+        eventData.uintItems.setItem(0, "maxNotionals", maxNotionals);
+        eventData.uintItems.setItem(1, "maxLeverages", maxLeverages);
+
+        eventEmitter.emitEventLog1("SetLeverageLadder", Cast.toBytes32(market), eventData);
+    }
+
     // @dev set a bool value
     // @param baseKey the base key of the value to set
     // @param data the additional data to be combined with the base key

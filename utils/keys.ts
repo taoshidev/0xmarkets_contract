@@ -1,3 +1,5 @@
+import { BigNumberish } from "ethers";
+
 import { hashString, hashData } from "./hash";
 
 export const USDC = hashString("USDC");
@@ -104,6 +106,9 @@ export const MIN_LEVERAGE = hashString("MIN_LEVERAGE");
 export const MIN_MMR = hashString("MIN_MMR");
 export const MAX_MMR = hashString("MAX_MMR");
 export const MMR_TUNING = hashString("MMR_TUNING");
+export const LEVERAGE_LADDER_TIER_COUNT = hashString("LEVERAGE_LADDER_TIER_COUNT");
+export const LEVERAGE_LADDER_MAX_NOTIONAL = hashString("LEVERAGE_LADDER_MAX_NOTIONAL");
+export const LEVERAGE_LADDER_MAX_LEVERAGE = hashString("LEVERAGE_LADDER_MAX_LEVERAGE");
 export const MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER = hashString(
   "MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER"
 );
@@ -472,6 +477,18 @@ export function maxLeverageKey(market: string) {
 
 export function minLeverageKey(market: string) {
   return hashData(["bytes32", "address"], [MIN_LEVERAGE, market]);
+}
+
+export function leverageLadderTierCountKey(market: string) {
+  return hashData(["bytes32", "address"], [LEVERAGE_LADDER_TIER_COUNT, market]);
+}
+
+export function leverageLadderMaxNotionalKey(market: string, tierIndex: BigNumberish) {
+  return hashData(["bytes32", "address", "uint256"], [LEVERAGE_LADDER_MAX_NOTIONAL, market, tierIndex]);
+}
+
+export function leverageLadderMaxLeverageKey(market: string, tierIndex: BigNumberish) {
+  return hashData(["bytes32", "address", "uint256"], [LEVERAGE_LADDER_MAX_LEVERAGE, market, tierIndex]);
 }
 
 export function minMmrKey(market: string) {

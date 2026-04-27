@@ -305,6 +305,9 @@ library Errors {
     error InsufficientCollateralAmount(uint256 collateralAmount, int256 collateralDeltaAmount);
     error InsufficientCollateralUsd(int256 remainingCollateralUsd);
 
+    // Config.setLeverageLadder errors
+    error LeverageLadderMisconfigured();
+
     // PositionStoreUtils errors
     error PositionNotFound(bytes32 key);
 

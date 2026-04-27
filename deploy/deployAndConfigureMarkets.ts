@@ -121,6 +121,55 @@ const func = async ({ deployments, getNamedAccounts, ethers, gmx }: HardhatRunti
   if (write) {
     await updateMarketConfig({ write: true });
   }
+
+  // Push leverage ladders per market via Config.setLeverageLadder.
+  // Runs after updateMarketConfig so max_leverage / min_leverage are in place
+  // for the setter's band check. Idempotent: skip if the on-chain ladder
+  // already matches the config exactly (same length + identical tier values).
+  // Refresh the on-chain market index before pushing — markets created earlier
+  // in this run won't appear in the snapshot taken at the top of the function.
+  onchainMarketsByTokens = await getOnchainMarkets(read, dataStore.address);
+
+  for (const marketConfig of markets) {
+    if (marketConfig.swapOnly || marketConfig.leverageLadder === undefined) {
+      continue;
+    }
+
+    const [indexToken, longToken, shortToken] = getMarketTokenAddresses(marketConfig, tokens);
+    const marketKey = getMarketKey(indexToken, longToken, shortToken, marketConfig.reversed);
+    const onchainMarket = onchainMarketsByTokens[marketKey];
+    if (!onchainMarket) {
+      continue;
+    }
+    const marketToken = onchainMarket.marketToken;
+
+    const tiers = marketConfig.leverageLadder;
+    const onchainCount = (await read("DataStore", "getUint", keys.leverageLadderTierCountKey(marketToken))).toNumber();
+
+    let needsUpdate = onchainCount !== tiers.length;
+    if (!needsUpdate) {
+      for (let i = 0; i < tiers.length; i++) {
+        const onchainNotional = await read("DataStore", "getUint", keys.leverageLadderMaxNotionalKey(marketToken, i));
+        const onchainLev = await read("DataStore", "getUint", keys.leverageLadderMaxLeverageKey(marketToken, i));
+        if (!onchainNotional.eq(tiers[i].maxNotionalUsd) || !onchainLev.eq(tiers[i].maxLeverage)) {
+          needsUpdate = true;
+          break;
+        }
+      }
+    }
+
+    if (needsUpdate) {
+      log("setting leverage ladder for market %s (%d tiers)", marketToken, tiers.length);
+      await execute(
+        "Config",
+        { from: deployer, log: true },
+        "setLeverageLadder",
+        marketToken,
+        tiers.map((t) => t.maxNotionalUsd),
+        tiers.map((t) => t.maxLeverage)
+      );
+    }
+  }
 };
 
 func.skip = async ({ gmx, network }) => {
