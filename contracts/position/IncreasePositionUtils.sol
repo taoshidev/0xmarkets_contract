@@ -12,6 +12,7 @@ import "../pricing/PositionPricingUtils.sol";
 import "./Position.sol";
 import "./PositionStoreUtils.sol";
 import "./PositionUtils.sol";
+import "./PositionExecutionPriceUtils.sol";
 import "./PositionEventUtils.sol";
 
 // @title IncreasePositionUtils
@@ -100,7 +101,7 @@ library IncreasePositionUtils {
             );
         }
 
-        (cache.priceImpactUsd, cache.priceImpactAmount, cache.sizeDeltaInTokens, cache.executionPrice) = PositionUtils.getExecutionPriceForIncrease(params, prices.indexTokenPrice);
+        (cache.priceImpactUsd, cache.priceImpactAmount, cache.sizeDeltaInTokens, cache.executionPrice) = PositionExecutionPriceUtils.getExecutionPriceForIncrease(params, prices.indexTokenPrice);
 
         // process the collateral for the given position and order
         PositionPricingUtils.PositionFees memory fees;

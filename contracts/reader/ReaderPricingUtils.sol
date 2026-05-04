@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-v4/utils/math/SignedMath.sol";
 
 import "../position/Position.sol";
 import "../position/PositionUtils.sol";
+import "../position/PositionExecutionPriceUtils.sol";
 import "../market/MarketUtils.sol";
 import "../market/Market.sol";
 
@@ -175,12 +176,12 @@ library ReaderPricingUtils {
         ExecutionPriceResult memory result;
 
         if (sizeDeltaUsd > 0) {
-            (result.priceImpactUsd, /* priceImpactAmount */, /* sizeDeltaInTokens */, result.executionPrice) = PositionUtils.getExecutionPriceForIncrease(
+            (result.priceImpactUsd, /* priceImpactAmount */, /* sizeDeltaInTokens */, result.executionPrice) = PositionExecutionPriceUtils.getExecutionPriceForIncrease(
                 params,
                 indexTokenPrice
             );
         } else {
-             (result.priceImpactUsd, result.priceImpactDiffUsd, result.executionPrice) = PositionUtils.getExecutionPriceForDecrease(
+             (result.priceImpactUsd, result.priceImpactDiffUsd, result.executionPrice) = PositionExecutionPriceUtils.getExecutionPriceForDecrease(
                 params,
                 indexTokenPrice
             );
