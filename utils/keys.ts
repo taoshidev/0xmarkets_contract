@@ -153,6 +153,12 @@ export const POSITION_FEE_RECEIVER_FACTOR = hashString("POSITION_FEE_RECEIVER_FA
 export const POSITION_FEE_SECONDARY_RECEIVER_FACTOR = hashString("POSITION_FEE_SECONDARY_RECEIVER_FACTOR");
 export const LIQUIDATION_FEE_RECEIVER_FACTOR = hashString("LIQUIDATION_FEE_RECEIVER_FACTOR");
 export const LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR = hashString("LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR");
+export const LIQUIDATION_FEE_INSURANCE_FACTOR = hashString("LIQUIDATION_FEE_INSURANCE_FACTOR");
+export const LIQUIDATION_FEE_VALIDATOR_FACTOR = hashString("LIQUIDATION_FEE_VALIDATOR_FACTOR");
+export const LIQUIDATION_FEE_BUYBACK_FACTOR = hashString("LIQUIDATION_FEE_BUYBACK_FACTOR");
+export const INSURANCE_FUND_ADDRESS = hashString("INSURANCE_FUND_ADDRESS");
+export const VALIDATOR_FEE_RECEIVER = hashString("VALIDATOR_FEE_RECEIVER");
+export const BUYBACK_FEE_RECEIVER = hashString("BUYBACK_FEE_RECEIVER");
 export const BORROWING_FEE_RECEIVER_FACTOR = hashString("BORROWING_FEE_RECEIVER_FACTOR");
 export const BORROWING_FEE_SECONDARY_RECEIVER_FACTOR = hashString("BORROWING_FEE_SECONDARY_RECEIVER_FACTOR");
 
@@ -353,8 +359,11 @@ export function cancelOrderFeatureDisabledKey(contract, orderType) {
   return hashData(["bytes32", "address", "uint256"], [CANCEL_ORDER_FEATURE_DISABLED, contract, orderType]);
 }
 
-export function claimableFeeAmountKey(market: string, token: string) {
-  return hashData(["bytes32", "address", "address"], [CLAIMABLE_FEE_AMOUNT, market, token]);
+export function claimableFeeAmountKey(market: string, token: string, receiver?: string) {
+  if (receiver === undefined) {
+    return hashData(["bytes32", "address", "address"], [CLAIMABLE_FEE_AMOUNT, market, token]);
+  }
+  return hashData(["bytes32", "address", "address", "address"], [CLAIMABLE_FEE_AMOUNT, market, token, receiver]);
 }
 
 export function claimableFundingAmountKey(market: string, token: string, account: string) {

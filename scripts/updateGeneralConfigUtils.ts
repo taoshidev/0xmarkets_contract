@@ -147,6 +147,34 @@ const processGeneralConfig = async ({ generalConfig, oracleConfig, handleConfig 
     );
   }
 
+  if (generalConfig.liquidationFeeInsuranceFactor !== undefined) {
+    await handleConfig(
+      "uint",
+      keys.LIQUIDATION_FEE_INSURANCE_FACTOR,
+      "0x",
+      generalConfig.liquidationFeeInsuranceFactor,
+      `liquidationFeeInsuranceFactor`
+    );
+  }
+  if (generalConfig.liquidationFeeValidatorFactor !== undefined) {
+    await handleConfig(
+      "uint",
+      keys.LIQUIDATION_FEE_VALIDATOR_FACTOR,
+      "0x",
+      generalConfig.liquidationFeeValidatorFactor,
+      `liquidationFeeValidatorFactor`
+    );
+  }
+  if (generalConfig.liquidationFeeBuybackFactor !== undefined) {
+    await handleConfig(
+      "uint",
+      keys.LIQUIDATION_FEE_BUYBACK_FACTOR,
+      "0x",
+      generalConfig.liquidationFeeBuybackFactor,
+      `liquidationFeeBuybackFactor`
+    );
+  }
+
   await handleConfig("uint", keys.DEPOSIT_GAS_LIMIT, "0x", generalConfig.depositGasLimit, `depositGasLimit`);
 
   await handleConfig("uint", keys.WITHDRAWAL_GAS_LIMIT, "0x", generalConfig.withdrawalGasLimit, `withdrawalGasLimit`);

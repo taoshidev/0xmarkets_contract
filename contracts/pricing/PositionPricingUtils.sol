@@ -91,6 +91,9 @@ library PositionPricingUtils {
         uint256 positionFeeSecondaryReceiverFactor;
         uint256 feeReceiverAmount;
         uint256 secondaryFeeReceiverAmount;
+        uint256 insuranceFeeAmount;
+        uint256 validatorFeeAmount;
+        uint256 buybackFeeAmount;
         uint256 feeAmountForPool;
         uint256 positionFeeAmountForPool;
         uint256 positionFeeAmount;
@@ -112,6 +115,15 @@ library PositionPricingUtils {
         uint256 liquidationFeeAmountForFeeReceiver;
         uint256 liquidationFeeSecondaryReceiverFactor;
         uint256 liquidationFeeAmountForSecondaryReceiver;
+        // 4-way split extension: per-share factors + amounts. Any share whose
+        // address is unset (address(0)) or factor is zero is skipped; the
+        // remainder accrues to the LP pool as before.
+        uint256 liquidationFeeInsuranceFactor;
+        uint256 liquidationFeeAmountForInsurance;
+        uint256 liquidationFeeValidatorFactor;
+        uint256 liquidationFeeAmountForValidator;
+        uint256 liquidationFeeBuybackFactor;
+        uint256 liquidationFeeAmountForBuyback;
     }
 
     // @param affiliate the referral affiliate of the trader
@@ -320,9 +332,15 @@ library PositionPricingUtils {
     // @param shortToken the short token of the market
     // @param sizeDeltaUsd the change in position size
     // @return PositionFees
+    // Marked `public` (was `internal`) to force PositionUtils to call this via
+    // DELEGATECALL rather than inline it. After the liquidation 4-way split
+    // expanded PositionFees / PositionLiquidationFees, the optimizer started
+    // inlining the whole call into PositionUtils — pushing its bytecode past
+    // EIP-170's 24576-byte deploy limit. Public preserves the library
+    // boundary and keeps PositionUtils deployable.
     function getPositionFees(
         GetPositionFeesParams memory params
-    ) internal view returns (PositionFees memory) {
+    ) public view returns (PositionFees memory) {
         PositionFees memory fees = getPositionFeesAfterReferral(
             params.dataStore,
             params.referralStorage,
@@ -352,7 +370,10 @@ library PositionPricingUtils {
             fees.borrowing.borrowingFeeAmountForSecondaryReceiver +
             fees.liquidation.liquidationFeeAmount -
             fees.liquidation.liquidationFeeAmountForSecondaryReceiver -
-            fees.liquidation.liquidationFeeAmountForFeeReceiver;
+            fees.liquidation.liquidationFeeAmountForFeeReceiver -
+            fees.liquidation.liquidationFeeAmountForInsurance -
+            fees.liquidation.liquidationFeeAmountForValidator -
+            fees.liquidation.liquidationFeeAmountForBuyback;
 
         fees.feeReceiverAmount +=
             fees.borrowing.borrowingFeeAmountForFeeReceiver +
@@ -361,6 +382,13 @@ library PositionPricingUtils {
         fees.secondaryFeeReceiverAmount +=
             fees.borrowing.borrowingFeeAmountForSecondaryReceiver +
             fees.liquidation.liquidationFeeAmountForSecondaryReceiver;
+
+        // The 4-way split goes through its own dedicated receivers; not folded
+        // into feeReceiverAmount / secondaryFeeReceiverAmount because those are
+        // shared with non-liquidation flows (positionFee, borrowingFee).
+        fees.insuranceFeeAmount = fees.liquidation.liquidationFeeAmountForInsurance;
+        fees.validatorFeeAmount = fees.liquidation.liquidationFeeAmountForValidator;
+        fees.buybackFeeAmount = fees.liquidation.liquidationFeeAmountForBuyback;
 
         fees.funding.latestFundingFeeAmountPerSize = MarketUtils.getFundingFeeAmountPerSize(
             params.dataStore,
@@ -597,6 +625,16 @@ library PositionPricingUtils {
         liquidationFees.liquidationFeeAmountForFeeReceiver = Precision.applyFactor(liquidationFees.liquidationFeeAmount, liquidationFees.liquidationFeeReceiverFactor);
         liquidationFees.liquidationFeeSecondaryReceiverFactor = dataStore.getUint(Keys.LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR);
         liquidationFees.liquidationFeeAmountForSecondaryReceiver = Precision.applyFactor(liquidationFees.liquidationFeeAmount, liquidationFees.liquidationFeeSecondaryReceiverFactor);
+        // 4-way split: insurance / validator / buyback. Pool gets the remainder
+        // (computed in getPositionFees below). Caller-side responsibility: sum
+        // of all five factors must be <= FLOAT_PRECISION (100%); enforced by
+        // Config.sol range checks at write time, not validated again here.
+        liquidationFees.liquidationFeeInsuranceFactor = dataStore.getUint(Keys.LIQUIDATION_FEE_INSURANCE_FACTOR);
+        liquidationFees.liquidationFeeAmountForInsurance = Precision.applyFactor(liquidationFees.liquidationFeeAmount, liquidationFees.liquidationFeeInsuranceFactor);
+        liquidationFees.liquidationFeeValidatorFactor = dataStore.getUint(Keys.LIQUIDATION_FEE_VALIDATOR_FACTOR);
+        liquidationFees.liquidationFeeAmountForValidator = Precision.applyFactor(liquidationFees.liquidationFeeAmount, liquidationFees.liquidationFeeValidatorFactor);
+        liquidationFees.liquidationFeeBuybackFactor = dataStore.getUint(Keys.LIQUIDATION_FEE_BUYBACK_FACTOR);
+        liquidationFees.liquidationFeeAmountForBuyback = Precision.applyFactor(liquidationFees.liquidationFeeAmount, liquidationFees.liquidationFeeBuybackFactor);
         return liquidationFees;
     }
 }

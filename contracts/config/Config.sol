@@ -408,6 +408,9 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
     // @dev initialize the allowed base keys
     function _initAllowedBaseKeys() internal {
         allowedBaseKeys[Keys.HOLDING_ADDRESS] = true;
+        allowedBaseKeys[Keys.INSURANCE_FUND_ADDRESS] = true;
+        allowedBaseKeys[Keys.VALIDATOR_FEE_RECEIVER] = true;
+        allowedBaseKeys[Keys.BUYBACK_FEE_RECEIVER] = true;
 
         allowedBaseKeys[Keys.MIN_HANDLE_EXECUTION_ERROR_GAS] = true;
         allowedBaseKeys[Keys.MIN_HANDLE_EXECUTION_ERROR_GAS_TO_FORWARD] = true;
@@ -480,6 +483,9 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         allowedBaseKeys[Keys.POSITION_FEE_SECONDARY_RECEIVER_FACTOR] = true;
         allowedBaseKeys[Keys.LIQUIDATION_FEE_RECEIVER_FACTOR] = true;
         allowedBaseKeys[Keys.LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR] = true;
+        allowedBaseKeys[Keys.LIQUIDATION_FEE_INSURANCE_FACTOR] = true;
+        allowedBaseKeys[Keys.LIQUIDATION_FEE_VALIDATOR_FACTOR] = true;
+        allowedBaseKeys[Keys.LIQUIDATION_FEE_BUYBACK_FACTOR] = true;
         allowedBaseKeys[Keys.SWAP_FEE_RECEIVER_FACTOR] = true;
         allowedBaseKeys[Keys.SWAP_FEE_SECONDARY_RECEIVER_FACTOR] = true;
         allowedBaseKeys[Keys.BORROWING_FEE_RECEIVER_FACTOR] = true;
@@ -764,6 +770,9 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
             baseKey == Keys.SWAP_FEE_RECEIVER_FACTOR ||
             baseKey == Keys.BORROWING_FEE_RECEIVER_FACTOR ||
             baseKey == Keys.LIQUIDATION_FEE_RECEIVER_FACTOR ||
+            baseKey == Keys.LIQUIDATION_FEE_INSURANCE_FACTOR ||
+            baseKey == Keys.LIQUIDATION_FEE_VALIDATOR_FACTOR ||
+            baseKey == Keys.LIQUIDATION_FEE_BUYBACK_FACTOR ||
             baseKey == Keys.MAX_PNL_FACTOR ||
             baseKey == Keys.MIN_PNL_FACTOR_AFTER_ADL ||
             baseKey == Keys.OPTIMAL_USAGE_FACTOR ||

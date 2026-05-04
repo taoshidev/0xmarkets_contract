@@ -16,6 +16,14 @@ library Keys {
     bytes32 public constant FEE_RECEIVER = keccak256(abi.encode("FEE_RECEIVER"));
     bytes32 public constant SECONDARY_FEE_RECEIVER = keccak256(abi.encode("SECONDARY_FEE_RECEIVER"));
 
+    // @dev address of the insurance fund — receives a share of liquidation fees
+    // and acts as last-resort backstop for insolvent-close shortfalls.
+    bytes32 public constant INSURANCE_FUND_ADDRESS = keccak256(abi.encode("INSURANCE_FUND_ADDRESS"));
+    // @dev address that accumulates the validator share of liquidation fees
+    bytes32 public constant VALIDATOR_FEE_RECEIVER = keccak256(abi.encode("VALIDATOR_FEE_RECEIVER"));
+    // @dev address that accumulates the alpha-buyback share of liquidation
+    bytes32 public constant BUYBACK_FEE_RECEIVER = keccak256(abi.encode("BUYBACK_FEE_RECEIVER"));
+
     // @dev for holding tokens that could not be sent out
     bytes32 public constant HOLDING_ADDRESS = keccak256(abi.encode("HOLDING_ADDRESS"));
 
@@ -207,6 +215,12 @@ library Keys {
     // @dev key for the percentage amount of liquidation fees to be received
     bytes32 public constant LIQUIDATION_FEE_RECEIVER_FACTOR = keccak256(abi.encode("LIQUIDATION_FEE_RECEIVER_FACTOR"));
     bytes32 public constant LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR = keccak256(abi.encode("LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR"));
+    // @dev key for the share of liquidation fees routed to the insurance fund
+    bytes32 public constant LIQUIDATION_FEE_INSURANCE_FACTOR = keccak256(abi.encode("LIQUIDATION_FEE_INSURANCE_FACTOR"));
+    // @dev key for the share of liquidation fees routed to the validator pool
+    bytes32 public constant LIQUIDATION_FEE_VALIDATOR_FACTOR = keccak256(abi.encode("LIQUIDATION_FEE_VALIDATOR_FACTOR"));
+    // @dev key for the share of liquidation fees routed to alpha buyback
+    bytes32 public constant LIQUIDATION_FEE_BUYBACK_FACTOR = keccak256(abi.encode("LIQUIDATION_FEE_BUYBACK_FACTOR"));
     // @dev key for the percentage amount of swap fees to be received
     bytes32 public constant SWAP_FEE_RECEIVER_FACTOR = keccak256(abi.encode("SWAP_FEE_RECEIVER_FACTOR"));
     bytes32 public constant SWAP_FEE_SECONDARY_RECEIVER_FACTOR = keccak256(abi.encode("SWAP_FEE_SECONDARY_RECEIVER_FACTOR"));

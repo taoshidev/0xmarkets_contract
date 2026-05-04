@@ -346,6 +346,8 @@ library DecreasePositionCollateralUtils {
                 );
             }
 
+            _distributeLiquidationShares(params, fees, collateralToken);
+
             FeeUtils.incrementClaimableUiFeeAmount(
                 params.contracts.dataStore,
                 params.contracts.eventEmitter,
@@ -634,6 +636,52 @@ library DecreasePositionCollateralUtils {
         return (values, getEmptyFees(fees));
     }
 
+    // @dev distributes the insurance / validator / buyback shares of a liquidation fee.
+    function _distributeLiquidationShares(
+        PositionUtils.UpdatePositionParams memory params,
+        PositionPricingUtils.PositionFees memory fees,
+        address collateralToken
+    ) internal {
+        address insuranceFundAddress = params.contracts.dataStore.getAddress(Keys.INSURANCE_FUND_ADDRESS);
+        if (insuranceFundAddress != address(0)) {
+            FeeUtils.incrementClaimableFeeAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                insuranceFundAddress,
+                params.market.marketToken,
+                collateralToken,
+                fees.insuranceFeeAmount,
+                Keys.POSITION_FEE_TYPE
+            );
+        }
+
+        address validatorFeeReceiver = params.contracts.dataStore.getAddress(Keys.VALIDATOR_FEE_RECEIVER);
+        if (validatorFeeReceiver != address(0)) {
+            FeeUtils.incrementClaimableFeeAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                validatorFeeReceiver,
+                params.market.marketToken,
+                collateralToken,
+                fees.validatorFeeAmount,
+                Keys.POSITION_FEE_TYPE
+            );
+        }
+
+        address buybackFeeReceiver = params.contracts.dataStore.getAddress(Keys.BUYBACK_FEE_RECEIVER);
+        if (buybackFeeReceiver != address(0)) {
+            FeeUtils.incrementClaimableFeeAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                buybackFeeReceiver,
+                params.market.marketToken,
+                collateralToken,
+                fees.buybackFeeAmount,
+                Keys.POSITION_FEE_TYPE
+            );
+        }
+    }
+
     function getEmptyFees(
         PositionPricingUtils.PositionFees memory fees
     ) internal pure returns (PositionPricingUtils.PositionFees memory) {
@@ -690,7 +738,13 @@ library DecreasePositionCollateralUtils {
             liquidationFeeReceiverFactor: 0,
             liquidationFeeAmountForFeeReceiver: 0,
             liquidationFeeSecondaryReceiverFactor: 0,
-            liquidationFeeAmountForSecondaryReceiver: 0
+            liquidationFeeAmountForSecondaryReceiver: 0,
+            liquidationFeeInsuranceFactor: 0,
+            liquidationFeeAmountForInsurance: 0,
+            liquidationFeeValidatorFactor: 0,
+            liquidationFeeAmountForValidator: 0,
+            liquidationFeeBuybackFactor: 0,
+            liquidationFeeAmountForBuyback: 0
         });
 
         // all fees are zeroed even though funding may have been paid
@@ -709,6 +763,9 @@ library DecreasePositionCollateralUtils {
             positionFeeSecondaryReceiverFactor: 0,
             feeReceiverAmount: 0,
             secondaryFeeReceiverAmount: 0,
+            insuranceFeeAmount: 0,
+            validatorFeeAmount: 0,
+            buybackFeeAmount: 0,
             feeAmountForPool: 0,
             positionFeeAmountForPool: 0,
             positionFeeAmount: 0,
