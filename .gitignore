@@ -20,6 +20,7 @@ out
 /cache/
 artifacts
 deployments/localhost
+deployments/baseSepoliaFork
 deployments.txt
 *.log
 .cursorignore*

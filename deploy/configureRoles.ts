@@ -13,6 +13,7 @@ import { grantRoleIfNotGranted, revokeRoleIfGranted } from "../utils/role";
 const rolesToRemove = {
   base: [],
   baseSepolia: [],
+  baseSepoliaFork: [],
   hardhat: [],
   localhost: [],
 };
