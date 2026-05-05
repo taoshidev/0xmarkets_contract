@@ -196,32 +196,6 @@ library ExecuteWithdrawalUtils {
             params.swapPricingType
         );
 
-        address feeReceiver = params.dataStore.getAddress(Keys.FEE_RECEIVER);
-
-        FeeUtils.incrementClaimableFeeAmount(
-            params.dataStore,
-            params.eventEmitter,
-            feeReceiver,
-            market.marketToken,
-            market.longToken,
-            cache.longTokenFees.feeReceiverAmount,
-            Keys.WITHDRAWAL_FEE_TYPE
-        );
-
-        address secondaryFeeReceiver = params.dataStore.getAddress(Keys.SECONDARY_FEE_RECEIVER);
-
-        if (secondaryFeeReceiver != address(0)) {
-            FeeUtils.incrementClaimableFeeAmount(
-                params.dataStore,
-                params.eventEmitter,
-                secondaryFeeReceiver,
-                market.marketToken,
-                market.longToken,
-                cache.longTokenFees.secondaryFeeReceiverAmount,
-                Keys.WITHDRAWAL_FEE_TYPE
-            );
-        }
-
         FeeUtils.incrementClaimableUiFeeAmount(
             params.dataStore,
             params.eventEmitter,
@@ -240,28 +214,6 @@ library ExecuteWithdrawalUtils {
             uiFeeReceiver,
             params.swapPricingType
         );
-
-        FeeUtils.incrementClaimableFeeAmount(
-            params.dataStore,
-            params.eventEmitter,
-            feeReceiver,
-            market.marketToken,
-            market.shortToken,
-            cache.shortTokenFees.feeReceiverAmount,
-            Keys.WITHDRAWAL_FEE_TYPE
-        );
-
-        if (secondaryFeeReceiver != address(0)) {
-            FeeUtils.incrementClaimableFeeAmount(
-                params.dataStore,
-                params.eventEmitter,
-                secondaryFeeReceiver,
-                market.marketToken,
-                market.shortToken,
-                cache.shortTokenFees.secondaryFeeReceiverAmount,
-                Keys.WITHDRAWAL_FEE_TYPE
-            );
-        }
 
         FeeUtils.incrementClaimableUiFeeAmount(
             params.dataStore,

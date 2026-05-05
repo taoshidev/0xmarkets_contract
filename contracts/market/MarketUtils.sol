@@ -310,8 +310,8 @@ library MarketUtils {
             false
         );
 
-        result.borrowingFeePoolFactor = Precision.FLOAT_PRECISION - dataStore.getUint(Keys.BORROWING_FEE_RECEIVER_FACTOR);
-        result.poolValue += Precision.applyFactor(result.totalBorrowingFees, result.borrowingFeePoolFactor).toInt256();
+        result.borrowingFeePoolFactor = Precision.FLOAT_PRECISION;
+        result.poolValue += result.totalBorrowingFees.toInt256();
 
         // !maximize should be used for net pnl as a larger pnl leads to a smaller pool value
         // and a smaller pnl leads to a larger pool value

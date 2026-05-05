@@ -6,31 +6,31 @@ import { updateGeneralConfig } from "../scripts/updateGeneralConfigUtils";
 const func = async ({ gmx }: HardhatRuntimeEnvironment) => {
   const generalConfig = await gmx.getGeneral();
 
-  await setAddressIfDifferent(keys.FEE_RECEIVER, generalConfig.feeReceiver, "fee receiver");
-
-  if (generalConfig.secondaryFeeReceiver !== undefined) {
+  if (generalConfig.veAlphaFeeReceiver !== undefined) {
+    await setAddressIfDifferent(keys.VEALPHA_FEE_RECEIVER, generalConfig.veAlphaFeeReceiver, "veAlpha fee receiver");
+  }
+  if (generalConfig.treasuryFeeReceiver !== undefined) {
+    await setAddressIfDifferent(keys.TREASURY_FEE_RECEIVER, generalConfig.treasuryFeeReceiver, "treasury fee receiver");
+  }
+  if (generalConfig.buybackFeeReceiver !== undefined) {
+    await setAddressIfDifferent(keys.BUYBACK_FEE_RECEIVER, generalConfig.buybackFeeReceiver, "buyback fee receiver");
+  }
+  if (generalConfig.validatorFeeReceiver !== undefined) {
     await setAddressIfDifferent(
-      keys.SECONDARY_FEE_RECEIVER,
-      generalConfig.secondaryFeeReceiver,
-      "secondary fee receiver"
+      keys.VALIDATOR_FEE_RECEIVER,
+      generalConfig.validatorFeeReceiver,
+      "validator fee receiver"
+    );
+  }
+  if (generalConfig.insuranceFundAddress !== undefined) {
+    await setAddressIfDifferent(
+      keys.INSURANCE_FUND_ADDRESS,
+      generalConfig.insuranceFundAddress,
+      "insurance fund address"
     );
   }
 
   await setAddressIfDifferent(keys.HOLDING_ADDRESS, generalConfig.holdingAddress, "holding address");
-
-  await setUintIfDifferent(
-    keys.BORROWING_FEE_RECEIVER_FACTOR,
-    generalConfig.borrowingFeeReceiverFactor,
-    "borrowingFeeReceiverFactor"
-  );
-
-  if (generalConfig.borrowingFeeSecondaryReceiverFactor !== undefined) {
-    await setUintIfDifferent(
-      keys.BORROWING_FEE_SECONDARY_RECEIVER_FACTOR,
-      generalConfig.borrowingFeeSecondaryReceiverFactor,
-      "borrowingFeeSecondaryReceiverFactor"
-    );
-  }
 
   await setBoolIfDifferent(
     keys.SKIP_BORROWING_FEE_FOR_SMALLER_SIDE,

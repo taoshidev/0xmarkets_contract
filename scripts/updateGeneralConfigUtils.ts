@@ -93,57 +93,50 @@ const processGeneralConfig = async ({ generalConfig, oracleConfig, handleConfig 
 
   await handleConfig("uint", keys.MIN_POSITION_SIZE_USD, "0x", generalConfig.minPositionSizeUsd, `minCollateralUsd`);
 
-  await handleConfig(
-    "uint",
-    keys.SWAP_FEE_RECEIVER_FACTOR,
-    "0x",
-    generalConfig.swapFeeReceiverFactor,
-    `swapFeeReceiverFactor`
-  );
-
-  if (generalConfig.swapFeeSecondaryReceiverFactor !== undefined) {
+  if (generalConfig.positionFeeVeAlphaFactor !== undefined) {
     await handleConfig(
       "uint",
-      keys.SWAP_FEE_SECONDARY_RECEIVER_FACTOR,
+      keys.POSITION_FEE_VEALPHA_FACTOR,
       "0x",
-      generalConfig.swapFeeSecondaryReceiverFactor,
-      `swapFeeSecondaryReceiverFactor`
+      generalConfig.positionFeeVeAlphaFactor,
+      `positionFeeVeAlphaFactor`
+    );
+  }
+  if (generalConfig.positionFeeTreasuryFactor !== undefined) {
+    await handleConfig(
+      "uint",
+      keys.POSITION_FEE_TREASURY_FACTOR,
+      "0x",
+      generalConfig.positionFeeTreasuryFactor,
+      `positionFeeTreasuryFactor`
+    );
+  }
+  if (generalConfig.positionFeeBuybackFactor !== undefined) {
+    await handleConfig(
+      "uint",
+      keys.POSITION_FEE_BUYBACK_FACTOR,
+      "0x",
+      generalConfig.positionFeeBuybackFactor,
+      `positionFeeBuybackFactor`
     );
   }
 
-  await handleConfig(
-    "uint",
-    keys.POSITION_FEE_RECEIVER_FACTOR,
-    "0x",
-    generalConfig.positionFeeReceiverFactor,
-    `positionFeeReceiverFactor`
-  );
-
-  if (generalConfig.positionFeeSecondaryReceiverFactor !== undefined) {
+  if (generalConfig.liquidationFeeValidatorFactor !== undefined) {
     await handleConfig(
       "uint",
-      keys.POSITION_FEE_SECONDARY_RECEIVER_FACTOR,
+      keys.LIQUIDATION_FEE_VALIDATOR_FACTOR,
       "0x",
-      generalConfig.positionFeeSecondaryReceiverFactor,
-      `positionFeeSecondaryReceiverFactor`
+      generalConfig.liquidationFeeValidatorFactor,
+      `liquidationFeeValidatorFactor`
     );
   }
-
-  await handleConfig(
-    "uint",
-    keys.LIQUIDATION_FEE_RECEIVER_FACTOR,
-    "0x",
-    generalConfig.liquidationFeeReceiverFactor,
-    `liquidationFeeReceiverFactor`
-  );
-
-  if (generalConfig.liquidationFeeSecondaryReceiverFactor !== undefined) {
+  if (generalConfig.liquidationFeeInsuranceFactor !== undefined) {
     await handleConfig(
       "uint",
-      keys.LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR,
+      keys.LIQUIDATION_FEE_INSURANCE_FACTOR,
       "0x",
-      generalConfig.liquidationFeeSecondaryReceiverFactor,
-      `liquidationFeeSecondaryReceiverFactor`
+      generalConfig.liquidationFeeInsuranceFactor,
+      `liquidationFeeInsuranceFactor`
     );
   }
 

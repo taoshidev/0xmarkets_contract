@@ -232,17 +232,27 @@ describe("Config", () => {
         type: "Uint",
       },
       {
-        key: keys.POSITION_FEE_RECEIVER_FACTOR,
+        key: keys.POSITION_FEE_VEALPHA_FACTOR,
         initial: 0,
         type: "Uint",
       },
       {
-        key: keys.SWAP_FEE_RECEIVER_FACTOR,
+        key: keys.POSITION_FEE_TREASURY_FACTOR,
         initial: 0,
         type: "Uint",
       },
       {
-        key: keys.BORROWING_FEE_RECEIVER_FACTOR,
+        key: keys.POSITION_FEE_BUYBACK_FACTOR,
+        initial: 0,
+        type: "Uint",
+      },
+      {
+        key: keys.LIQUIDATION_FEE_VALIDATOR_FACTOR,
+        initial: 0,
+        type: "Uint",
+      },
+      {
+        key: keys.LIQUIDATION_FEE_INSURANCE_FACTOR,
         initial: 0,
         type: "Uint",
       },

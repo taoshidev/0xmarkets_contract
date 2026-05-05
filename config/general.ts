@@ -7,7 +7,11 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
     // Note that this is only for the hardhat config, the config for all
     // other networks is separate from this
     return {
-      feeReceiver: ethers.constants.AddressZero,
+      veAlphaFeeReceiver: ethers.constants.AddressZero,
+      treasuryFeeReceiver: ethers.constants.AddressZero,
+      buybackFeeReceiver: ethers.constants.AddressZero,
+      validatorFeeReceiver: ethers.constants.AddressZero,
+      insuranceFundAddress: ethers.constants.AddressZero,
       holdingAddress: ethers.constants.AddressZero,
       sequencerUptimeFeed: ethers.constants.AddressZero,
       sequencerGraceDuration: 300,
@@ -53,10 +57,11 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
       minPositionSizeUsd: decimalToFloat(1),
       claimableCollateralTimeDivisor: 60 * 60,
 
-      positionFeeReceiverFactor: 0,
-      swapFeeReceiverFactor: 0,
-      borrowingFeeReceiverFactor: 0,
-      liquidationFeeReceiverFactor: 0,
+      positionFeeVeAlphaFactor: 0,
+      positionFeeTreasuryFactor: 0,
+      positionFeeBuybackFactor: 0,
+      liquidationFeeValidatorFactor: 0,
+      liquidationFeeInsuranceFactor: 0,
 
       skipBorrowingFeeForSmallerSide: false,
 
@@ -111,14 +116,11 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
     minPositionSizeUsd: decimalToFloat(1),
     claimableCollateralTimeDivisor: 60 * 60,
 
-    positionFeeReceiverFactor: decimalToFloat(40, 2), // 40%
-    positionFeeSecondaryReceiverFactor: decimalToFloat(10, 2), // 10%
-    swapFeeReceiverFactor: decimalToFloat(40, 2), // 40%
-    swapFeeSecondaryReceiverFactor: decimalToFloat(10, 2), // 10%
-    borrowingFeeReceiverFactor: decimalToFloat(40, 2), // 40%
-    borrowingFeeSecondaryReceiverFactor: decimalToFloat(10, 2), // 10%
-    liquidationFeeReceiverFactor: decimalToFloat(40, 2), // 40%
-    liquidationFeeSecondaryReceiverFactor: decimalToFloat(10, 2), // 10%
+    positionFeeVeAlphaFactor: 0,
+    positionFeeTreasuryFactor: 0,
+    positionFeeBuybackFactor: 0,
+    liquidationFeeValidatorFactor: 0,
+    liquidationFeeInsuranceFactor: 0,
 
     skipBorrowingFeeForSmallerSide: true,
 
@@ -133,8 +135,11 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
       estimatedGasPerOraclePrice: false,
       executionGasFeeBaseAmount: false,
       executionGasPerOraclePrice: false,
-      feeReceiver: "REPLACE_ME",
-      secondaryFeeReceiver: "REPLACE_ME",
+      veAlphaFeeReceiver: "REPLACE_ME",
+      treasuryFeeReceiver: "REPLACE_ME",
+      buybackFeeReceiver: "REPLACE_ME",
+      validatorFeeReceiver: "REPLACE_ME",
+      insuranceFundAddress: "REPLACE_ME",
       holdingAddress: "REPLACE_ME",
     },
     baseSepolia: {
@@ -142,8 +147,11 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
       estimatedGasPerOraclePrice: false,
       executionGasFeeBaseAmount: false,
       executionGasPerOraclePrice: false,
-      feeReceiver: "REPLACE_ME",
-      secondaryFeeReceiver: "REPLACE_ME",
+      veAlphaFeeReceiver: "REPLACE_ME",
+      treasuryFeeReceiver: "REPLACE_ME",
+      buybackFeeReceiver: "REPLACE_ME",
+      validatorFeeReceiver: "REPLACE_ME",
+      insuranceFundAddress: "REPLACE_ME",
       holdingAddress: "REPLACE_ME",
     },
     localhost: {
@@ -151,7 +159,11 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
       estimatedGasPerOraclePrice: false,
       executionGasFeeBaseAmount: false,
       executionGasPerOraclePrice: false,
-      feeReceiver: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      veAlphaFeeReceiver: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      treasuryFeeReceiver: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      buybackFeeReceiver: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      validatorFeeReceiver: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      insuranceFundAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
       holdingAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     },
   }[network.name === "baseSepoliaFork" ? "baseSepolia" : network.name];

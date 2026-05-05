@@ -320,32 +320,10 @@ library DecreasePositionCollateralUtils {
                 fees.feeAmountForPool.toInt256()
             );
 
-            address feeReceiver = params.contracts.dataStore.getAddress(Keys.FEE_RECEIVER);
             address collateralToken = params.position.collateralToken();
 
-            FeeUtils.incrementClaimableFeeAmount(
-                params.contracts.dataStore,
-                params.contracts.eventEmitter,
-                feeReceiver,
-                params.market.marketToken,
-                collateralToken,
-                fees.feeReceiverAmount,
-                Keys.POSITION_FEE_TYPE
-            );
-
-            address secondaryFeeReceiver = params.contracts.dataStore.getAddress(Keys.SECONDARY_FEE_RECEIVER);
-
-            if (secondaryFeeReceiver != address(0)) {
-                FeeUtils.incrementClaimableFeeAmount(
-                    params.contracts.dataStore,
-                    params.contracts.eventEmitter,
-                    secondaryFeeReceiver,
-                    params.market.marketToken,
-                    collateralToken,
-                    fees.secondaryFeeReceiverAmount,
-                    Keys.POSITION_FEE_TYPE
-                );
-            }
+            _distributeTransactionShares(params, fees, collateralToken);
+            _distributeLiquidationShares(params, fees, collateralToken);
 
             FeeUtils.incrementClaimableUiFeeAmount(
                 params.contracts.dataStore,
@@ -672,11 +650,7 @@ library DecreasePositionCollateralUtils {
 
         PositionPricingUtils.PositionBorrowingFees memory borrowing = PositionPricingUtils.PositionBorrowingFees({
             borrowingFeeUsd: 0,
-            borrowingFeeAmount: 0,
-            borrowingFeeReceiverFactor: 0,
-            borrowingFeeAmountForFeeReceiver: 0,
-            borrowingFeeSecondaryReceiverFactor: 0,
-            borrowingFeeAmountForSecondaryReceiver: 0
+            borrowingFeeAmount: 0
         });
 
         PositionPricingUtils.PositionUiFees memory ui = PositionPricingUtils.PositionUiFees({
@@ -688,10 +662,10 @@ library DecreasePositionCollateralUtils {
         PositionPricingUtils.PositionLiquidationFees memory liquidation = PositionPricingUtils.PositionLiquidationFees({
             liquidationFeeUsd: 0,
             liquidationFeeAmount: 0,
-            liquidationFeeReceiverFactor: 0,
-            liquidationFeeAmountForFeeReceiver: 0,
-            liquidationFeeSecondaryReceiverFactor: 0,
-            liquidationFeeAmountForSecondaryReceiver: 0
+            liquidationFeeValidatorFactor: 0,
+            liquidationFeeAmountForValidator: 0,
+            liquidationFeeInsuranceFactor: 0,
+            liquidationFeeAmountForInsurance: 0
         });
 
         // all fees are zeroed even though funding may have been paid
@@ -706,10 +680,14 @@ library DecreasePositionCollateralUtils {
             collateralTokenPrice: fees.collateralTokenPrice,
             positionFeeFactor: 0,
             protocolFeeAmount: 0,
-            positionFeeReceiverFactor: 0,
-            positionFeeSecondaryReceiverFactor: 0,
-            feeReceiverAmount: 0,
-            secondaryFeeReceiverAmount: 0,
+            positionFeeVeAlphaFactor: 0,
+            positionFeeTreasuryFactor: 0,
+            positionFeeBuybackFactor: 0,
+            veAlphaFeeAmount: 0,
+            treasuryFeeAmount: 0,
+            buybackFeeAmount: 0,
+            validatorFeeAmount: 0,
+            insuranceFeeAmount: 0,
             feeAmountForPool: 0,
             positionFeeAmountForPool: 0,
             positionFeeAmount: 0,
@@ -719,5 +697,82 @@ library DecreasePositionCollateralUtils {
         });
 
         return _fees;
+    }
+
+    function _distributeTransactionShares(
+        PositionUtils.UpdatePositionParams memory params,
+        PositionPricingUtils.PositionFees memory fees,
+        address collateralToken
+    ) internal {
+        address veAlphaFeeReceiver = params.contracts.dataStore.getAddress(Keys.VEALPHA_FEE_RECEIVER);
+        if (veAlphaFeeReceiver != address(0)) {
+            FeeUtils.incrementClaimableFeeAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                veAlphaFeeReceiver,
+                params.market.marketToken,
+                collateralToken,
+                fees.veAlphaFeeAmount,
+                Keys.POSITION_FEE_TYPE
+            );
+        }
+
+        address treasuryFeeReceiver = params.contracts.dataStore.getAddress(Keys.TREASURY_FEE_RECEIVER);
+        if (treasuryFeeReceiver != address(0)) {
+            FeeUtils.incrementClaimableFeeAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                treasuryFeeReceiver,
+                params.market.marketToken,
+                collateralToken,
+                fees.treasuryFeeAmount,
+                Keys.POSITION_FEE_TYPE
+            );
+        }
+
+        address buybackFeeReceiver = params.contracts.dataStore.getAddress(Keys.BUYBACK_FEE_RECEIVER);
+        if (buybackFeeReceiver != address(0)) {
+            FeeUtils.incrementClaimableFeeAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                buybackFeeReceiver,
+                params.market.marketToken,
+                collateralToken,
+                fees.buybackFeeAmount,
+                Keys.POSITION_FEE_TYPE
+            );
+        }
+    }
+
+    function _distributeLiquidationShares(
+        PositionUtils.UpdatePositionParams memory params,
+        PositionPricingUtils.PositionFees memory fees,
+        address collateralToken
+    ) internal {
+        address validatorFeeReceiver = params.contracts.dataStore.getAddress(Keys.VALIDATOR_FEE_RECEIVER);
+        if (validatorFeeReceiver != address(0)) {
+            FeeUtils.incrementClaimableFeeAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                validatorFeeReceiver,
+                params.market.marketToken,
+                collateralToken,
+                fees.validatorFeeAmount,
+                Keys.POSITION_FEE_TYPE
+            );
+        }
+
+        address insuranceFundAddress = params.contracts.dataStore.getAddress(Keys.INSURANCE_FUND_ADDRESS);
+        if (insuranceFundAddress != address(0)) {
+            FeeUtils.incrementClaimableFeeAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                insuranceFundAddress,
+                params.market.marketToken,
+                collateralToken,
+                fees.insuranceFeeAmount,
+                Keys.POSITION_FEE_TYPE
+            );
+        }
     }
 }
