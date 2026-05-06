@@ -11,6 +11,7 @@ import "../pricing/PositionPricingUtils.sol";
 import "./Position.sol";
 import "./PositionEventUtils.sol";
 import "./PositionUtils.sol";
+import "./PositionExecutionPriceUtils.sol";
 import "../order/BaseOrderUtils.sol";
 import "../order/OrderEventUtils.sol";
 
@@ -88,7 +89,7 @@ library DecreasePositionCollateralUtils {
         // priceImpactDiffUsd is the difference between the maximum price impact and the originally calculated price impact
         // e.g. if the originally calculated price impact is -$100, but the capped price impact is -$80
         // then priceImpactDiffUsd would be $20
-        (values.priceImpactUsd, values.priceImpactDiffUsd, values.executionPrice) = PositionUtils.getExecutionPriceForDecrease(params, cache.prices.indexTokenPrice);
+        (values.priceImpactUsd, values.priceImpactDiffUsd, values.executionPrice) = PositionExecutionPriceUtils.getExecutionPriceForDecrease(params, cache.prices.indexTokenPrice);
 
         // the totalPositionPnl is calculated based on the current indexTokenPrice instead of the executionPrice
         // since the executionPrice factors in price impact which should be accounted for separately
