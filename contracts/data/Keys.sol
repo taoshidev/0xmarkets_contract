@@ -19,6 +19,12 @@ library Keys {
     // @dev for holding tokens that could not be sent out
     bytes32 public constant HOLDING_ADDRESS = keccak256(abi.encode("HOLDING_ADDRESS"));
 
+    // @dev address of the singleton InsuranceVault that custodies per-market
+    // insurance reserves. Resolved at runtime from DataStore because the
+    // injection runs inside InsuranceFundUtils (a library) and libraries
+    // cannot hold immutable state, matching the pattern used for HOLDING_ADDRESS.
+    bytes32 public constant INSURANCE_VAULT = keccak256(abi.encode("INSURANCE_VAULT"));
+
     // @dev key for the minimum gas for execution error
     bytes32 public constant MIN_HANDLE_EXECUTION_ERROR_GAS = keccak256(abi.encode("MIN_HANDLE_EXECUTION_ERROR_GAS"));
 
@@ -213,6 +219,34 @@ library Keys {
     // @dev key for the percentage amount of borrowing fees to be received
     bytes32 public constant BORROWING_FEE_RECEIVER_FACTOR = keccak256(abi.encode("BORROWING_FEE_RECEIVER_FACTOR"));
     bytes32 public constant BORROWING_FEE_SECONDARY_RECEIVER_FACTOR = keccak256(abi.encode("BORROWING_FEE_SECONDARY_RECEIVER_FACTOR"));
+
+    // @dev per-market share of liquidationFeeAmount routed into the insurance fund reserve.
+    // Default 0 (off). Range bound enforced in Config._validateRange.
+    bytes32 public constant INSURANCE_FUND_FEE_FACTOR = keccak256(abi.encode("INSURANCE_FUND_FEE_FACTOR"));
+    // @dev per-market share of positionFeeAmount routed into the insurance fund reserve.
+    // Same shape as the liquidation slice; collected on every close, not just liquidations,
+    // so the fund keeps accruing in calm markets and isn't starved when the fund actually matters
+    // (insolvent liquidations skip liquidation-fee collection — see DecreasePositionCollateralUtils.handleEarlyReturn).
+    bytes32 public constant INSURANCE_FUND_POSITION_FEE_FACTOR = keccak256(abi.encode("INSURANCE_FUND_POSITION_FEE_FACTOR"));
+    // @dev per-market realized-drawdown threshold; the fund injects when drawdown fraction exceeds this.
+    // Default type(uint256).max (off).
+    bytes32 public constant INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR = keccak256(abi.encode("INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR"));
+    // @dev per (market, token) reserve balance. Tokens are physically held by the InsuranceVault
+    // singleton; this DataStore entry is the bookkeeping segregating reserves by market+token.
+    // Invariant: InsuranceVault.tokenBalance(token) >= sum over markets of insuranceFundBalanceKey(market, token).
+    bytes32 public constant INSURANCE_FUND_BALANCE = keccak256(abi.encode("INSURANCE_FUND_BALANCE"));
+    // @dev per-market USD snapshot of poolValueExcludingUnrealizedPnl at the last epoch start.
+    // v1 is USD-denominated. A v2 upgrade to token-denominated snapshots will replace this with
+    // per-token amount snapshots; the key name is preserved here for the USD path.
+    bytes32 public constant INSURANCE_FUND_EPOCH_POOL_VALUE = keccak256(abi.encode("INSURANCE_FUND_EPOCH_POOL_VALUE"));
+    // @dev per-market timestamp of the last epoch start. Treat the fund as disabled
+    // when this is zero (first epoch) or older than MAX_EPOCH_AGE (stale snapshot).
+    bytes32 public constant INSURANCE_FUND_EPOCH_START = keccak256(abi.encode("INSURANCE_FUND_EPOCH_START"));
+    // @dev maximum allowed age of an epoch snapshot before the fund auto-disables (global, seconds).
+    // Guards against a keeper missing the Friday snapshot and the next week running off a stale baseline.
+    bytes32 public constant INSURANCE_FUND_MAX_EPOCH_AGE = keccak256(abi.encode("INSURANCE_FUND_MAX_EPOCH_AGE"));
+    // @dev epoch length used by SettlementHandler.snapshotEpoch idempotency guard (global, seconds).
+    bytes32 public constant INSURANCE_FUND_EPOCH_LENGTH = keccak256(abi.encode("INSURANCE_FUND_EPOCH_LENGTH"));
 
     // @dev key for the base gas limit used when estimating execution fee
     bytes32 public constant ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1 = keccak256(abi.encode("ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1"));
@@ -1206,6 +1240,55 @@ library Keys {
     function liquidationFeeFactorKey(address market) internal pure returns (bytes32) {
         return keccak256(abi.encode(
             LIQUIDATION_FEE_FACTOR,
+            market
+        ));
+    }
+
+    // @dev key for the share of liquidationFeeAmount routed into the insurance fund (per market)
+    function insuranceFundFeeFactorKey(address market) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            INSURANCE_FUND_FEE_FACTOR,
+            market
+        ));
+    }
+
+    // @dev key for the share of positionFeeAmount routed into the insurance fund (per market)
+    function insuranceFundPositionFeeFactorKey(address market) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            INSURANCE_FUND_POSITION_FEE_FACTOR,
+            market
+        ));
+    }
+
+    // @dev key for the realized-drawdown trigger threshold (per market)
+    function insuranceFundDrawdownTriggerFactorKey(address market) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR,
+            market
+        ));
+    }
+
+    // @dev key for the per (market, token) insurance reserve balance
+    function insuranceFundBalanceKey(address market, address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            INSURANCE_FUND_BALANCE,
+            market,
+            token
+        ));
+    }
+
+    // @dev key for the per-market USD pool-value snapshot at last epoch start
+    function insuranceFundEpochPoolValueKey(address market) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            INSURANCE_FUND_EPOCH_POOL_VALUE,
+            market
+        ));
+    }
+
+    // @dev key for the per-market timestamp of the last epoch start
+    function insuranceFundEpochStartKey(address market) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            INSURANCE_FUND_EPOCH_START,
             market
         ));
     }
