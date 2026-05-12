@@ -156,6 +156,16 @@ export const LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR = hashString("LIQUIDATION
 export const BORROWING_FEE_RECEIVER_FACTOR = hashString("BORROWING_FEE_RECEIVER_FACTOR");
 export const BORROWING_FEE_SECONDARY_RECEIVER_FACTOR = hashString("BORROWING_FEE_SECONDARY_RECEIVER_FACTOR");
 
+export const INSURANCE_VAULT = hashString("INSURANCE_VAULT");
+export const INSURANCE_FUND_FEE_FACTOR = hashString("INSURANCE_FUND_FEE_FACTOR");
+export const INSURANCE_FUND_POSITION_FEE_FACTOR = hashString("INSURANCE_FUND_POSITION_FEE_FACTOR");
+export const INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR = hashString("INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR");
+export const INSURANCE_FUND_BALANCE = hashString("INSURANCE_FUND_BALANCE");
+export const INSURANCE_FUND_EPOCH_POOL_VALUE = hashString("INSURANCE_FUND_EPOCH_POOL_VALUE");
+export const INSURANCE_FUND_EPOCH_START = hashString("INSURANCE_FUND_EPOCH_START");
+export const INSURANCE_FUND_MAX_EPOCH_AGE = hashString("INSURANCE_FUND_MAX_EPOCH_AGE");
+export const INSURANCE_FUND_EPOCH_LENGTH = hashString("INSURANCE_FUND_EPOCH_LENGTH");
+
 export const SWAP_FEE_FACTOR = hashString("SWAP_FEE_FACTOR");
 export const DEPOSIT_FEE_FACTOR = hashString("DEPOSIT_FEE_FACTOR");
 export const WITHDRAWAL_FEE_FACTOR = hashString("WITHDRAWAL_FEE_FACTOR");
@@ -600,6 +610,30 @@ export function proDiscountFactorKey(proTier: number) {
 
 export function liquidationFeeFactorKey(market: string) {
   return hashData(["bytes32", "address"], [LIQUIDATION_FEE_FACTOR, market]);
+}
+
+export function insuranceFundFeeFactorKey(market: string) {
+  return hashData(["bytes32", "address"], [INSURANCE_FUND_FEE_FACTOR, market]);
+}
+
+export function insuranceFundPositionFeeFactorKey(market: string) {
+  return hashData(["bytes32", "address"], [INSURANCE_FUND_POSITION_FEE_FACTOR, market]);
+}
+
+export function insuranceFundDrawdownTriggerFactorKey(market: string) {
+  return hashData(["bytes32", "address"], [INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR, market]);
+}
+
+export function insuranceFundBalanceKey(market: string, token: string) {
+  return hashData(["bytes32", "address", "address"], [INSURANCE_FUND_BALANCE, market, token]);
+}
+
+export function insuranceFundEpochPoolValueKey(market: string) {
+  return hashData(["bytes32", "address"], [INSURANCE_FUND_EPOCH_POOL_VALUE, market]);
+}
+
+export function insuranceFundEpochStartKey(market: string) {
+  return hashData(["bytes32", "address"], [INSURANCE_FUND_EPOCH_START, market]);
 }
 
 export function latestAdlBlockKey(market: string, isLong: boolean) {
