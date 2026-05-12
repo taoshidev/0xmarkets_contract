@@ -1,8 +1,38 @@
-import { BigNumberish } from "ethers";
+import { BigNumberish, ethers } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 import { SECONDS_PER_DAY, SECONDS_PER_HOUR, SECONDS_PER_YEAR } from "../utils/constants";
 import { bigNumberify, decimalToFloat, expandDecimals, exponentToFloat, percentageToFloat } from "../utils/math";
+
+// Leverage ladder presets per asset class. Each tier caps max leverage as a function
+// of post-trade notional (in USD with 30 decimals). Final tier's notional is MaxUint256
+// (catch-all). Each tier's leverage must be ≤ the market's max_leverage.
+const fxLeverageLadder = [
+  { maxNotionalUsd: expandDecimals(50_000, 30), maxLeverage: decimalToFloat(200) },
+  { maxNotionalUsd: expandDecimals(200_000, 30), maxLeverage: decimalToFloat(150) },
+  { maxNotionalUsd: expandDecimals(500_000, 30), maxLeverage: decimalToFloat(100) },
+  { maxNotionalUsd: expandDecimals(1_000_000, 30), maxLeverage: decimalToFloat(50) },
+  { maxNotionalUsd: expandDecimals(2_500_000, 30), maxLeverage: decimalToFloat(25) },
+  { maxNotionalUsd: ethers.constants.MaxUint256, maxLeverage: decimalToFloat(10) },
+];
+
+const goldLeverageLadder = [
+  { maxNotionalUsd: expandDecimals(50_000, 30), maxLeverage: decimalToFloat(100) },
+  { maxNotionalUsd: expandDecimals(200_000, 30), maxLeverage: decimalToFloat(75) },
+  { maxNotionalUsd: expandDecimals(500_000, 30), maxLeverage: decimalToFloat(50) },
+  { maxNotionalUsd: expandDecimals(1_000_000, 30), maxLeverage: decimalToFloat(25) },
+  { maxNotionalUsd: expandDecimals(2_500_000, 30), maxLeverage: decimalToFloat(15) },
+  { maxNotionalUsd: ethers.constants.MaxUint256, maxLeverage: decimalToFloat(5) },
+];
+
+const cryptoLeverageLadder = [
+  { maxNotionalUsd: expandDecimals(25_000, 30), maxLeverage: decimalToFloat(50) },
+  { maxNotionalUsd: expandDecimals(100_000, 30), maxLeverage: decimalToFloat(25) },
+  { maxNotionalUsd: expandDecimals(250_000, 30), maxLeverage: decimalToFloat(15) },
+  { maxNotionalUsd: expandDecimals(500_000, 30), maxLeverage: decimalToFloat(10) },
+  { maxNotionalUsd: expandDecimals(1_000_000, 30), maxLeverage: decimalToFloat(5) },
+  { maxNotionalUsd: ethers.constants.MaxUint256, maxLeverage: decimalToFloat(3) },
+];
 
 export type BaseMarketConfig = {
   reserveFactor: BigNumberish;
@@ -23,6 +53,12 @@ export type BaseMarketConfig = {
   minMmr?: BigNumberish;
   maxMmr?: BigNumberish;
   mmrTuning?: BigNumberish;
+
+  // Leverage ladder. Each tier caps max leverage as a function of post-trade notional.
+  // Tiers must be sorted strictly ascending by maxNotionalUsd. maxLeverages must be
+  // non-increasing. The final tier's maxNotionalUsd must equal MaxUint256 (catch-all).
+  // Each maxLeverage must lie within [minLeverage, maxLeverage] for the market.
+  leverageLadder?: { maxNotionalUsd: BigNumberish; maxLeverage: BigNumberish }[];
 
   maxLongTokenPoolAmount: BigNumberish;
   maxShortTokenPoolAmount: BigNumberish;
@@ -386,6 +422,8 @@ const fxMarketOverrides: Partial<BaseMarketConfig> = {
   minMmr: percentageToFloat("0.1%"),
   maxMmr: percentageToFloat("10%"),
   mmrTuning: percentageToFloat("0.1%"), // 0.5 / 500x
+
+  leverageLadder: fxLeverageLadder,
 };
 
 const commodityMarketOverrides: Partial<BaseMarketConfig> = {
@@ -397,6 +435,8 @@ const commodityMarketOverrides: Partial<BaseMarketConfig> = {
   minMmr: percentageToFloat("0.2%"),
   maxMmr: percentageToFloat("10%"),
   mmrTuning: percentageToFloat("0.25%"), // 0.5 / 200x
+
+  leverageLadder: goldLeverageLadder,
 };
 
 const cryptoMarketOverrides: Partial<BaseMarketConfig> = {
@@ -408,6 +448,8 @@ const cryptoMarketOverrides: Partial<BaseMarketConfig> = {
   minMmr: percentageToFloat("0.3%"),
   maxMmr: percentageToFloat("10%"),
   mmrTuning: percentageToFloat("0.5%"), // 0.5 / 100x
+
+  leverageLadder: cryptoLeverageLadder,
 };
 
 const stablecoinSwapMarketConfig: Partial<SpotMarketConfig> = {
