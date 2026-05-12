@@ -691,7 +691,9 @@ library DecreasePositionCollateralUtils {
             liquidationFeeReceiverFactor: 0,
             liquidationFeeAmountForFeeReceiver: 0,
             liquidationFeeSecondaryReceiverFactor: 0,
-            liquidationFeeAmountForSecondaryReceiver: 0
+            liquidationFeeAmountForSecondaryReceiver: 0,
+            liquidationFeeInsuranceFactor: 0,
+            liquidationFeeAmountForInsurance: 0
         });
 
         // all fees are zeroed even though funding may have been paid
@@ -710,6 +712,8 @@ library DecreasePositionCollateralUtils {
             positionFeeSecondaryReceiverFactor: 0,
             feeReceiverAmount: 0,
             secondaryFeeReceiverAmount: 0,
+            positionFeeInsuranceFactor: 0,
+            positionFeeAmountForInsurance: 0,
             feeAmountForPool: 0,
             positionFeeAmountForPool: 0,
             positionFeeAmount: 0,

@@ -91,6 +91,12 @@ library PositionPricingUtils {
         uint256 positionFeeSecondaryReceiverFactor;
         uint256 feeReceiverAmount;
         uint256 secondaryFeeReceiverAmount;
+        // share of protocolFeeAmount routed into the per-market insurance reserve.
+        // collected on every close (not just liquidations) so the fund keeps accruing
+        // in calm markets — liquidation-only collection is starved by the
+        // insolvent-liquidation early-return in processCollateral.handleEarlyReturn.
+        uint256 positionFeeInsuranceFactor;
+        uint256 positionFeeAmountForInsurance;
         uint256 feeAmountForPool;
         uint256 positionFeeAmountForPool;
         uint256 positionFeeAmount;
@@ -112,6 +118,12 @@ library PositionPricingUtils {
         uint256 liquidationFeeAmountForFeeReceiver;
         uint256 liquidationFeeSecondaryReceiverFactor;
         uint256 liquidationFeeAmountForSecondaryReceiver;
+        // share of liquidationFeeAmount routed into the per-market insurance reserve.
+        // collected on the trader's close by DecreasePositionCollateralUtils, which
+        // transfers the slice from MarketToken into the InsuranceVault and applies
+        // a negative applyDeltaToPoolAmount to keep pool accounting consistent.
+        uint256 liquidationFeeInsuranceFactor;
+        uint256 liquidationFeeAmountForInsurance;
     }
 
     // @param affiliate the referral affiliate of the trader
@@ -345,6 +357,11 @@ library PositionPricingUtils {
             fees.liquidation = getLiquidationFees(params.dataStore, params.position.market(), params.remainingCollateralUsd, params.collateralTokenPrice);
         }
 
+        // positionFeeAmountForPool already excludes positionFeeAmountForInsurance
+        // (subtracted in getPositionFeesAfterReferral); liquidationFeeAmountForInsurance
+        // is subtracted explicitly here. Without this subtraction the same tokens
+        // would be both transferred to the InsuranceVault and credited to the pool
+        // — double counting.
         fees.feeAmountForPool =
             fees.positionFeeAmountForPool +
             fees.borrowing.borrowingFeeAmount -
@@ -352,7 +369,8 @@ library PositionPricingUtils {
             fees.borrowing.borrowingFeeAmountForSecondaryReceiver +
             fees.liquidation.liquidationFeeAmount -
             fees.liquidation.liquidationFeeAmountForSecondaryReceiver -
-            fees.liquidation.liquidationFeeAmountForFeeReceiver;
+            fees.liquidation.liquidationFeeAmountForFeeReceiver -
+            fees.liquidation.liquidationFeeAmountForInsurance;
 
         fees.feeReceiverAmount +=
             fees.borrowing.borrowingFeeAmountForFeeReceiver +
@@ -579,7 +597,13 @@ library PositionPricingUtils {
         fees.positionFeeSecondaryReceiverFactor = dataStore.getUint(Keys.POSITION_FEE_SECONDARY_RECEIVER_FACTOR);
         fees.secondaryFeeReceiverAmount = Precision.applyFactor(fees.protocolFeeAmount, fees.positionFeeSecondaryReceiverFactor);
 
-        fees.positionFeeAmountForPool = fees.protocolFeeAmount - fees.feeReceiverAmount - fees.secondaryFeeReceiverAmount;
+        // Insurance slice of the position fee. Off by default (factor 0 ⇒ amount 0).
+        // The sum-of-shares invariant is enforced in Config._validateRange so this
+        // subtraction cannot underflow at the residual line below.
+        fees.positionFeeInsuranceFactor = dataStore.getUint(Keys.insuranceFundPositionFeeFactorKey(market));
+        fees.positionFeeAmountForInsurance = Precision.applyFactor(fees.protocolFeeAmount, fees.positionFeeInsuranceFactor);
+
+        fees.positionFeeAmountForPool = fees.protocolFeeAmount - fees.feeReceiverAmount - fees.secondaryFeeReceiverAmount - fees.positionFeeAmountForInsurance;
 
         return fees;
     }
@@ -597,6 +621,12 @@ library PositionPricingUtils {
         liquidationFees.liquidationFeeAmountForFeeReceiver = Precision.applyFactor(liquidationFees.liquidationFeeAmount, liquidationFees.liquidationFeeReceiverFactor);
         liquidationFees.liquidationFeeSecondaryReceiverFactor = dataStore.getUint(Keys.LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR);
         liquidationFees.liquidationFeeAmountForSecondaryReceiver = Precision.applyFactor(liquidationFees.liquidationFeeAmount, liquidationFees.liquidationFeeSecondaryReceiverFactor);
+        // Insurance slice of the liquidation fee. Off by default (factor 0).
+        // Sum invariant (primary + secondary + insurance ≤ 1e30) is enforced in
+        // Config._validateRange — see the feeAmountForPool subtraction in
+        // getPositionFees below which depends on this not underflowing.
+        liquidationFees.liquidationFeeInsuranceFactor = dataStore.getUint(Keys.insuranceFundFeeFactorKey(market));
+        liquidationFees.liquidationFeeAmountForInsurance = Precision.applyFactor(liquidationFees.liquidationFeeAmount, liquidationFees.liquidationFeeInsuranceFactor);
         return liquidationFees;
     }
 }
