@@ -292,6 +292,7 @@ export const BASELINE_SWAP_PER_DAY = hashString("BASELINE_SWAP_PER_DAY");
 export const PYTH_LAZER_FEED_ID = hashString("PYTH_LAZER_FEED_ID");
 export const PYTH_LAZER_FEED_INVERTED = hashString("PYTH_LAZER_FEED_INVERTED");
 export const PYTH_LAZER_FEED_MULTIPLIER = hashString("PYTH_LAZER_FEED_MULTIPLIER");
+export const PYTH_LAZER_FEED_SPREAD_FACTOR = hashString("PYTH_LAZER_FEED_SPREAD_FACTOR");
 
 export function accountDepositListKey(account) {
   return hashData(["bytes32", "address"], [ACCOUNT_DEPOSIT_LIST, account]);
@@ -910,4 +911,8 @@ export function pythLazerFeedInvertedKey(token: string) {
 
 export function pythLazerFeedMultiplierKey(token: string) {
   return hashData(["bytes32", "address"], [PYTH_LAZER_FEED_MULTIPLIER, token]);
+}
+
+export function pythLazerFeedSpreadFactorKey(token: string) {
+  return hashData(["bytes32", "address"], [PYTH_LAZER_FEED_SPREAD_FACTOR, token]);
 }

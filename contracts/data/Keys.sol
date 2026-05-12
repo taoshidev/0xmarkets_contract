@@ -538,6 +538,8 @@ library Keys {
     bytes32 public constant PYTH_LAZER_FEED_INVERTED = keccak256(abi.encode("PYTH_LAZER_FEED_INVERTED"));
     // @dev key for Pyth Lazer feed multiplier
     bytes32 public constant PYTH_LAZER_FEED_MULTIPLIER = keccak256(abi.encode("PYTH_LAZER_FEED_MULTIPLIER"));
+    // @dev key for Pyth Lazer feed per-token spread factor applied to confidence (FLOAT_PRECISION-scaled)
+    bytes32 public constant PYTH_LAZER_FEED_SPREAD_FACTOR = keccak256(abi.encode("PYTH_LAZER_FEED_SPREAD_FACTOR"));
 
 
     // @dev function used to calculate fullKey for a given market parameter
@@ -2339,6 +2341,16 @@ library Keys {
     function pythLazerFeedMultiplierKey(address token) internal pure returns (bytes32) {
         return keccak256(abi.encode(
             PYTH_LAZER_FEED_MULTIPLIER,
+            token
+        ));
+    }
+
+    // @dev key for Pyth Lazer feed per-token confidence spread factor
+    // @param token the token to get the key for
+    // @return key for Pyth Lazer feed spread factor
+    function pythLazerFeedSpreadFactorKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            PYTH_LAZER_FEED_SPREAD_FACTOR,
             token
         ));
     }

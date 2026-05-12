@@ -60,19 +60,25 @@ contract PythLazerFeedProvider is IOracleProvider {
         bool inverted,
         uint64 timestamp
     ) internal view returns (OracleUtils.ValidatedPrice memory) {
-        int64 askPrice = PythLazerLib.getBestAskPrice(feed);
-        if (askPrice < 0) revert Errors.InvalidFeedPrice(token, int256(askPrice));
+        int64 rawPrice = PythLazerLib.getPrice(feed);
+        if (rawPrice <= 0) revert Errors.InvalidFeedPrice(token, int256(rawPrice));
+        uint256 price = uint256(uint64(rawPrice));
 
-        int64 bidPrice = PythLazerLib.getBestBidPrice(feed);
-        if (bidPrice < 0) revert Errors.InvalidFeedPrice(token, int256(bidPrice));
+        uint64 rawConfidence = PythLazerLib.getConfidence(feed);
+        uint256 spreadFactor = dataStore.getUint(Keys.pythLazerFeedSpreadFactorKey(token));
+        uint256 scaledConfidence = Precision.applyFactor(uint256(rawConfidence), spreadFactor);
+
+        if (scaledConfidence >= price) {
+            revert Errors.InvalidPythLazerScaledConfidence(token, scaledConfidence, price);
+        }
 
         uint256 minPrice = Precision.mulDiv(
-            uint256(uint64(bidPrice)),
+            price - scaledConfidence,
             feedMultiplier,
             Precision.FLOAT_PRECISION
         );
         uint256 maxPrice = Precision.mulDiv(
-            uint256(uint64(askPrice)),
+            price + scaledConfidence,
             feedMultiplier,
             Precision.FLOAT_PRECISION
         );

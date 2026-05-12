@@ -212,5 +212,6 @@ library ConfigAllowedKeys {
         allowedBaseKeys[Keys.PYTH_LAZER_FEED_ID] = true;
         allowedBaseKeys[Keys.PYTH_LAZER_FEED_INVERTED] = true;
         allowedBaseKeys[Keys.PYTH_LAZER_FEED_MULTIPLIER] = true;
+        allowedBaseKeys[Keys.PYTH_LAZER_FEED_SPREAD_FACTOR] = true;
     }
 }

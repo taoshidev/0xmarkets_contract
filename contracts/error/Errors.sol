@@ -240,6 +240,7 @@ library Errors {
     error EmptyPythLazerFeedData(address token);
     error EmptyPythLazerFeedId(address token);
     error EmptyPythLazerFeedMultiplier(address token);
+    error InvalidPythLazerScaledConfidence(address token, uint256 scaledConfidence, uint256 price);
     error StaleOraclePrice(address token, uint256 publishedTimestamp, uint256 storedTimestamp);
 
     // OracleModule errors

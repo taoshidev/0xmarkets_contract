@@ -197,5 +197,13 @@ library ConfigValidatorUtils {
                 revert Errors.ConfigValueExceedsAllowedRange(baseKey, value);
             }
         }
+
+        if (baseKey == Keys.PYTH_LAZER_FEED_SPREAD_FACTOR) {
+            // factor is a multiplier on confidence: 1e30 = identity, >1e30 widens band, 0 collapses band
+            // cap at 100x as a fat-finger guard; provider also reverts if scaledConfidence >= price
+            if (value > Precision.FLOAT_PRECISION * 100) {
+                revert Errors.ConfigValueExceedsAllowedRange(baseKey, value);
+            }
+        }
     }
 }

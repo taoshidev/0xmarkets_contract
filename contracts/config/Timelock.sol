@@ -522,13 +522,15 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
         address token,
         bytes32 pythLazerFeedId,
         bool pythLazerFeedInverted,
-        uint256 pythLazerFeedMultiplier
+        uint256 pythLazerFeedMultiplier,
+        uint256 pythLazerFeedSpreadFactor
     ) external onlyTimelockAdmin nonReentrant {
         bytes32 actionKey = _setPythLazerFeedActionKey(
             token,
             pythLazerFeedId,
             pythLazerFeedInverted,
-            pythLazerFeedMultiplier
+            pythLazerFeedMultiplier,
+            pythLazerFeedSpreadFactor
         );
 
         _signalPendingAction(actionKey, "setPythLazerFeed");
@@ -542,6 +544,7 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
         eventData.boolItems.setItem(0, "pythLazerFeedInverted", pythLazerFeedInverted);
         eventData.uintItems.initItems(2);
         eventData.uintItems.setItem(0, "pythLazerFeedMultiplier", pythLazerFeedMultiplier);
+        eventData.uintItems.setItem(1, "pythLazerFeedSpreadFactor", pythLazerFeedSpreadFactor);
         eventEmitter.emitEventLog1(
             "SetPythLazerFeed",
             actionKey,
@@ -553,13 +556,15 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
         address token,
         bytes32 pythLazerFeedId,
         bool pythLazerFeedInverted,
-        uint256 pythLazerFeedMultiplier
+        uint256 pythLazerFeedMultiplier,
+        uint256 pythLazerFeedSpreadFactor
     ) external onlyTimelockAdmin nonReentrant {
         bytes32 actionKey = _setPythLazerFeedActionKey(
             token,
             pythLazerFeedId,
             pythLazerFeedInverted,
-            pythLazerFeedMultiplier
+            pythLazerFeedMultiplier,
+            pythLazerFeedSpreadFactor
         );
 
         _validateAndClearAction(actionKey, "setPythLazerFeed");
@@ -567,6 +572,7 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
         dataStore.setBytes32(Keys.pythLazerFeedIdKey(token), pythLazerFeedId);
         dataStore.setBool(Keys.pythLazerFeedInvertedKey(token), pythLazerFeedInverted);
         dataStore.setUint(Keys.pythLazerFeedMultiplierKey(token), pythLazerFeedMultiplier);
+        dataStore.setUint(Keys.pythLazerFeedSpreadFactorKey(token), pythLazerFeedSpreadFactor);
 
         EventUtils.EventLogData memory eventData;
         eventData.addressItems.initItems(1);
@@ -577,6 +583,7 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
         eventData.boolItems.setItem(0, "pythLazerFeedInverted", pythLazerFeedInverted);
         eventData.uintItems.initItems(2);
         eventData.uintItems.setItem(0, "pythLazerFeedMultiplier", pythLazerFeedMultiplier);
+        eventData.uintItems.setItem(1, "pythLazerFeedSpreadFactor", pythLazerFeedSpreadFactor);
         eventEmitter.emitEventLog1(
             "SetPythLazerFeed",
             actionKey,
@@ -682,14 +689,16 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
         address token,
         bytes32 pythLazerFeedId,
         bool pythLazerFeedInverted,
-        uint256 pythLazerFeedMultiplier
+        uint256 pythLazerFeedMultiplier,
+        uint256 pythLazerFeedSpreadFactor
     ) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(
             "setPythLazerFeed",
             token,
             pythLazerFeedId,
             pythLazerFeedInverted,
-            pythLazerFeedMultiplier
+            pythLazerFeedMultiplier,
+            pythLazerFeedSpreadFactor
         ));
     }
 
