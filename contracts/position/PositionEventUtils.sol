@@ -275,9 +275,13 @@ library PositionEventUtils {
             uintItemsCount += 6;
         }
         if (fees.liquidation.liquidationFeeAmount > 0) {
-            uintItemsCount += 3;
+            // base 3 + 2 for insurance-slice columns
+            uintItemsCount += 5;
         }
         if (fees.pro.traderDiscountFactor > 0) {
+            uintItemsCount += 2;
+        }
+        if (fees.positionFeeAmountForInsurance > 0) {
             uintItemsCount += 2;
         }
 
@@ -324,6 +328,12 @@ library PositionEventUtils {
             eventData.uintItems.setItem(++dynamicItemIndex, "liquidationFeeAmount", fees.liquidation.liquidationFeeAmount);
             eventData.uintItems.setItem(++dynamicItemIndex, "liquidationFeeReceiverFactor", fees.liquidation.liquidationFeeReceiverFactor);
             eventData.uintItems.setItem(++dynamicItemIndex, "liquidationFeeAmountForFeeReceiver", fees.liquidation.liquidationFeeAmountForFeeReceiver);
+            eventData.uintItems.setItem(++dynamicItemIndex, "liquidationFeeInsuranceFactor", fees.liquidation.liquidationFeeInsuranceFactor);
+            eventData.uintItems.setItem(++dynamicItemIndex, "liquidationFeeAmountForInsurance", fees.liquidation.liquidationFeeAmountForInsurance);
+        }
+        if (fees.positionFeeAmountForInsurance > 0) {
+            eventData.uintItems.setItem(++dynamicItemIndex, "positionFeeInsuranceFactor", fees.positionFeeInsuranceFactor);
+            eventData.uintItems.setItem(++dynamicItemIndex, "positionFeeAmountForInsurance", fees.positionFeeAmountForInsurance);
         }
 
         eventData.boolItems.initItems(1);

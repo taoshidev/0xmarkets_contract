@@ -35,6 +35,16 @@ export const EXCLUDED_CONFIG_KEYS = {
   DEPOSIT_LIST: true,
   FEE_RECEIVER: true,
   SECONDARY_FEE_RECEIVER: true,
+  // Insurance fund state + non-governance keys:
+  //   - INSURANCE_VAULT is an address set once at deploy via dataStore.setAddress,
+  //     same shape as HOLDING_ADDRESS / FEE_RECEIVER (not Config-tunable).
+  //   - INSURANCE_FUND_BALANCE / _EPOCH_POOL_VALUE / _EPOCH_START are runtime
+  //     state written by InsuranceFundUtils (deposit / attemptInjectPool /
+  //     snapshotEpoch). Same shape as POOL_AMOUNT — not governance-tunable.
+  INSURANCE_VAULT: true,
+  INSURANCE_FUND_BALANCE: true,
+  INSURANCE_FUND_EPOCH_POOL_VALUE: true,
+  INSURANCE_FUND_EPOCH_START: true,
   BORROWING_FEE_SECONDARY_RECEIVER_FACTOR: true,
   LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR: true,
   POSITION_FEE_SECONDARY_RECEIVER_FACTOR: true,
