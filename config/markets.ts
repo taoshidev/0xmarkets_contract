@@ -342,7 +342,7 @@ const baseMarketConfig: Partial<BaseMarketConfig> = {
 
   optimalUsageFactor: 0,
   baseBorrowingFactor: 0,
-  aboveOptimalUsageBorrowingFactor: decimalToFloat(3), // 3.0 (kink model disabled with optimalUsageFactor=0)
+  aboveOptimalUsageBorrowingFactor: 0, // kink disabled (optimalUsageFactor=0); validator caps the raw value at 1e23, so any larger sentinel reverts
 
   borrowingExponentFactor: exponentToFloat("1.52e0"),
 

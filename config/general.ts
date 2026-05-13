@@ -142,9 +142,9 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
       estimatedGasPerOraclePrice: false,
       executionGasFeeBaseAmount: false,
       executionGasPerOraclePrice: false,
-      feeReceiver: "REPLACE_ME",
-      secondaryFeeReceiver: "REPLACE_ME",
-      holdingAddress: "REPLACE_ME",
+      feeReceiver: "0x9724251d7DeC79FB5C41F31b2793892831Bf1200",
+      secondaryFeeReceiver: "0x9724251d7DeC79FB5C41F31b2793892831Bf1200",
+      holdingAddress: "0x9724251d7DeC79FB5C41F31b2793892831Bf1200",
     },
     localhost: {
       estimatedGasFeeBaseAmount: false,

@@ -24,6 +24,8 @@ export async function grantRoleIfNotGranted(address: string, role: string, addre
   if (!hasRole) {
     log("granting role %s to %s %s", role, addressLabel, address);
     await execute("RoleStore", { from: deployer, log: true }, "grantRole", address, roleHash);
+    // Let the RPC's pending-nonce view catch up before the next tx
+    await new Promise((r) => setTimeout(r, 2000));
   } else {
     log("role %s already granted to %s %s", role, addressLabel, address);
   }
