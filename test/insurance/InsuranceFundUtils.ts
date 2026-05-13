@@ -15,24 +15,36 @@ const MaxUint256 = hre.ethers.constants.MaxUint256;
 describe("InsuranceFundUtils", () => {
   let fixture;
   let wallet, user0;
-  let dataStore, eventEmitter, roleStore, insuranceVault, insuranceFundEventUtils;
+  let dataStore, eventEmitter, roleStore, insuranceVault, insuranceFundEventUtils, insuranceFundUtils;
   let ethUsdMarket, wnt, usdc;
   let testWrapper;
 
   beforeEach(async () => {
     fixture = await deployFixture();
     ({ wallet, user0 } = fixture.accounts);
-    ({ dataStore, eventEmitter, roleStore, insuranceVault, insuranceFundEventUtils, ethUsdMarket, wnt, usdc } =
-      fixture.contracts);
+    ({
+      dataStore,
+      eventEmitter,
+      roleStore,
+      insuranceVault,
+      insuranceFundEventUtils,
+      insuranceFundUtils,
+      ethUsdMarket,
+      wnt,
+      usdc,
+    } = fixture.contracts);
 
-    // Both event-util libraries are reachable through the inlined call chain:
-    // InsuranceFundUtils → MarketUtils.applyDeltaToPoolAmount → MarketEventUtils (external),
-    // and InsuranceFundUtils directly emits via InsuranceFundEventUtils.
-    const marketEventUtils = await hre.ethers.getContract("MarketEventUtils");
+    // InsuranceFundUtils.deposit / attemptInjectPool are external — delegate-
+    // called via the deployed library address. Internal helpers (getBalance,
+    // snapshotEpoch, topUp, getDrawdownFraction) are inlined into the wrapper;
+    // those reach external InsuranceFundEventUtils for their event emits, so
+    // it must be linked too. (MarketEventUtils is no longer needed: the
+    // applyDeltaToPoolAmount path now lives behind the InsuranceFundUtils
+    // deployment.)
     testWrapper = await deployContract("InsuranceFundUtilsTest", [], {
       libraries: {
+        InsuranceFundUtils: insuranceFundUtils.address,
         InsuranceFundEventUtils: insuranceFundEventUtils.address,
-        MarketEventUtils: marketEventUtils.address,
       },
     });
 

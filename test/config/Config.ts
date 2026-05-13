@@ -437,6 +437,81 @@ describe("Config", () => {
     await config.setUint(keys.DATA_STREAM_SPREAD_REDUCTION_FACTOR, encodeData(["address"], [wnt.address]), p100);
   });
 
+  it("validates insurance fund fee factor — individual ≤ 100% and sum invariant", async () => {
+    const market = encodeData(["address"], [ethUsdMarket.marketToken]);
+    const p100 = percentageToFloat("100%");
+
+    // Off-by-default global liquidation factors (sum 0). Insurance fee factor
+    // up to 100% must be accepted on a per-market basis.
+    await config.connect(user0).setUint(keys.INSURANCE_FUND_FEE_FACTOR, market, percentageToFloat("50%"));
+    expect(await dataStore.getUint(keys.insuranceFundFeeFactorKey(ethUsdMarket.marketToken))).eq(
+      percentageToFloat("50%")
+    );
+
+    // Individual upper bound at 100%.
+    await expect(
+      config.connect(user0).setUint(keys.INSURANCE_FUND_FEE_FACTOR, market, p100.add(1))
+    ).to.be.revertedWithCustomError(errorsContract, "ConfigValueExceedsAllowedRange");
+
+    // Sum invariant: primary + secondary + insurance ≤ 100%. With primary = 60%
+    // and insurance previously at 50%, raising insurance to a value that pushes
+    // the sum over 1e30 must revert. Use 41% (sum would be 60+0+41 = 101%).
+    await config.connect(user0).setUint(keys.LIQUIDATION_FEE_RECEIVER_FACTOR, "0x", percentageToFloat("40%"));
+    await expect(
+      config.connect(user0).setUint(keys.INSURANCE_FUND_FEE_FACTOR, market, percentageToFloat("61%"))
+    ).to.be.revertedWithCustomError(errorsContract, "ConfigValueExceedsAllowedRange");
+  });
+
+  it("validates insurance fund position fee factor — individual ≤ 100%", async () => {
+    const market = encodeData(["address"], [ethUsdMarket.marketToken]);
+    const p100 = percentageToFloat("100%");
+
+    await config.connect(user0).setUint(keys.INSURANCE_FUND_POSITION_FEE_FACTOR, market, percentageToFloat("25%"));
+    expect(await dataStore.getUint(keys.insuranceFundPositionFeeFactorKey(ethUsdMarket.marketToken))).eq(
+      percentageToFloat("25%")
+    );
+
+    await expect(
+      config.connect(user0).setUint(keys.INSURANCE_FUND_POSITION_FEE_FACTOR, market, p100.add(1))
+    ).to.be.revertedWithCustomError(errorsContract, "ConfigValueExceedsAllowedRange");
+  });
+
+  it("validates insurance fund drawdown trigger factor — off-sentinel allowed, otherwise ≤ 100%", async () => {
+    const market = encodeData(["address"], [ethUsdMarket.marketToken]);
+    const p100 = percentageToFloat("100%");
+    const maxUint = ethers.constants.MaxUint256;
+
+    // Off-sentinel must be settable.
+    await config.connect(user0).setUint(keys.INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR, market, maxUint);
+    expect(await dataStore.getUint(keys.insuranceFundDrawdownTriggerFactorKey(ethUsdMarket.marketToken))).eq(maxUint);
+
+    // Normal fraction must be settable.
+    await config.connect(user0).setUint(keys.INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR, market, percentageToFloat("2%"));
+
+    // Anything above 100% that isn't the sentinel must revert.
+    await expect(
+      config.connect(user0).setUint(keys.INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR, market, p100.add(1))
+    ).to.be.revertedWithCustomError(errorsContract, "ConfigValueExceedsAllowedRange");
+  });
+
+  it("conservative cap: liquidation fee primary + secondary ≤ 50%", async () => {
+    // Headroom for any per-market insurance share up to 50%. See spec §4.1
+    // implementer note and ConfigValidatorUtils comment.
+    await config.connect(user0).setUint(keys.LIQUIDATION_FEE_RECEIVER_FACTOR, "0x", percentageToFloat("30%"));
+    await config.connect(user0).setUint(keys.LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR, "0x", percentageToFloat("20%"));
+
+    // Sum is exactly 50% — at the boundary, accepted. Raising either by 1 wei reverts.
+    await expect(
+      config.connect(user0).setUint(keys.LIQUIDATION_FEE_RECEIVER_FACTOR, "0x", percentageToFloat("30%").add(1))
+    ).to.be.revertedWithCustomError(errorsContract, "ConfigValueExceedsAllowedRange");
+
+    await expect(
+      config
+        .connect(user0)
+        .setUint(keys.LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR, "0x", percentageToFloat("20%").add(1))
+    ).to.be.revertedWithCustomError(errorsContract, "ConfigValueExceedsAllowedRange");
+  });
+
   it("setDataStream", async () => {
     const p100 = percentageToFloat("100%");
     const feedId = hashString("WNT");

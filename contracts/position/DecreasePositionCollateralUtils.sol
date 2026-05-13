@@ -17,6 +17,9 @@ import "../order/OrderEventUtils.sol";
 
 import "./DecreasePositionSwapUtils.sol";
 
+import "../insurance/InsuranceFundUtils.sol";
+import "../insurance/InsuranceVault.sol";
+
 // @title DecreasePositionCollateralUtils
 // @dev Library for functions to help with the calculations when decreasing a position
 library DecreasePositionCollateralUtils {
@@ -320,6 +323,29 @@ library DecreasePositionCollateralUtils {
                 fees.feeAmountForPool.toInt256()
             );
 
+            // Collect the insurance-fund slice. Both the position-fee and the
+            // liquidation-fee slices are in `collateralToken` (the pricing
+            // helpers compute them from `protocolFeeAmount` / `liquidationFeeAmount`,
+            // both denominated in collateral). The combined slice is moved
+            // out of MarketToken into the singleton InsuranceVault here;
+            // `fees.feeAmountForPool` has already subtracted both, so no
+            // double counting against the pool delta above.
+            {
+                uint256 totalInsuranceSlice = fees.positionFeeAmountForInsurance
+                    + fees.liquidation.liquidationFeeAmountForInsurance;
+                if (totalInsuranceSlice > 0) {
+                    InsuranceFundUtils.deposit(
+                        params.contracts.dataStore,
+                        params.contracts.eventEmitter,
+                        InsuranceVault(payable(params.contracts.dataStore.getAddress(Keys.INSURANCE_VAULT))),
+                        params.market.marketToken,
+                        params.position.collateralToken(),
+                        params.orderKey,
+                        totalInsuranceSlice
+                    );
+                }
+            }
+
             address feeReceiver = params.contracts.dataStore.getAddress(Keys.FEE_RECEIVER);
             address collateralToken = params.position.collateralToken();
 
@@ -535,6 +561,25 @@ library DecreasePositionCollateralUtils {
             values.remainingCollateralAmount -= params.order.initialCollateralDeltaAmount();
             values.output.outputAmount += params.order.initialCollateralDeltaAmount();
         }
+
+        // Insurance fund: attempt to inject reserves into the pool if realized
+        // drawdown (current pool USD vs. last epoch snapshot, both excluding
+        // unrealized PnL) exceeds the per-market trigger factor. No-ops when
+        // the trigger is the off-sentinel (type(uint256).max), drawdown is at
+        // or below the threshold, or the epoch snapshot is stale / uninitialized.
+        // Runs at the end so it sees the post-close pool state from every
+        // applyDeltaToPoolAmount branch above (positive PnL, price impact,
+        // negative PnL, fees, negative price impact). ADL and liquidation
+        // paths flow through the same processCollateral and pick this up.
+        InsuranceFundUtils.attemptInjectPool(
+            params.contracts.dataStore,
+            params.contracts.eventEmitter,
+            InsuranceVault(payable(params.contracts.dataStore.getAddress(Keys.INSURANCE_VAULT))),
+            params.market,
+            cache.prices,
+            cache.pnlToken,
+            params.orderKey
+        );
 
         return (values, fees);
     }

@@ -15,6 +15,8 @@ import "../position/PositionStoreUtils.sol";
 import "../market/MarketUtils.sol";
 import "../market/Market.sol";
 
+import "../insurance/InsuranceFundUtils.sol";
+
 import "./ReaderUtils.sol";
 import "./ReaderDepositUtils.sol";
 import "./ReaderWithdrawalUtils.sol";
@@ -353,5 +355,42 @@ contract Reader {
                 uiFeeReceiver,
                 swapPricingType
             );
+    }
+
+    // @dev Per-(market, token) insurance reserve bookkeeping. Distinct from
+    // the physical InsuranceVault ERC-20 balance: the bookkeeping value is
+    // the per-market share of vault holdings; vault.balanceOf(token) is the
+    // sum of all market buckets for that token.
+    function getInsuranceFundBalance(
+        DataStore dataStore,
+        address market,
+        address token
+    ) external view returns (uint256) {
+        return InsuranceFundUtils.getBalance(dataStore, market, token);
+    }
+
+    // @dev Composite view of a market's insurance fund epoch state.
+    // Returns:
+    //   - epochPoolValue: snapshot USD (1e30) at last epoch start (0 if uninitialized)
+    //   - currentPoolValue: live pool USD excluding unrealized PnL
+    //   - drawdownFraction: (epoch - current) / epoch in 1e30 base, clamped to 0
+    //                       when fund disabled (uninit or stale snapshot)
+    //   - epochStart: timestamp of last snapshot (0 if uninitialized)
+    function getInsuranceFundEpochState(
+        DataStore dataStore,
+        Market.Props memory market,
+        MarketUtils.MarketPrices memory prices
+    ) external view returns (
+        uint256 epochPoolValue,
+        uint256 currentPoolValue,
+        uint256 drawdownFraction,
+        uint256 epochStart
+    ) {
+        (drawdownFraction, currentPoolValue, epochPoolValue) = InsuranceFundUtils.getDrawdownFraction(
+            dataStore,
+            market,
+            prices
+        );
+        epochStart = dataStore.getUint(Keys.insuranceFundEpochStartKey(market.marketToken));
     }
 }

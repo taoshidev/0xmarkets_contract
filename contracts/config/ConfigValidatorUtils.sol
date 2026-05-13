@@ -163,5 +163,74 @@ library ConfigValidatorUtils {
                 revert Errors.ConfigValueExceedsAllowedRange(baseKey, value);
             }
         }
+
+        // ---------------------------------------------------------------
+        // Insurance fund — sum-of-shares safety
+        // ---------------------------------------------------------------
+        //
+        // The three terms that slice `liquidationFeeAmount` live in different
+        // scopes (the two receiver factors are global; INSURANCE_FUND_FEE_FACTOR
+        // is per-market). The pool's share is the residual, computed in
+        // PositionPricingUtils.getPositionFees as:
+        //
+        //   feeAmountForPool += liquidationFeeAmount
+        //                       - liquidationFeeAmountForFeeReceiver
+        //                       - liquidationFeeAmountForSecondaryReceiver
+        //                       - liquidationFeeAmountForInsurance
+        //
+        // If primary + secondary + insurance > 1e30, that residual underflows.
+        // We enforce the invariant in two complementary places:
+        //
+        //   1. On the per-market insurance key (precise check — we know the
+        //      market and can read both globals).
+        //   2. On either global — apply a conservative cap so any per-market
+        //      insurance share up to the headroom is automatically safe,
+        //      without iterating every market.
+
+        // (1) Per-market precise check.
+        if (
+            baseKey == Keys.INSURANCE_FUND_FEE_FACTOR ||
+            baseKey == Keys.INSURANCE_FUND_POSITION_FEE_FACTOR
+        ) {
+            // Individual ≤ 100%.
+            if (value > Precision.FLOAT_PRECISION) {
+                revert Errors.ConfigValueExceedsAllowedRange(baseKey, value);
+            }
+            if (baseKey == Keys.INSURANCE_FUND_FEE_FACTOR) {
+                uint256 primary = dataStore.getUint(Keys.LIQUIDATION_FEE_RECEIVER_FACTOR);
+                uint256 secondary = dataStore.getUint(Keys.LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR);
+                // sum = primary + secondary + incoming insurance value
+                if (primary + secondary + value > Precision.FLOAT_PRECISION) {
+                    revert Errors.ConfigValueExceedsAllowedRange(baseKey, value);
+                }
+            }
+        }
+
+        // (2) Conservative cap on the global liquidation receiver factors so
+        // raising them can never push an existing per-market insurance factor
+        // out of bounds. 50% ceiling leaves 50% of headroom for the per-market
+        // insurance share — matches the spec §4.1 implementer note. Operators
+        // can lift this cap later by introducing a market-iteration helper.
+        if (
+            baseKey == Keys.LIQUIDATION_FEE_RECEIVER_FACTOR ||
+            baseKey == Keys.LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR
+        ) {
+            uint256 conservativeCap = Precision.FLOAT_PRECISION / 2; // 50% in 1e30 base
+            bytes32 otherGlobalKey = baseKey == Keys.LIQUIDATION_FEE_RECEIVER_FACTOR
+                ? Keys.LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR
+                : Keys.LIQUIDATION_FEE_RECEIVER_FACTOR;
+            uint256 otherValue = dataStore.getUint(otherGlobalKey);
+            if (value + otherValue > conservativeCap) {
+                revert Errors.ConfigValueExceedsAllowedRange(baseKey, value);
+            }
+        }
+
+        // Drawdown trigger: type(uint256).max is the "off" sentinel — allow it
+        // explicitly. Otherwise cap at 100% to keep the threshold a fraction.
+        if (baseKey == Keys.INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR) {
+            if (value != type(uint256).max && value > Precision.FLOAT_PRECISION) {
+                revert Errors.ConfigValueExceedsAllowedRange(baseKey, value);
+            }
+        }
     }
 }

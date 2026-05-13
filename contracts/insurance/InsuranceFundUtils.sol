@@ -59,7 +59,7 @@ library InsuranceFundUtils {
         DataStore dataStore,
         Market.Props memory market,
         MarketUtils.MarketPrices memory prices
-    ) internal view returns (uint256 drawdownFraction, uint256 currentPoolValueUsd, uint256 epochPoolValueUsd) {
+    ) public view returns (uint256 drawdownFraction, uint256 currentPoolValueUsd, uint256 epochPoolValueUsd) {
         int256 cur = MarketUtils.getPoolValueExcludingUnrealizedPnl(dataStore, market, prices, false);
         currentPoolValueUsd = cur < 0 ? 0 : uint256(cur);
 
@@ -103,7 +103,7 @@ library InsuranceFundUtils {
         address token,
         bytes32 orderKey,
         uint256 amount
-    ) internal returns (uint256 newBalance) {
+    ) external returns (uint256 newBalance) {
         if (amount == 0) {
             return dataStore.getUint(Keys.insuranceFundBalanceKey(market, token));
         }
@@ -192,7 +192,7 @@ library InsuranceFundUtils {
         MarketUtils.MarketPrices memory prices,
         address pnlToken,
         bytes32 orderKey
-    ) internal returns (uint256 injectedAmount) {
+    ) external returns (uint256 injectedAmount) {
         uint256 triggerFactor = dataStore.getUint(Keys.insuranceFundDrawdownTriggerFactorKey(market.marketToken));
         // type(uint256).max is the "off" sentinel; default value of an unset
         // key is 0, which would semantically mean "inject on any drawdown",
@@ -330,7 +330,7 @@ library InsuranceFundUtils {
         EventEmitter eventEmitter,
         Market.Props memory market,
         MarketUtils.MarketPrices memory prices
-    ) internal returns (uint256 epochValue) {
+    ) external returns (uint256 epochValue) {
         // minimize=false matches getDrawdownFraction's call so both sides
         // use the same price-pick rule. (Snapshot pick must match current
         // pick or drawdown will mis-fire.)
