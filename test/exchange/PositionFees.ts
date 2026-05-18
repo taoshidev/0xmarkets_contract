@@ -41,8 +41,7 @@ describe("Exchange.PositionFees", () => {
     await dataStore.setUint(keys.positionFeeFactorKey(ethUsdMarket.marketToken, true), decimalToFloat(5, 4)); // 0.05%
     await dataStore.setUint(keys.positionFeeFactorKey(ethUsdMarket.marketToken, false), decimalToFloat(5, 4)); // 0.05%
 
-    await dataStore.setUint(keys.POSITION_FEE_RECEIVER_FACTOR, decimalToFloat(2, 1)); // 20%
-    await dataStore.setUint(keys.BORROWING_FEE_RECEIVER_FACTOR, decimalToFloat(4, 1)); // 40%
+    await dataStore.setUint(keys.POSITION_FEE_VEALPHA_FACTOR, decimalToFloat(2, 1)); // 20%
 
     await dataStore.setUint(keys.borrowingFactorKey(ethUsdMarket.marketToken, true), decimalToFloat(1, 9));
     await dataStore.setUint(keys.borrowingFactorKey(ethUsdMarket.marketToken, false), decimalToFloat(2, 10));
@@ -377,9 +376,8 @@ describe("Exchange.PositionFees", () => {
           // positionFeeForPool: 85.5 * 80% => 68.4 USD
           // fundingFee: 0.0016128039998 ETH => 8.064019999 USD
           // borrowingFee:  0.001935343331056032 ETH => 9.67671665528 USD
-          // borrowingFeeForFeeReceiver: 9.67671665528 * 40% => 3.87068666211 USD
-          // feeReceiver: 85.5 * 20% + 3.87068666211 => 20.9706866621 USD
-          // feeForPool: 85.5 * 80% + 9.67671665528 * 60% => 74.2060299932 USD
+          // veAlphaFeeAmount: 85.5 * 20% => 17.1 USD
+          // feeForPool: 85.5 * 80% + 9.67671665528 => 78.0767166553 USD
           // totalNetCost: positionFee + borrowingFee + fundingFee - traderDiscount
           //    => 95 + 9.67671665528 + 8.064019999 - 1.9 => 110.840736654 USD
 
@@ -396,13 +394,11 @@ describe("Exchange.PositionFees", () => {
           expect(positionFeesCollectedEvent.claimableLongTokenAmount).eq("0");
           expect(positionFeesCollectedEvent.claimableShortTokenAmount).eq("0");
           expect(positionFeesCollectedEvent.borrowingFeeAmount).closeTo("1935344931032993", "10000000000"); // 0.001935344931032993 ETH => 9.67671665528 USD
-          expect(positionFeesCollectedEvent.borrowingFeeReceiverFactor).eq(decimalToFloat(4, 1)); // 40%
-          expect(positionFeesCollectedEvent.borrowingFeeAmountForFeeReceiver).closeTo("774137332422412", "10000000000"); // 0.000774137332422412 ETH => 3.87068666211 USD
           expect(positionFeesCollectedEvent.positionFeeFactor).eq(decimalToFloat(5, 4));
           expect(positionFeesCollectedEvent.protocolFeeAmount).eq("17100000000000000"); // 0.0171 ETH => 85.5 USD
-          expect(positionFeesCollectedEvent.positionFeeReceiverFactor).eq(decimalToFloat(2, 1)); // 20%
-          expect(positionFeesCollectedEvent.feeReceiverAmount).closeTo("4194137332422412", "10000000000"); // 0.004194137332422412 ETH => 20.9706866621 USD
-          expect(positionFeesCollectedEvent.feeAmountForPool).closeTo("14841205998633620", "10000000000"); // 0.129800599863361968 ETH => 74.2060299932 USD
+          expect(positionFeesCollectedEvent.positionFeeVeAlphaFactor).eq(decimalToFloat(2, 1)); // 20%
+          expect(positionFeesCollectedEvent.veAlphaFeeAmount).eq("3420000000000000"); // 0.00342 ETH => 17.1 USD
+          expect(positionFeesCollectedEvent.feeAmountForPool).closeTo("15615344931032993", "10000000000"); // 78.0767166553 USD
           expect(positionFeesCollectedEvent.positionFeeAmountForPool).eq("13680000000000000"); // 0.01368 ETH => 68.4 USD
           expect(positionFeesCollectedEvent.positionFeeAmount).eq("19000000000000000"); // 0.019 ETH => 95 USD
           expect(positionFeesCollectedEvent.totalCostAmount).closeTo("22168147331056031", "10000000000"); // 0.022168147331056031 ETH => 110.840736654 USD
@@ -448,9 +444,8 @@ describe("Exchange.PositionFees", () => {
           // positionFeeForPool: 32 * 80% => 25.6 USD
           // fundingFee: 0
           // borrowingFee: 4.838114 USD
-          // borrowingFeeForFeeReceiver: 4.838114 * 40% => 1.9352456 USD
-          // feeReceiver: 32 * 20% + 1.9352456 => 8.3352456 USD
-          // feeForPool: 32 * 80% + 4.838114 * 60% => 28.5028684 USD
+          // veAlphaFeeAmount: 32 * 20% => 6.4 USD
+          // feeForPool: 32 * 80% + 4.838114 => 30.438114 USD
           // totalNetCost: positionFee + borrowingFee + fundingFee - traderDiscount
           //    => 40 + 4.838114 + 0 - 2 => 42.838114 USD
 
@@ -467,13 +462,11 @@ describe("Exchange.PositionFees", () => {
           expect(positionFeesCollectedEvent.claimableLongTokenAmount).closeTo("1612803999900000", "10000000000"); // 0.0016128039999 ETH, 8.0640199995 USD
           expect(positionFeesCollectedEvent.claimableShortTokenAmount).eq("0");
           expect(positionFeesCollectedEvent.borrowingFeeAmount).closeTo("4838114", "50"); // 4.838114 USD
-          expect(positionFeesCollectedEvent.borrowingFeeReceiverFactor).eq(decimalToFloat(4, 1)); // 40%
-          expect(positionFeesCollectedEvent.borrowingFeeAmountForFeeReceiver).closeTo("1935245", "50"); // 1.935245 USD
           expect(positionFeesCollectedEvent.positionFeeFactor).eq(decimalToFloat(5, 4));
           expect(positionFeesCollectedEvent.protocolFeeAmount).eq("32000000"); // 32 USD
-          expect(positionFeesCollectedEvent.positionFeeReceiverFactor).eq(decimalToFloat(2, 1)); // 20%
-          expect(positionFeesCollectedEvent.feeReceiverAmount).closeTo("8335245", "50"); // 8.335245 USD
-          expect(positionFeesCollectedEvent.feeAmountForPool).closeTo("28502869", "50"); // 28.502869 USD
+          expect(positionFeesCollectedEvent.positionFeeVeAlphaFactor).eq(decimalToFloat(2, 1)); // 20%
+          expect(positionFeesCollectedEvent.veAlphaFeeAmount).eq("6400000"); // 6.4 USD
+          expect(positionFeesCollectedEvent.feeAmountForPool).closeTo("30438114", "50"); // 30.438114 USD
           expect(positionFeesCollectedEvent.positionFeeAmountForPool).eq("25600000"); // 25.6 USD
           expect(positionFeesCollectedEvent.positionFeeAmount).eq("40000000"); // 40 USD
           expect(positionFeesCollectedEvent.totalCostAmount).closeTo("42838114", "50"); // 42.838114 USD

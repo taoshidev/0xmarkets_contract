@@ -313,32 +313,6 @@ library ExecuteDepositUtils {
             params.swapPricingType
         );
 
-        address feeReceiver = params.dataStore.getAddress(Keys.FEE_RECEIVER);
-
-        FeeUtils.incrementClaimableFeeAmount(
-            params.dataStore,
-            params.eventEmitter,
-            feeReceiver,
-            _params.market.marketToken,
-            _params.tokenIn,
-            fees.feeReceiverAmount,
-            Keys.DEPOSIT_FEE_TYPE
-        );
-
-        address secondaryFeeReceiver = params.dataStore.getAddress(Keys.SECONDARY_FEE_RECEIVER);
-
-        if (secondaryFeeReceiver != address(0)) {
-            FeeUtils.incrementClaimableFeeAmount(
-                params.dataStore,
-                params.eventEmitter,
-                secondaryFeeReceiver,
-                _params.market.marketToken,
-                _params.tokenIn,
-                fees.secondaryFeeReceiverAmount,
-                Keys.DEPOSIT_FEE_TYPE
-            );
-        }
-
         FeeUtils.incrementClaimableUiFeeAmount(
             params.dataStore,
             params.eventEmitter,

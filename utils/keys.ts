@@ -6,8 +6,6 @@ export const USDC = hashString("USDC");
 export const WNT = hashString("WNT");
 export const NONCE = hashString("NONCE");
 
-export const FEE_RECEIVER = hashString("FEE_RECEIVER");
-export const SECONDARY_FEE_RECEIVER = hashString("SECONDARY_FEE_RECEIVER");
 export const HOLDING_ADDRESS = hashString("HOLDING_ADDRESS");
 export const SEQUENCER_GRACE_DURATION = hashString("SEQUENCER_GRACE_DURATION");
 export const IN_STRICT_PRICE_FEED_MODE = hashString("IN_STRICT_PRICE_FEED_MODE");
@@ -115,8 +113,6 @@ export const MIN_COLLATERAL_FACTOR_FOR_OPEN_INTEREST_MULTIPLIER = hashString(
 export const MIN_COLLATERAL_USD = hashString("MIN_COLLATERAL_USD");
 export const MIN_POSITION_SIZE_USD = hashString("MIN_POSITION_SIZE_USD");
 
-export const SWAP_FEE_RECEIVER_FACTOR = hashString("SWAP_FEE_RECEIVER_FACTOR");
-export const SWAP_FEE_SECONDARY_RECEIVER_FACTOR = hashString("SWAP_FEE_SECONDARY_RECEIVER_FACTOR");
 export const ATOMIC_SWAP_FEE_TYPE = hashString("ATOMIC_SWAP_FEE_TYPE");
 export const TOKEN_TRANSFER_GAS_LIMIT = hashString("TOKEN_TRANSFER_GAS_LIMIT");
 export const NATIVE_TOKEN_TRANSFER_GAS_LIMIT = hashString("NATIVE_TOKEN_TRANSFER_GAS_LIMIT");
@@ -154,12 +150,16 @@ export const POSITION_IMPACT_POOL_DISTRIBUTED_AT = hashString("POSITION_IMPACT_P
 
 export const SWAP_IMPACT_POOL_AMOUNT = hashString("SWAP_IMPACT_POOL_AMOUNT");
 
-export const POSITION_FEE_RECEIVER_FACTOR = hashString("POSITION_FEE_RECEIVER_FACTOR");
-export const POSITION_FEE_SECONDARY_RECEIVER_FACTOR = hashString("POSITION_FEE_SECONDARY_RECEIVER_FACTOR");
-export const LIQUIDATION_FEE_RECEIVER_FACTOR = hashString("LIQUIDATION_FEE_RECEIVER_FACTOR");
-export const LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR = hashString("LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR");
-export const BORROWING_FEE_RECEIVER_FACTOR = hashString("BORROWING_FEE_RECEIVER_FACTOR");
-export const BORROWING_FEE_SECONDARY_RECEIVER_FACTOR = hashString("BORROWING_FEE_SECONDARY_RECEIVER_FACTOR");
+export const POSITION_FEE_VEALPHA_FACTOR = hashString("POSITION_FEE_VEALPHA_FACTOR");
+export const POSITION_FEE_TREASURY_FACTOR = hashString("POSITION_FEE_TREASURY_FACTOR");
+export const POSITION_FEE_BUYBACK_FACTOR = hashString("POSITION_FEE_BUYBACK_FACTOR");
+export const LIQUIDATION_FEE_VALIDATOR_FACTOR = hashString("LIQUIDATION_FEE_VALIDATOR_FACTOR");
+export const LIQUIDATION_FEE_INSURANCE_FACTOR = hashString("LIQUIDATION_FEE_INSURANCE_FACTOR");
+export const VEALPHA_FEE_RECEIVER = hashString("VEALPHA_FEE_RECEIVER");
+export const TREASURY_FEE_RECEIVER = hashString("TREASURY_FEE_RECEIVER");
+export const BUYBACK_FEE_RECEIVER = hashString("BUYBACK_FEE_RECEIVER");
+export const VALIDATOR_FEE_RECEIVER = hashString("VALIDATOR_FEE_RECEIVER");
+export const INSURANCE_FUND_ADDRESS = hashString("INSURANCE_FUND_ADDRESS");
 
 export const SWAP_FEE_FACTOR = hashString("SWAP_FEE_FACTOR");
 export const DEPOSIT_FEE_FACTOR = hashString("DEPOSIT_FEE_FACTOR");
@@ -358,8 +358,11 @@ export function cancelOrderFeatureDisabledKey(contract, orderType) {
   return hashData(["bytes32", "address", "uint256"], [CANCEL_ORDER_FEATURE_DISABLED, contract, orderType]);
 }
 
-export function claimableFeeAmountKey(market: string, token: string) {
-  return hashData(["bytes32", "address", "address"], [CLAIMABLE_FEE_AMOUNT, market, token]);
+export function claimableFeeAmountKey(market: string, token: string, receiver?: string) {
+  if (receiver === undefined) {
+    return hashData(["bytes32", "address", "address"], [CLAIMABLE_FEE_AMOUNT, market, token]);
+  }
+  return hashData(["bytes32", "address", "address", "address"], [CLAIMABLE_FEE_AMOUNT, market, token, receiver]);
 }
 
 export function claimableFundingAmountKey(market: string, token: string, account: string) {

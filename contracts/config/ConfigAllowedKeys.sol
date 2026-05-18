@@ -83,14 +83,11 @@ library ConfigAllowedKeys {
         allowedBaseKeys[Keys.SEQUENCER_GRACE_DURATION] = true;
         allowedBaseKeys[Keys.MAX_ORACLE_REF_PRICE_DEVIATION_FACTOR] = true;
 
-        allowedBaseKeys[Keys.POSITION_FEE_RECEIVER_FACTOR] = true;
-        allowedBaseKeys[Keys.POSITION_FEE_SECONDARY_RECEIVER_FACTOR] = true;
-        allowedBaseKeys[Keys.LIQUIDATION_FEE_RECEIVER_FACTOR] = true;
-        allowedBaseKeys[Keys.LIQUIDATION_FEE_SECONDARY_RECEIVER_FACTOR] = true;
-        allowedBaseKeys[Keys.SWAP_FEE_RECEIVER_FACTOR] = true;
-        allowedBaseKeys[Keys.SWAP_FEE_SECONDARY_RECEIVER_FACTOR] = true;
-        allowedBaseKeys[Keys.BORROWING_FEE_RECEIVER_FACTOR] = true;
-        allowedBaseKeys[Keys.BORROWING_FEE_SECONDARY_RECEIVER_FACTOR] = true;
+        allowedBaseKeys[Keys.POSITION_FEE_VEALPHA_FACTOR] = true;
+        allowedBaseKeys[Keys.POSITION_FEE_TREASURY_FACTOR] = true;
+        allowedBaseKeys[Keys.POSITION_FEE_BUYBACK_FACTOR] = true;
+        allowedBaseKeys[Keys.LIQUIDATION_FEE_VALIDATOR_FACTOR] = true;
+        allowedBaseKeys[Keys.LIQUIDATION_FEE_INSURANCE_FACTOR] = true;
 
         allowedBaseKeys[Keys.ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1] = true;
         allowedBaseKeys[Keys.ESTIMATED_GAS_FEE_PER_ORACLE_PRICE] = true;
