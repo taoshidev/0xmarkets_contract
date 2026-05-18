@@ -141,10 +141,11 @@ library ConfigValidatorUtils {
         }
 
         if (
-            baseKey == Keys.POSITION_FEE_RECEIVER_FACTOR ||
-            baseKey == Keys.SWAP_FEE_RECEIVER_FACTOR ||
-            baseKey == Keys.BORROWING_FEE_RECEIVER_FACTOR ||
-            baseKey == Keys.LIQUIDATION_FEE_RECEIVER_FACTOR ||
+            baseKey == Keys.POSITION_FEE_VEALPHA_FACTOR ||
+            baseKey == Keys.POSITION_FEE_TREASURY_FACTOR ||
+            baseKey == Keys.POSITION_FEE_BUYBACK_FACTOR ||
+            baseKey == Keys.LIQUIDATION_FEE_VALIDATOR_FACTOR ||
+            baseKey == Keys.LIQUIDATION_FEE_INSURANCE_FACTOR ||
             baseKey == Keys.MAX_PNL_FACTOR ||
             baseKey == Keys.MIN_PNL_FACTOR_AFTER_ADL ||
             baseKey == Keys.OPTIMAL_USAGE_FACTOR ||
