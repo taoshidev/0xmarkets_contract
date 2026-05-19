@@ -15,6 +15,7 @@ const func = createDeployFunction({
     "ReaderWithdrawalUtils",
     "ShiftStoreUtils",
     "WithdrawalStoreUtils",
+    "InsuranceFundUtils",
   ],
 });
 
