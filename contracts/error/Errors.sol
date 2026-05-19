@@ -382,6 +382,9 @@ library Errors {
     error EmptyAccount();
     error EmptyReceiver();
 
+    // InsuranceFund errors
+    error InsuranceFundEpochNotYetElapsed(uint256 currentTime, uint256 epochStart, uint256 epochLength);
+
     // Array errors
     error CompactedArrayOutOfBounds(
         uint256[] compactedValues,

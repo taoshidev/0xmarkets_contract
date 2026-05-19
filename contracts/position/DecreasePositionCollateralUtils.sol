@@ -17,6 +17,9 @@ import "../order/OrderEventUtils.sol";
 
 import "./DecreasePositionSwapUtils.sol";
 
+import "../insurance/InsuranceFundUtils.sol";
+import "../insurance/InsuranceVault.sol";
+
 // @title DecreasePositionCollateralUtils
 // @dev Library for functions to help with the calculations when decreasing a position
 library DecreasePositionCollateralUtils {
@@ -514,7 +517,37 @@ library DecreasePositionCollateralUtils {
             values.output.outputAmount += params.order.initialCollateralDeltaAmount();
         }
 
+        // Insurance fund: see _maybeInjectInsurancePool. Extracted to a private
+        // helper to keep processCollateral under the stack-depth limit; the
+        // helper's locals don't pin slots in the parent.
+        _maybeInjectInsurancePool(params, cache);
+
         return (values, fees);
+    }
+
+    // @dev If realized drawdown exceeds the per-market trigger factor, move
+    // reserves from the InsuranceVault back into the pool. No-ops cleanly when
+    // the trigger is the off-sentinel (type(uint256).max), drawdown is at or
+    // below the threshold, the epoch snapshot is stale/uninitialized, or
+    // INSURANCE_FUND_ADDRESS is unset. ADL and liquidation paths flow through
+    // the same processCollateral and pick this up automatically.
+    function _maybeInjectInsurancePool(
+        PositionUtils.UpdatePositionParams memory params,
+        PositionUtils.DecreasePositionCache memory cache
+    ) private {
+        address vaultAddress = params.contracts.dataStore.getAddress(Keys.INSURANCE_FUND_ADDRESS);
+        if (vaultAddress == address(0)) {
+            return;
+        }
+        InsuranceFundUtils.attemptInjectPool(
+            params.contracts.dataStore,
+            params.contracts.eventEmitter,
+            InsuranceVault(payable(vaultAddress)),
+            params.market,
+            cache.prices,
+            cache.pnlToken,
+            params.orderKey
+        );
     }
 
     function payForCost(
@@ -762,17 +795,26 @@ library DecreasePositionCollateralUtils {
             );
         }
 
-        address insuranceFundAddress = params.contracts.dataStore.getAddress(Keys.INSURANCE_FUND_ADDRESS);
-        if (insuranceFundAddress != address(0)) {
-            FeeUtils.incrementClaimableFeeAmount(
-                params.contracts.dataStore,
-                params.contracts.eventEmitter,
-                insuranceFundAddress,
-                params.market.marketToken,
-                collateralToken,
-                fees.insuranceFeeAmount,
-                Keys.POSITION_FEE_TYPE
-            );
+        // Insurance fund: route the configured slice into the InsuranceVault.
+        // INSURANCE_FUND_ADDRESS holds the vault contract; InsuranceFundUtils.deposit
+        // transfers the slice from MarketToken into the vault and increments the
+        // per (market, token) reserve bucket so attemptInjectPool can draw from it
+        // when realized drawdown crosses the trigger. fees.feeAmountForPool already
+        // excludes this slice (see PositionPricingUtils.getPositionFees) — no
+        // double counting against the pool delta.
+        if (fees.insuranceFeeAmount > 0) {
+            InsuranceVault insuranceVault = InsuranceVault(payable(params.contracts.dataStore.getAddress(Keys.INSURANCE_FUND_ADDRESS)));
+            if (address(insuranceVault) != address(0)) {
+                InsuranceFundUtils.deposit(
+                    params.contracts.dataStore,
+                    params.contracts.eventEmitter,
+                    insuranceVault,
+                    params.market.marketToken,
+                    collateralToken,
+                    params.orderKey,
+                    fees.insuranceFeeAmount
+                );
+            }
         }
     }
 }

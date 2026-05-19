@@ -32,6 +32,11 @@ export const EXCLUDED_CONFIG_KEYS = {
   BUYBACK_FEE_RECEIVER: true,
   VALIDATOR_FEE_RECEIVER: true,
   INSURANCE_FUND_ADDRESS: true,
+  // InsuranceFund runtime state (written by InsuranceFundUtils.deposit /
+  // attemptInjectPool / snapshotEpoch, never Config-tunable).
+  INSURANCE_FUND_BALANCE: true,
+  INSURANCE_FUND_EPOCH_POOL_VALUE: true,
+  INSURANCE_FUND_EPOCH_START: true,
   POSITION_FEE_VEALPHA_FACTOR: true,
   POSITION_FEE_TREASURY_FACTOR: true,
   POSITION_FEE_BUYBACK_FACTOR: true,

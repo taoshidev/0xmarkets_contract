@@ -219,6 +219,25 @@ library Keys {
     // @dev key for the share of liquidation fees routed to the insurance fund
     bytes32 public constant LIQUIDATION_FEE_INSURANCE_FACTOR = keccak256(abi.encode("LIQUIDATION_FEE_INSURANCE_FACTOR"));
 
+    // @dev per-market realized-drawdown threshold; InsuranceFundUtils.attemptInjectPool
+    // moves reserves back into the pool when drawdown crosses this.
+    // type(uint256).max is the off-sentinel.
+    bytes32 public constant INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR = keccak256(abi.encode("INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR"));
+    // @dev per (market, token) insurance reserve balance. Tokens physically held by the
+    // InsuranceVault singleton (resolved via INSURANCE_FUND_ADDRESS); this DataStore
+    // entry is bookkeeping segregating reserves by market+token.
+    // Invariant: InsuranceVault.tokenBalances(token) >= sum across markets of insuranceFundBalanceKey(market, token).
+    bytes32 public constant INSURANCE_FUND_BALANCE = keccak256(abi.encode("INSURANCE_FUND_BALANCE"));
+    // @dev per-market USD snapshot of poolValueExcludingUnrealizedPnl at the last epoch start.
+    bytes32 public constant INSURANCE_FUND_EPOCH_POOL_VALUE = keccak256(abi.encode("INSURANCE_FUND_EPOCH_POOL_VALUE"));
+    // @dev per-market timestamp of the last epoch start. Treat the fund as disabled
+    // when this is zero (first epoch) or older than INSURANCE_FUND_MAX_EPOCH_AGE.
+    bytes32 public constant INSURANCE_FUND_EPOCH_START = keccak256(abi.encode("INSURANCE_FUND_EPOCH_START"));
+    // @dev maximum allowed age of an epoch snapshot before the fund auto-disables (global, seconds).
+    bytes32 public constant INSURANCE_FUND_MAX_EPOCH_AGE = keccak256(abi.encode("INSURANCE_FUND_MAX_EPOCH_AGE"));
+    // @dev epoch length used by SettlementHandler.snapshotEpoch idempotency guard (global, seconds).
+    bytes32 public constant INSURANCE_FUND_EPOCH_LENGTH = keccak256(abi.encode("INSURANCE_FUND_EPOCH_LENGTH"));
+
     // @dev key for the base gas limit used when estimating execution fee
     bytes32 public constant ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1 = keccak256(abi.encode("ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1"));
     // @dev key for the gas limit used for each oracle price when estimating execution fee
@@ -1250,6 +1269,39 @@ library Keys {
     function liquidationFeeFactorKey(address market) internal pure returns (bytes32) {
         return keccak256(abi.encode(
             LIQUIDATION_FEE_FACTOR,
+            market
+        ));
+    }
+
+    // @dev per-market drawdown trigger threshold
+    function insuranceFundDrawdownTriggerFactorKey(address market) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR,
+            market
+        ));
+    }
+
+    // @dev per (market, token) insurance reserve balance
+    function insuranceFundBalanceKey(address market, address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            INSURANCE_FUND_BALANCE,
+            market,
+            token
+        ));
+    }
+
+    // @dev per-market USD pool-value snapshot at last epoch start
+    function insuranceFundEpochPoolValueKey(address market) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            INSURANCE_FUND_EPOCH_POOL_VALUE,
+            market
+        ));
+    }
+
+    // @dev per-market timestamp of the last epoch start
+    function insuranceFundEpochStartKey(address market) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            INSURANCE_FUND_EPOCH_START,
             market
         ));
     }

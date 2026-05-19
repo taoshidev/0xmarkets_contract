@@ -164,5 +164,38 @@ library ConfigValidatorUtils {
                 revert Errors.ConfigValueExceedsAllowedRange(baseKey, value);
             }
         }
+
+        // ---------------------------------------------------------------
+        // Insurance fund — sum-of-shares + drawdown trigger bounds
+        // ---------------------------------------------------------------
+        //
+        // The liquidation fee is split between validator + insurance + pool.
+        // PositionPricingUtils.getPositionFees computes the pool share as
+        // residual: liquidationFeeAmount - liquidationFeeAmountForValidator -
+        // liquidationFeeAmountForInsurance. Validator + insurance > 1e30
+        // would underflow that subtraction, so enforce the sum here.
+        // Both factors are global, so this check is exact (no per-market scope
+        // ambiguity).
+        if (
+            baseKey == Keys.LIQUIDATION_FEE_VALIDATOR_FACTOR ||
+            baseKey == Keys.LIQUIDATION_FEE_INSURANCE_FACTOR
+        ) {
+            bytes32 otherKey = baseKey == Keys.LIQUIDATION_FEE_VALIDATOR_FACTOR
+                ? Keys.LIQUIDATION_FEE_INSURANCE_FACTOR
+                : Keys.LIQUIDATION_FEE_VALIDATOR_FACTOR;
+            uint256 otherValue = dataStore.getUint(otherKey);
+            if (value + otherValue > Precision.FLOAT_PRECISION) {
+                revert Errors.ConfigValueExceedsAllowedRange(baseKey, value);
+            }
+        }
+
+        // Drawdown trigger factor: type(uint256).max is the off-sentinel
+        // (operators set this to disable the fund on a market). Otherwise
+        // value must be ≤ 100% so the threshold is a fraction of pool USD.
+        if (baseKey == Keys.INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR) {
+            if (value != type(uint256).max && value > Precision.FLOAT_PRECISION) {
+                revert Errors.ConfigValueExceedsAllowedRange(baseKey, value);
+            }
+        }
     }
 }

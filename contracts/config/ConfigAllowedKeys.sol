@@ -89,6 +89,16 @@ library ConfigAllowedKeys {
         allowedBaseKeys[Keys.LIQUIDATION_FEE_VALIDATOR_FACTOR] = true;
         allowedBaseKeys[Keys.LIQUIDATION_FEE_INSURANCE_FACTOR] = true;
 
+        // Insurance fund — governance-tunable parameters.
+        // INSURANCE_FUND_ADDRESS and LIQUIDATION_FEE_INSURANCE_FACTOR are registered
+        // above by fee-addresses (PR #31). Storage keys for the fund (balance, epoch
+        // snapshot, epoch start) are NOT registered here: balances are written by
+        // InsuranceFundUtils on each close + snapshot, not by governance. Those
+        // keys live in EXCLUDED_CONFIG_KEYS in utils/config.ts.
+        allowedBaseKeys[Keys.INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR] = true;
+        allowedBaseKeys[Keys.INSURANCE_FUND_MAX_EPOCH_AGE] = true;
+        allowedBaseKeys[Keys.INSURANCE_FUND_EPOCH_LENGTH] = true;
+
         allowedBaseKeys[Keys.ESTIMATED_GAS_FEE_BASE_AMOUNT_V2_1] = true;
         allowedBaseKeys[Keys.ESTIMATED_GAS_FEE_PER_ORACLE_PRICE] = true;
         allowedBaseKeys[Keys.ESTIMATED_GAS_FEE_MULTIPLIER_FACTOR] = true;
