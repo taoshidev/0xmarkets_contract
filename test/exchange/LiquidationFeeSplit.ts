@@ -12,24 +12,21 @@ import * as keys from "../../utils/keys";
 describe("Exchange.LiquidationFeeSplit", () => {
   let fixture;
   let wallet, user0;
-  let roleStore, dataStore, ethUsdMarket, wnt, usdc;
-  let validatorReceiver, insuranceFundAddress;
+  let roleStore, dataStore, ethUsdMarket, wnt, usdc, insuranceVault;
+  let validatorReceiver;
 
   beforeEach(async () => {
     fixture = await deployFixture();
     ({ wallet, user0 } = fixture.accounts);
-    ({ roleStore, dataStore, ethUsdMarket, wnt, usdc } = fixture.contracts);
+    ({ roleStore, dataStore, ethUsdMarket, wnt, usdc, insuranceVault } = fixture.contracts);
 
     validatorReceiver = fixture.accounts.user1.address;
-    insuranceFundAddress = fixture.accounts.user2.address;
-
     await dataStore.setAddress(keys.VALIDATOR_FEE_RECEIVER, validatorReceiver);
-    await dataStore.setAddress(keys.INSURANCE_FUND_ADDRESS, insuranceFundAddress);
-
-    // 0.5% liquidation fee, with 30%/20% splits → pool keeps 50%
-    await dataStore.setUint(keys.liquidationFeeFactorKey(ethUsdMarket.marketToken), decimalToFloat(5, 3));
+    await dataStore.setUint(keys.liquidationFeeFactorKey(ethUsdMarket.marketToken), decimalToFloat(30, 2));
     await dataStore.setUint(keys.LIQUIDATION_FEE_VALIDATOR_FACTOR, decimalToFloat(30, 2));
     await dataStore.setUint(keys.LIQUIDATION_FEE_INSURANCE_FACTOR, decimalToFloat(20, 2));
+
+    await dataStore.setUint(keys.minMmrKey(ethUsdMarket.marketToken), decimalToFloat(20, 2));
 
     await handleDeposit(fixture, {
       create: {
@@ -39,10 +36,7 @@ describe("Exchange.LiquidationFeeSplit", () => {
     });
   });
 
-  // TODO: this scenario hits the insolvent-close path at $4000, which
-  // bypasses _distributeLiquidationShares. Restructure with a leverage-based
-  // liquidation that leaves remaining collateral.
-  it.skip("splits liquidation fees between validator, insurance fund, and pool", async () => {
+  it("splits liquidation fees between validator, insurance fund, and pool on an insolvent close", async () => {
     // Open 10 WETH collateral ($50k at $5k), $200k size — 4x leverage.
     await handleOrder(fixture, {
       create: {
@@ -67,34 +61,34 @@ describe("Exchange.LiquidationFeeSplit", () => {
       market: ethUsdMarket,
       collateralToken: wnt,
       isLong: true,
-      minPrices: [expandDecimals(4000, 4), expandDecimals(1, 6)],
-      maxPrices: [expandDecimals(4000, 4), expandDecimals(1, 6)],
+      // Price $4500 → PnL -$20k, $30k collateral remaining; fees $60k → 50%
+      // partial payment, exercising _distributeInsolventShares scaling.
+      minPrices: [expandDecimals(4500, 4), expandDecimals(1, 6)],
+      maxPrices: [expandDecimals(4500, 4), expandDecimals(1, 6)],
       gasUsageLabel: "liquidationHandler.executeLiquidation",
     });
 
-    // The two named receivers should now hold non-zero claimable balances
-    // and they should be in a 30:20 ratio (= 3:2).
     const validatorBalance = await getClaimableFeeAmount(
       dataStore,
       ethUsdMarket.marketToken,
       wnt.address,
       validatorReceiver
     );
-    const insuranceBalance = await getClaimableFeeAmount(
-      dataStore,
-      ethUsdMarket.marketToken,
-      wnt.address,
-      insuranceFundAddress
+    const insuranceBalance = await dataStore.getUint(
+      keys.insuranceFundBalanceKey(ethUsdMarket.marketToken, wnt.address)
     );
 
-    expect(validatorBalance).gt(0);
-    expect(insuranceBalance).gt(0);
-    // 30% / 20% factors → validator/insurance ratio is 3/2
+    expect(validatorBalance, "validator claimable").gt(0);
+    expect(insuranceBalance, "insurance vault bucket").gt(0);
+    // 30% / 20% factors → validator/insurance ratio is 3/2 (same scale
+    // factor applied to both shares cancels in the ratio).
     expect(validatorBalance.mul(2)).eq(insuranceBalance.mul(3));
+
+    // Vault's physical token balance matches the bookkept reserve.
+    expect(await wnt.balanceOf(insuranceVault.address)).eq(insuranceBalance);
   });
 
-  // TODO: same insolvent-close issue as above.
-  it.skip("zero-address receivers are skipped on liquidation", async () => {
+  it("zero-address validator receiver is skipped, insurance still receives on liquidation", async () => {
     await dataStore.setAddress(keys.VALIDATOR_FEE_RECEIVER, "0x0000000000000000000000000000000000000000");
 
     await handleOrder(fixture, {
@@ -119,23 +113,22 @@ describe("Exchange.LiquidationFeeSplit", () => {
       market: ethUsdMarket,
       collateralToken: wnt,
       isLong: true,
-      minPrices: [expandDecimals(4000, 4), expandDecimals(1, 6)],
-      maxPrices: [expandDecimals(4000, 4), expandDecimals(1, 6)],
+      // Price $4500 → PnL -$20k, $30k collateral remaining; fees $60k → 50%
+      // partial payment, exercising _distributeInsolventShares scaling.
+      minPrices: [expandDecimals(4500, 4), expandDecimals(1, 6)],
+      maxPrices: [expandDecimals(4500, 4), expandDecimals(1, 6)],
       gasUsageLabel: "liquidationHandler.executeLiquidation",
     });
 
-    // validator address is zero → no credit; insurance still credits
+    // validator address is zero → no credit; insurance still credits the vault
     const validatorBalance = await getClaimableFeeAmount(
       dataStore,
       ethUsdMarket.marketToken,
       wnt.address,
       validatorReceiver
     );
-    const insuranceBalance = await getClaimableFeeAmount(
-      dataStore,
-      ethUsdMarket.marketToken,
-      wnt.address,
-      insuranceFundAddress
+    const insuranceBalance = await dataStore.getUint(
+      keys.insuranceFundBalanceKey(ethUsdMarket.marketToken, wnt.address)
     );
 
     expect(validatorBalance).eq(0);
