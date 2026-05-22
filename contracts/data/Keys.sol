@@ -539,6 +539,15 @@ library Keys {
     // @dev key for Pyth Lazer feed multiplier
     bytes32 public constant PYTH_LAZER_FEED_MULTIPLIER = keccak256(abi.encode("PYTH_LAZER_FEED_MULTIPLIER"));
 
+    // @dev key for per-token max allowed deviation (in bps) between primary and secondary oracles in the circuit breaker
+    bytes32 public constant CIRCUIT_BREAKER_DEVIATION_BPS = keccak256(abi.encode("CIRCUIT_BREAKER_DEVIATION_BPS"));
+    // @dev key for per-token max allowed timestamp skew (in seconds) between primary and secondary oracles
+    bytes32 public constant CIRCUIT_BREAKER_TIMESTAMP_SKEW = keccak256(abi.encode("CIRCUIT_BREAKER_TIMESTAMP_SKEW"));
+    // @dev key for marking an address as an authorized caller of ChainlinkDataStreamProvider (in addition to the Oracle contract)
+    bytes32 public constant IS_DATA_STREAM_AUTHORIZED_CALLER = keccak256(abi.encode("IS_DATA_STREAM_AUTHORIZED_CALLER"));
+    // @dev key for allowing a per-token hybrid oracle to fall back to a single feed when the other is unavailable
+    bytes32 public constant ALLOW_SINGLE_ORACLE_FALLBACK = keccak256(abi.encode("ALLOW_SINGLE_ORACLE_FALLBACK"));
+
 
     // @dev function used to calculate fullKey for a given market parameter
     // @param baseKey the base key for the market parameter
@@ -2339,6 +2348,46 @@ library Keys {
     function pythLazerFeedMultiplierKey(address token) internal pure returns (bytes32) {
         return keccak256(abi.encode(
             PYTH_LAZER_FEED_MULTIPLIER,
+            token
+        ));
+    }
+
+    // @dev key for per-token circuit breaker max deviation in bps
+    // @param token the token to get the key for
+    // @return key for per-token max deviation between primary and secondary oracles, in bps
+    function circuitBreakerDeviationBpsKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            CIRCUIT_BREAKER_DEVIATION_BPS,
+            token
+        ));
+    }
+
+    // @dev key for per-token circuit breaker max timestamp skew in seconds
+    // @param token the token to get the key for
+    // @return key for per-token max allowed timestamp skew between primary and secondary oracle reports
+    function circuitBreakerTimestampSkewKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            CIRCUIT_BREAKER_TIMESTAMP_SKEW,
+            token
+        ));
+    }
+
+    // @dev key for flagging an address as an authorized caller of ChainlinkDataStreamProvider
+    // @param caller the address to check
+    // @return key for the authorized caller flag
+    function isDataStreamAuthorizedCallerKey(address caller) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            IS_DATA_STREAM_AUTHORIZED_CALLER,
+            caller
+        ));
+    }
+
+    // @dev key for allowing the hybrid oracle to fall back to a single feed for this token
+    // @param token the token to check
+    // @return key for the per-token single-oracle-fallback allow flag
+    function allowSingleOracleFallbackKey(address token) internal pure returns (bytes32) {
+        return keccak256(abi.encode(
+            ALLOW_SINGLE_ORACLE_FALLBACK,
             token
         ));
     }

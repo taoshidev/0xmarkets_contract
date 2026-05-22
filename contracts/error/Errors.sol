@@ -242,6 +242,24 @@ library Errors {
     error EmptyPythLazerFeedMultiplier(address token);
     error StaleOraclePrice(address token, uint256 publishedTimestamp, uint256 storedTimestamp);
 
+    // CircuitBreakerOracleProvider errors
+    error EmptyCircuitBreakerDeviationBps(address token);
+    error OracleCircuitBreakerDeviation(
+        address token,
+        uint256 primaryMid,
+        uint256 secondaryMid,
+        uint256 observedBps,
+        uint256 maxBps
+    );
+    error OracleCircuitBreakerTimestampSkew(
+        address token,
+        uint256 primaryTimestamp,
+        uint256 secondaryTimestamp,
+        uint256 maxSkew
+    );
+    error NoOracleData(address token);
+    error OracleSingleFallbackDisabled(address token);
+
     // OracleModule errors
     error InvalidPrimaryPricesForSimulation(uint256 primaryTokensLength, uint256 primaryPricesLength);
     error EndOfOracleSimulation();
