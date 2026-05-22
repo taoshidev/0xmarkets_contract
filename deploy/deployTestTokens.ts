@@ -65,9 +65,9 @@ const func = async ({ getNamedAccounts, deployments, gmx, network }: HardhatRunt
     );
   }
 
-  const usdcAddress = tokens["USDC"].address;
+  const usdcAddress = (tokens["USDC"] ?? tokens["USD0"])?.address;
   if (!usdcAddress) {
-    throw new Error("No USDC token found");
+    throw new Error("No USDC/USD0 token found");
   }
   await setAddressIfDifferent(keys.USDC, usdcAddress, "USDC");
 

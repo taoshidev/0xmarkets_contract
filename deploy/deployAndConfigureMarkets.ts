@@ -168,6 +168,9 @@ const func = async ({ deployments, getNamedAccounts, ethers, gmx }: HardhatRunti
         tiers.map((t) => t.maxNotionalUsd),
         tiers.map((t) => t.maxLeverage)
       );
+      // Same pending-nonce race as utils/role.ts — give the RPC's mempool
+      // view time to advance before the next setLeverageLadder.
+      await new Promise((r) => setTimeout(r, 2000));
     }
   }
 };

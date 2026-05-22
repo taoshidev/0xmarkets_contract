@@ -8,7 +8,6 @@
   "ProtocolGovernor_1": 1771253117,
   "OracleStore_3": 1771253168,
   "GmOracleProvider_2": 1771253196,
-  "PythLazerFeedProvider": 1771253349,
   "ChainlinkPriceFeedProvider_2": 1771253499,
   "Oracle_5": 1771253549,
   "OrderVault_1": 1771253561,
@@ -21,5 +20,7 @@
   "ShiftVault_1": 1771253874,
   "ExternalHandler_1": 1771253962,
   "FeeHandler_1": 1771254019,
-  "GlvVault_1": 1771254086
+  "GlvVault_1": 1771254086,
+  "PythHermesFeedProvider": 1778676059,
+  "PythLazerFeedProvider": 1778678046
 }
