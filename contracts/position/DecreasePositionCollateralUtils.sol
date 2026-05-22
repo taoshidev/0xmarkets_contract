@@ -315,13 +315,19 @@ library DecreasePositionCollateralUtils {
             // this imbalance
             // the swap impact pool should be built up so that it can be used to pay for positive price impact
             // for re-balancing to help handle this case
-            MarketUtils.applyDeltaToPoolAmount(
-                params.contracts.dataStore,
-                params.contracts.eventEmitter,
-                params.market,
-                params.position.collateralToken(),
-                fees.feeAmountForPool.toInt256()
-            );
+            //
+            // Skip the pool delta when feeAmountForPool is zero — avoids an empty
+            // PoolAmountUpdated event and matches the guard in
+            // _distributeInsolventShares. (Cannot be negative; type is uint256.)
+            if (fees.feeAmountForPool > 0) {
+                MarketUtils.applyDeltaToPoolAmount(
+                    params.contracts.dataStore,
+                    params.contracts.eventEmitter,
+                    params.market,
+                    params.position.collateralToken(),
+                    fees.feeAmountForPool.toInt256()
+                );
+            }
 
             address collateralToken = params.position.collateralToken();
 
@@ -337,19 +343,8 @@ library DecreasePositionCollateralUtils {
                 fees.ui.uiFeeAmount,
                 Keys.UI_POSITION_FEE_TYPE
             );
-        } else {
-            // the fees are expected to be paid in the collateral token
-            // if there are insufficient funds to pay for fees entirely in the collateral token
-            // then credit the fee amount entirely to the pool
-            if (collateralCache.result.amountPaidInCollateralToken > 0) {
-                MarketUtils.applyDeltaToPoolAmount(
-                    params.contracts.dataStore,
-                    params.contracts.eventEmitter,
-                    params.market,
-                    params.position.collateralToken(),
-                    collateralCache.result.amountPaidInCollateralToken.toInt256()
-                );
-            }
+        } else if (collateralCache.result.remainingCostUsd > 0) {
+            _distributeInsolventShares(params, fees, collateralCache.result.amountPaidInCollateralToken);
 
             if (collateralCache.result.amountPaidInSecondaryOutputToken > 0) {
                 MarketUtils.applyDeltaToPoolAmount(
@@ -360,10 +355,25 @@ library DecreasePositionCollateralUtils {
                     collateralCache.result.amountPaidInSecondaryOutputToken.toInt256()
                 );
             }
-
-            // empty the fees since the amount was entirely paid to the pool instead of for fees
-            // it is possible for the txn execution to still complete even in this case
-            // as long as the remainingCostUsd is still zero
+        } else {
+            if (collateralCache.result.amountPaidInCollateralToken > 0) {
+                MarketUtils.applyDeltaToPoolAmount(
+                    params.contracts.dataStore,
+                    params.contracts.eventEmitter,
+                    params.market,
+                    params.position.collateralToken(),
+                    collateralCache.result.amountPaidInCollateralToken.toInt256()
+                );
+            }
+            if (collateralCache.result.amountPaidInSecondaryOutputToken > 0) {
+                MarketUtils.applyDeltaToPoolAmount(
+                    params.contracts.dataStore,
+                    params.contracts.eventEmitter,
+                    params.market,
+                    values.output.secondaryOutputToken,
+                    collateralCache.result.amountPaidInSecondaryOutputToken.toInt256()
+                );
+            }
             fees = getEmptyFees(fees);
         }
 
@@ -815,6 +825,66 @@ library DecreasePositionCollateralUtils {
                     fees.insuranceFeeAmount
                 );
             }
+        }
+    }
+
+    // @dev Insolvent / partial-payment fee distribution for the collateral-
+    // token portion of the recovered amount. Scales each receiver share by
+    //   scale = amountPaidInCollateralToken / totalCostAmountExcludingFunding
+    // (capped at 1.0) so the sum of distributed shares stays ≤ recovered.
+    //
+    // Mutates `fees` in place — handleEarlyReturn's PositionFeesInfo emit
+    // downstream will reflect the scaled values that were actually written.
+    function _distributeInsolventShares(
+        PositionUtils.UpdatePositionParams memory params,
+        PositionPricingUtils.PositionFees memory fees,
+        uint256 amountPaidInCollateralToken
+    ) internal {
+        if (amountPaidInCollateralToken == 0 || fees.totalCostAmountExcludingFunding == 0) {
+            // Nothing recovered or nothing owed — no scaled distribution.
+            // handleEarlyReturn will return getEmptyFees(fees) downstream.
+            return;
+        }
+
+        uint256 scale = Precision.toFactor(
+            amountPaidInCollateralToken,
+            fees.totalCostAmountExcludingFunding
+        );
+        if (scale > Precision.FLOAT_PRECISION) {
+            scale = Precision.FLOAT_PRECISION;
+        }
+
+        fees.feeAmountForPool = Precision.applyFactor(fees.feeAmountForPool, scale);
+        fees.veAlphaFeeAmount = Precision.applyFactor(fees.veAlphaFeeAmount, scale);
+        fees.treasuryFeeAmount = Precision.applyFactor(fees.treasuryFeeAmount, scale);
+        fees.buybackFeeAmount = Precision.applyFactor(fees.buybackFeeAmount, scale);
+        fees.validatorFeeAmount = Precision.applyFactor(fees.validatorFeeAmount, scale);
+        fees.insuranceFeeAmount = Precision.applyFactor(fees.insuranceFeeAmount, scale);
+        fees.ui.uiFeeAmount = Precision.applyFactor(fees.ui.uiFeeAmount, scale);
+
+        address collateralToken = params.position.collateralToken();
+
+        if (fees.feeAmountForPool > 0) {
+            MarketUtils.applyDeltaToPoolAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                params.market,
+                collateralToken,
+                fees.feeAmountForPool.toInt256()
+            );
+        }
+        _distributeTransactionShares(params, fees, collateralToken);
+        _distributeLiquidationShares(params, fees, collateralToken);
+        if (fees.ui.uiFeeAmount > 0) {
+            FeeUtils.incrementClaimableUiFeeAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                params.order.uiFeeReceiver(),
+                params.market.marketToken,
+                collateralToken,
+                fees.ui.uiFeeAmount,
+                Keys.UI_POSITION_FEE_TYPE
+            );
         }
     }
 }

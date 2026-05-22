@@ -189,6 +189,34 @@ library ConfigValidatorUtils {
             }
         }
 
+        // Position fee receivers (veAlpha + treasury + buyback) have the
+        // same underflow surface as the liquidation pair above:
+        //   fees.positionFeeAmountForPool =
+        //       fees.protocolFeeAmount
+        //       - fees.veAlphaFeeAmount
+        //       - fees.treasuryFeeAmount
+        //       - fees.buybackFeeAmount;
+        // If the three factors sum to > 1e30 the uint256 subtraction underflows.
+        // Enforce the sum here on whichever of the three is being set.
+        if (
+            baseKey == Keys.POSITION_FEE_VEALPHA_FACTOR ||
+            baseKey == Keys.POSITION_FEE_TREASURY_FACTOR ||
+            baseKey == Keys.POSITION_FEE_BUYBACK_FACTOR
+        ) {
+            uint256 vealpha = baseKey == Keys.POSITION_FEE_VEALPHA_FACTOR
+                ? value
+                : dataStore.getUint(Keys.POSITION_FEE_VEALPHA_FACTOR);
+            uint256 treasury = baseKey == Keys.POSITION_FEE_TREASURY_FACTOR
+                ? value
+                : dataStore.getUint(Keys.POSITION_FEE_TREASURY_FACTOR);
+            uint256 buyback = baseKey == Keys.POSITION_FEE_BUYBACK_FACTOR
+                ? value
+                : dataStore.getUint(Keys.POSITION_FEE_BUYBACK_FACTOR);
+            if (vealpha + treasury + buyback > Precision.FLOAT_PRECISION) {
+                revert Errors.ConfigValueExceedsAllowedRange(baseKey, value);
+            }
+        }
+
         // Drawdown trigger factor: type(uint256).max is the off-sentinel
         // (operators set this to disable the fund on a market). Otherwise
         // value must be ≤ 100% so the threshold is a fraction of pool USD.
