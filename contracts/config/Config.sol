@@ -136,15 +136,24 @@ contract Config is ReentrancyGuard, RoleModule, BasicMulticall {
         address token,
         bytes32 pythLazerFeedId,
         bool pythLazerFeedInverted,
-        uint256 pythLazerFeedMultiplier
+        uint256 pythLazerFeedMultiplier,
+        uint256 pythLazerFeedSpreadFactor
     ) external onlyConfigKeeper nonReentrant {
         if (dataStore.getBytes32(Keys.dataStreamIdKey(token)) != bytes32(0)) {
             revert Errors.DataStreamIdAlreadyExistsForToken(token);
         }
 
+        ConfigValidatorUtils.validateRange(
+            dataStore,
+            Keys.PYTH_LAZER_FEED_SPREAD_FACTOR,
+            abi.encode(token),
+            pythLazerFeedSpreadFactor
+        );
+
         dataStore.setBytes32(Keys.dataStreamIdKey(token), pythLazerFeedId);
         dataStore.setBool(Keys.dataStreamInvertedKey(token), pythLazerFeedInverted);
         dataStore.setUint(Keys.dataStreamMultiplierKey(token), pythLazerFeedMultiplier);
+        dataStore.setUint(Keys.pythLazerFeedSpreadFactorKey(token), pythLazerFeedSpreadFactor);
 
         EventUtils.EventLogData memory eventData;
         // eventData.addressItems.initItems(1);

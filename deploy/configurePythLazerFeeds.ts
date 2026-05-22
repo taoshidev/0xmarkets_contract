@@ -44,6 +44,15 @@ const func = async ({ gmx }: HardhatRuntimeEnvironment) => {
       expandDecimals(1, 60 - token.decimals - token.pythLazerFeedDecimals),
       `Pyth Lazer feed multiplier for ${tokenSymbol} ${token.address}`
     );
+
+    // default to FLOAT_PRECISION (1e30) so the confidence band is used as-is;
+    // factor of 0 would collapse the band to the midpoint
+    const spreadFactor = token.pythLazerFeedSpreadFactor ?? expandDecimals(1, 30);
+    await setUintIfDifferent(
+      keys.pythLazerFeedSpreadFactorKey(token.address),
+      spreadFactor,
+      `Pyth Lazer feed spread factor for ${tokenSymbol} ${token.address}`
+    );
   }
 };
 

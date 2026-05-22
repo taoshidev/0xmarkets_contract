@@ -41,6 +41,7 @@ type BaseTokenConfig = {
   pythLazerFeedId?: number;
   pythLazerFeedDecimals?: number;
   pythLazerFeedInverted?: boolean;
+  pythLazerFeedSpreadFactor?: BigNumberish;
 };
 
 type AssetToekenConfig = BaseTokenConfig & {

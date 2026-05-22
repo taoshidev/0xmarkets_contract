@@ -143,11 +143,12 @@ export async function initOracleConfigForTokens({ write }) {
 
     if (onchainConfig.pythLazerFeedId === 0 && token.pythLazerFeedId !== 0) {
       const pythLazerFeedMultiplier = expandDecimals(1, 60 - token.decimals - token.pythLazerFeedDecimals);
+      const pythLazerFeedSpreadFactor = token.pythLazerFeedSpreadFactor ?? expandDecimals(1, 30);
 
       console.log(
         `setPythLazerFeed(${tokenSymbol}, ${token.pythLazerFeedId}, ${
           token.pythLazerFeedInverted ? true : false
-        }, ${pythLazerFeedMultiplier.toString()})`
+        }, ${pythLazerFeedMultiplier.toString()}, ${pythLazerFeedSpreadFactor.toString()})`
       );
 
       multicallWriteParams.push(
@@ -156,6 +157,7 @@ export async function initOracleConfigForTokens({ write }) {
           token.pythLazerFeedId,
           token.pythLazerFeedInverted ? true : false,
           pythLazerFeedMultiplier,
+          pythLazerFeedSpreadFactor,
         ])
       );
     }
