@@ -232,17 +232,27 @@ describe("Config", () => {
         type: "Uint",
       },
       {
-        key: keys.POSITION_FEE_RECEIVER_FACTOR,
+        key: keys.POSITION_FEE_VEALPHA_FACTOR,
         initial: 0,
         type: "Uint",
       },
       {
-        key: keys.SWAP_FEE_RECEIVER_FACTOR,
+        key: keys.POSITION_FEE_TREASURY_FACTOR,
         initial: 0,
         type: "Uint",
       },
       {
-        key: keys.BORROWING_FEE_RECEIVER_FACTOR,
+        key: keys.POSITION_FEE_BUYBACK_FACTOR,
+        initial: 0,
+        type: "Uint",
+      },
+      {
+        key: keys.LIQUIDATION_FEE_VALIDATOR_FACTOR,
+        initial: 0,
+        type: "Uint",
+      },
+      {
+        key: keys.LIQUIDATION_FEE_INSURANCE_FACTOR,
         initial: 0,
         type: "Uint",
       },
@@ -435,6 +445,40 @@ describe("Config", () => {
     ).to.be.revertedWithCustomError(errorsContract, "ConfigValueExceedsAllowedRange");
 
     await config.setUint(keys.DATA_STREAM_SPREAD_REDUCTION_FACTOR, encodeData(["address"], [wnt.address]), p100);
+  });
+
+  it("validates LIQUIDATION_FEE_VALIDATOR + INSURANCE sum ≤ 100%", async () => {
+    // Both factors are global. Set validator to 40%; insurance up to 60% must
+    // be accepted, 61% must revert. Without this invariant, the pool's residual
+    // in PositionPricingUtils.getPositionFees would underflow.
+    await config.connect(user0).setUint(keys.LIQUIDATION_FEE_VALIDATOR_FACTOR, "0x", percentageToFloat("40%"));
+    await config.connect(user0).setUint(keys.LIQUIDATION_FEE_INSURANCE_FACTOR, "0x", percentageToFloat("60%"));
+
+    await expect(
+      config.connect(user0).setUint(keys.LIQUIDATION_FEE_INSURANCE_FACTOR, "0x", percentageToFloat("60%").add(1))
+    ).to.be.revertedWithCustomError(errorsContract, "ConfigValueExceedsAllowedRange");
+
+    await expect(
+      config.connect(user0).setUint(keys.LIQUIDATION_FEE_VALIDATOR_FACTOR, "0x", percentageToFloat("40%").add(1))
+    ).to.be.revertedWithCustomError(errorsContract, "ConfigValueExceedsAllowedRange");
+  });
+
+  it("validates INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR off-sentinel + ≤ 100%", async () => {
+    const market = encodeData(["address"], [ethUsdMarket.marketToken]);
+    const p100 = percentageToFloat("100%");
+    const maxUint = ethers.constants.MaxUint256;
+
+    // off-sentinel must be settable
+    await config.connect(user0).setUint(keys.INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR, market, maxUint);
+    expect(await dataStore.getUint(keys.insuranceFundDrawdownTriggerFactorKey(ethUsdMarket.marketToken))).eq(maxUint);
+
+    // normal fraction must be settable
+    await config.connect(user0).setUint(keys.INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR, market, percentageToFloat("2%"));
+
+    // anything above 100% that isn't the sentinel must revert
+    await expect(
+      config.connect(user0).setUint(keys.INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR, market, p100.add(1))
+    ).to.be.revertedWithCustomError(errorsContract, "ConfigValueExceedsAllowedRange");
   });
 
   it("setDataStream", async () => {

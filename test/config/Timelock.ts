@@ -114,30 +114,6 @@ describe("Timelock", () => {
     expect(await oracleStore.getSigner(0)).eq(signer9.address);
   });
 
-  it("setFeeReceiver", async () => {
-    await expect(timelock.connect(user2).signalSetFeeReceiver(user3.address))
-      .to.be.revertedWithCustomError(errorsContract, "Unauthorized")
-      .withArgs(user2.address, "TIMELOCK_ADMIN");
-
-    await timelock.connect(timelockAdmin).signalSetFeeReceiver(user3.address);
-
-    await expect(timelock.connect(user2).setFeeReceiverAfterSignal(user3.address))
-      .to.be.revertedWithCustomError(errorsContract, "Unauthorized")
-      .withArgs(user2.address, "TIMELOCK_ADMIN");
-
-    await expect(
-      timelock.connect(timelockAdmin).setFeeReceiverAfterSignal(user3.address)
-    ).to.be.revertedWithCustomError(errorsContract, "SignalTimeNotYetPassed");
-
-    await time.increase(1 * 24 * 60 * 60 + 10);
-
-    expect(await dataStore.getAddress(keys.FEE_RECEIVER)).eq(ethers.constants.AddressZero);
-
-    await timelock.connect(timelockAdmin).setFeeReceiverAfterSignal(user3.address);
-
-    expect(await dataStore.getAddress(keys.FEE_RECEIVER)).eq(user3.address);
-  });
-
   it("grantRole", async () => {
     const orderKeeperRole = hashString("ORDER_KEEPER");
 

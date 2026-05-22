@@ -260,6 +260,47 @@ library MarketUtils {
         return poolAmount * tokenPrice;
     }
 
+    // @dev get the USD value of a pool excluding unrealized trader PnL.
+    // Mirrors getPoolValueInfo's pool-USD computation but skips the long/short
+    // PnL (`getCappedPnl`) deduction, so the value reflects only realized state
+    // plus borrowing-fee accruals minus the impact pool.
+    //
+    // Used by InsuranceFundUtils to snapshot the per-market USD value at epoch
+    // start and to compute the live drawdown fraction. Keeping both call sites
+    // on the same helper guarantees they share the exact same formula —
+    // otherwise a divergence would surface as phantom drawdown.
+    //
+    // Returns int256 to match getPoolValueInfo's return shape; in normal
+    // operation the value is non-negative, but in degenerate states the
+    // impact-pool deduction could exceed the token + borrowing sum. Callers
+    // should treat negative returns as "zero pool value."
+    function getPoolValueExcludingUnrealizedPnl(
+        DataStore dataStore,
+        Market.Props memory market,
+        MarketPrices memory prices,
+        bool maximize
+    ) internal view returns (int256) {
+        uint256 longTokenUsd = getPoolUsdWithoutPnl(dataStore, market, prices, true, maximize);
+        uint256 shortTokenUsd = getPoolUsdWithoutPnl(dataStore, market, prices, false, maximize);
+
+        int256 poolValue = (longTokenUsd + shortTokenUsd).toInt256();
+
+        uint256 totalBorrowingFees = getTotalPendingBorrowingFees(dataStore, market, prices, true);
+        totalBorrowingFees += getTotalPendingBorrowingFees(dataStore, market, prices, false);
+
+        // Post-fee-addresses (PR #31): borrowing fees go 100% to the pool, no
+        // receiver factor — mirror that here so the snapshot matches getPoolValueInfo.
+        poolValue += totalBorrowingFees.toInt256();
+
+        uint256 impactPoolAmount = getNextPositionImpactPoolAmount(dataStore, market.marketToken);
+        // use !maximize for pickPrice since the impactPoolUsd is deducted from the poolValue
+        uint256 impactPoolUsd = impactPoolAmount * prices.indexTokenPrice.pickPrice(!maximize);
+
+        poolValue -= impactPoolUsd.toInt256();
+
+        return poolValue;
+    }
+
     // @dev get the USD value of a pool
     // the value of a pool is the worth of the liquidity provider tokens in the pool - pending trader pnl
     // we use the token index prices to calculate this and ignore price impact since if all positions were closed the
@@ -310,8 +351,8 @@ library MarketUtils {
             false
         );
 
-        result.borrowingFeePoolFactor = Precision.FLOAT_PRECISION - dataStore.getUint(Keys.BORROWING_FEE_RECEIVER_FACTOR);
-        result.poolValue += Precision.applyFactor(result.totalBorrowingFees, result.borrowingFeePoolFactor).toInt256();
+        result.borrowingFeePoolFactor = Precision.FLOAT_PRECISION;
+        result.poolValue += result.totalBorrowingFees.toInt256();
 
         // !maximize should be used for net pnl as a larger pnl leads to a smaller pool value
         // and a smaller pnl leads to a larger pool value

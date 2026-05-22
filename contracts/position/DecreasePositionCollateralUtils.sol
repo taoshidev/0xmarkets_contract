@@ -17,6 +17,9 @@ import "../order/OrderEventUtils.sol";
 
 import "./DecreasePositionSwapUtils.sol";
 
+import "../insurance/InsuranceFundUtils.sol";
+import "../insurance/InsuranceVault.sol";
+
 // @title DecreasePositionCollateralUtils
 // @dev Library for functions to help with the calculations when decreasing a position
 library DecreasePositionCollateralUtils {
@@ -320,32 +323,10 @@ library DecreasePositionCollateralUtils {
                 fees.feeAmountForPool.toInt256()
             );
 
-            address feeReceiver = params.contracts.dataStore.getAddress(Keys.FEE_RECEIVER);
             address collateralToken = params.position.collateralToken();
 
-            FeeUtils.incrementClaimableFeeAmount(
-                params.contracts.dataStore,
-                params.contracts.eventEmitter,
-                feeReceiver,
-                params.market.marketToken,
-                collateralToken,
-                fees.feeReceiverAmount,
-                Keys.POSITION_FEE_TYPE
-            );
-
-            address secondaryFeeReceiver = params.contracts.dataStore.getAddress(Keys.SECONDARY_FEE_RECEIVER);
-
-            if (secondaryFeeReceiver != address(0)) {
-                FeeUtils.incrementClaimableFeeAmount(
-                    params.contracts.dataStore,
-                    params.contracts.eventEmitter,
-                    secondaryFeeReceiver,
-                    params.market.marketToken,
-                    collateralToken,
-                    fees.secondaryFeeReceiverAmount,
-                    Keys.POSITION_FEE_TYPE
-                );
-            }
+            _distributeTransactionShares(params, fees, collateralToken);
+            _distributeLiquidationShares(params, fees, collateralToken);
 
             FeeUtils.incrementClaimableUiFeeAmount(
                 params.contracts.dataStore,
@@ -536,7 +517,37 @@ library DecreasePositionCollateralUtils {
             values.output.outputAmount += params.order.initialCollateralDeltaAmount();
         }
 
+        // Insurance fund: see _maybeInjectInsurancePool. Extracted to a private
+        // helper to keep processCollateral under the stack-depth limit; the
+        // helper's locals don't pin slots in the parent.
+        _maybeInjectInsurancePool(params, cache);
+
         return (values, fees);
+    }
+
+    // @dev If realized drawdown exceeds the per-market trigger factor, move
+    // reserves from the InsuranceVault back into the pool. No-ops cleanly when
+    // the trigger is the off-sentinel (type(uint256).max), drawdown is at or
+    // below the threshold, the epoch snapshot is stale/uninitialized, or
+    // INSURANCE_FUND_ADDRESS is unset. ADL and liquidation paths flow through
+    // the same processCollateral and pick this up automatically.
+    function _maybeInjectInsurancePool(
+        PositionUtils.UpdatePositionParams memory params,
+        PositionUtils.DecreasePositionCache memory cache
+    ) private {
+        address vaultAddress = params.contracts.dataStore.getAddress(Keys.INSURANCE_FUND_ADDRESS);
+        if (vaultAddress == address(0)) {
+            return;
+        }
+        InsuranceFundUtils.attemptInjectPool(
+            params.contracts.dataStore,
+            params.contracts.eventEmitter,
+            InsuranceVault(payable(vaultAddress)),
+            params.market,
+            cache.prices,
+            cache.pnlToken,
+            params.orderKey
+        );
     }
 
     function payForCost(
@@ -672,11 +683,7 @@ library DecreasePositionCollateralUtils {
 
         PositionPricingUtils.PositionBorrowingFees memory borrowing = PositionPricingUtils.PositionBorrowingFees({
             borrowingFeeUsd: 0,
-            borrowingFeeAmount: 0,
-            borrowingFeeReceiverFactor: 0,
-            borrowingFeeAmountForFeeReceiver: 0,
-            borrowingFeeSecondaryReceiverFactor: 0,
-            borrowingFeeAmountForSecondaryReceiver: 0
+            borrowingFeeAmount: 0
         });
 
         PositionPricingUtils.PositionUiFees memory ui = PositionPricingUtils.PositionUiFees({
@@ -688,10 +695,10 @@ library DecreasePositionCollateralUtils {
         PositionPricingUtils.PositionLiquidationFees memory liquidation = PositionPricingUtils.PositionLiquidationFees({
             liquidationFeeUsd: 0,
             liquidationFeeAmount: 0,
-            liquidationFeeReceiverFactor: 0,
-            liquidationFeeAmountForFeeReceiver: 0,
-            liquidationFeeSecondaryReceiverFactor: 0,
-            liquidationFeeAmountForSecondaryReceiver: 0
+            liquidationFeeValidatorFactor: 0,
+            liquidationFeeAmountForValidator: 0,
+            liquidationFeeInsuranceFactor: 0,
+            liquidationFeeAmountForInsurance: 0
         });
 
         // all fees are zeroed even though funding may have been paid
@@ -706,10 +713,14 @@ library DecreasePositionCollateralUtils {
             collateralTokenPrice: fees.collateralTokenPrice,
             positionFeeFactor: 0,
             protocolFeeAmount: 0,
-            positionFeeReceiverFactor: 0,
-            positionFeeSecondaryReceiverFactor: 0,
-            feeReceiverAmount: 0,
-            secondaryFeeReceiverAmount: 0,
+            positionFeeVeAlphaFactor: 0,
+            positionFeeTreasuryFactor: 0,
+            positionFeeBuybackFactor: 0,
+            veAlphaFeeAmount: 0,
+            treasuryFeeAmount: 0,
+            buybackFeeAmount: 0,
+            validatorFeeAmount: 0,
+            insuranceFeeAmount: 0,
             feeAmountForPool: 0,
             positionFeeAmountForPool: 0,
             positionFeeAmount: 0,
@@ -719,5 +730,91 @@ library DecreasePositionCollateralUtils {
         });
 
         return _fees;
+    }
+
+    function _distributeTransactionShares(
+        PositionUtils.UpdatePositionParams memory params,
+        PositionPricingUtils.PositionFees memory fees,
+        address collateralToken
+    ) internal {
+        address veAlphaFeeReceiver = params.contracts.dataStore.getAddress(Keys.VEALPHA_FEE_RECEIVER);
+        if (veAlphaFeeReceiver != address(0)) {
+            FeeUtils.incrementClaimableFeeAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                veAlphaFeeReceiver,
+                params.market.marketToken,
+                collateralToken,
+                fees.veAlphaFeeAmount,
+                Keys.POSITION_FEE_TYPE
+            );
+        }
+
+        address treasuryFeeReceiver = params.contracts.dataStore.getAddress(Keys.TREASURY_FEE_RECEIVER);
+        if (treasuryFeeReceiver != address(0)) {
+            FeeUtils.incrementClaimableFeeAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                treasuryFeeReceiver,
+                params.market.marketToken,
+                collateralToken,
+                fees.treasuryFeeAmount,
+                Keys.POSITION_FEE_TYPE
+            );
+        }
+
+        address buybackFeeReceiver = params.contracts.dataStore.getAddress(Keys.BUYBACK_FEE_RECEIVER);
+        if (buybackFeeReceiver != address(0)) {
+            FeeUtils.incrementClaimableFeeAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                buybackFeeReceiver,
+                params.market.marketToken,
+                collateralToken,
+                fees.buybackFeeAmount,
+                Keys.POSITION_FEE_TYPE
+            );
+        }
+    }
+
+    function _distributeLiquidationShares(
+        PositionUtils.UpdatePositionParams memory params,
+        PositionPricingUtils.PositionFees memory fees,
+        address collateralToken
+    ) internal {
+        address validatorFeeReceiver = params.contracts.dataStore.getAddress(Keys.VALIDATOR_FEE_RECEIVER);
+        if (validatorFeeReceiver != address(0)) {
+            FeeUtils.incrementClaimableFeeAmount(
+                params.contracts.dataStore,
+                params.contracts.eventEmitter,
+                validatorFeeReceiver,
+                params.market.marketToken,
+                collateralToken,
+                fees.validatorFeeAmount,
+                Keys.POSITION_FEE_TYPE
+            );
+        }
+
+        // Insurance fund: route the configured slice into the InsuranceVault.
+        // INSURANCE_FUND_ADDRESS holds the vault contract; InsuranceFundUtils.deposit
+        // transfers the slice from MarketToken into the vault and increments the
+        // per (market, token) reserve bucket so attemptInjectPool can draw from it
+        // when realized drawdown crosses the trigger. fees.feeAmountForPool already
+        // excludes this slice (see PositionPricingUtils.getPositionFees) — no
+        // double counting against the pool delta.
+        if (fees.insuranceFeeAmount > 0) {
+            InsuranceVault insuranceVault = InsuranceVault(payable(params.contracts.dataStore.getAddress(Keys.INSURANCE_FUND_ADDRESS)));
+            if (address(insuranceVault) != address(0)) {
+                InsuranceFundUtils.deposit(
+                    params.contracts.dataStore,
+                    params.contracts.eventEmitter,
+                    insuranceVault,
+                    params.market.marketToken,
+                    collateralToken,
+                    params.orderKey,
+                    fees.insuranceFeeAmount
+                );
+            }
+        }
     }
 }

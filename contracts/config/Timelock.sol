@@ -272,77 +272,6 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
         );
     }
 
-    // @dev signal setting of the fee receiver
-    // @param account the new fee receiver
-    function signalSetFeeReceiver(address account) external onlyTimelockAdmin nonReentrant {
-        if (account == address(0)) {
-            revert Errors.InvalidFeeReceiver(account);
-        }
-
-        bytes32 actionKey = _setFeeReceiverActionKey(account);
-        _signalPendingAction(actionKey, "setFeeReceiver");
-
-        EventUtils.EventLogData memory eventData;
-        eventData.addressItems.initItems(1);
-        eventData.addressItems.setItem(0, "account", account);
-        eventEmitter.emitEventLog1(
-            "SignalSetFeeReceiver",
-            actionKey,
-            eventData
-        );
-    }
-
-    function signalSetSecondaryFeeReceiver(address account) external onlyTimelockAdmin nonReentrant {
-        if (account == address(0)) {
-            revert Errors.InvalidFeeReceiver(account);
-        }
-
-        bytes32 actionKey = _setSecondaryFeeReceiverActionKey(account);
-        _signalPendingAction(actionKey, "setSecondaryFeeReceiver");
-
-        EventUtils.EventLogData memory eventData;
-        eventData.addressItems.initItems(1);
-        eventData.addressItems.setItem(0, "account", account);
-        eventEmitter.emitEventLog1(
-            "SignalSetSecondaryFeeReceiver",
-            actionKey,
-            eventData
-        );
-    }
-
-    // @dev set the fee receiver
-    // @param account the new fee receiver
-    function setFeeReceiverAfterSignal(address account) external onlyTimelockAdmin nonReentrant {
-        bytes32 actionKey = _setFeeReceiverActionKey(account);
-        _validateAndClearAction(actionKey, "setFeeReceiver");
-
-        dataStore.setAddress(Keys.FEE_RECEIVER, account);
-
-        EventUtils.EventLogData memory eventData;
-        eventData.addressItems.initItems(1);
-        eventData.addressItems.setItem(0, "account", account);
-        eventEmitter.emitEventLog1(
-            "SetFeeReceiver",
-            actionKey,
-            eventData
-        );
-    }
-
-    function setSecondaryFeeReceiverAfterSignal(address account) external onlyTimelockAdmin nonReentrant {
-        bytes32 actionKey = _setSecondaryFeeReceiverActionKey(account);
-        _validateAndClearAction(actionKey, "setSecondaryFeeReceiver");
-
-        dataStore.setAddress(Keys.SECONDARY_FEE_RECEIVER, account);
-        EventUtils.EventLogData memory eventData;
-        eventData.addressItems.initItems(1);
-        eventData.addressItems.setItem(0, "account", account);
-        eventEmitter.emitEventLog1(
-            "SetSecondaryFeeReceiver",
-            actionKey,
-            eventData
-        );
-    }
-
     // @dev signal granting of a role
     // @param account the account to grant the role
     // @param roleKey the role to grant
@@ -705,14 +634,6 @@ contract Timelock is ReentrancyGuard, RoleModule, BasicMulticall {
 
     function _removeOracleSignerActionKey(address account) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked("removeOracleSigner", account));
-    }
-
-    function _setFeeReceiverActionKey(address account) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked("setFeeReceiver", account));
-    }
-
-    function _setSecondaryFeeReceiverActionKey(address account) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked("setSecondaryFeeReceiver", account));
     }
 
     function _grantRoleActionKey(address account, bytes32 roleKey) internal pure returns (bytes32) {

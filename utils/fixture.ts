@@ -72,6 +72,10 @@ export async function deployFixture() {
   const eventEmitter = await hre.ethers.getContract("EventEmitter");
   const oracleStore = await hre.ethers.getContract("OracleStore");
   const orderVault = await hre.ethers.getContract("OrderVault");
+  const insuranceVault = await hre.ethers.getContract("InsuranceVault");
+  const insuranceFundEventUtils = await hre.ethers.getContract("InsuranceFundEventUtils");
+  const insuranceFundUtils = await hre.ethers.getContract("InsuranceFundUtils");
+  const settlementHandler = await hre.ethers.getContract("SettlementHandler");
   const glvVault = await hre.ethers.getContract("GlvVault");
   const marketFactory = await hre.ethers.getContract("MarketFactory");
   const glvFactory = await hre.ethers.getContract("GlvFactory");
@@ -265,6 +269,10 @@ export async function deployFixture() {
       shiftVault,
       oracleStore,
       orderVault,
+      insuranceVault,
+      insuranceFundEventUtils,
+      insuranceFundUtils,
+      settlementHandler,
       marketFactory,
       depositHandler,
       depositUtils,

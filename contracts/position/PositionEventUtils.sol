@@ -269,13 +269,13 @@ library PositionEventUtils {
         // in case the position was insolvent, the fundingFeeAmount and feeAmountForPool
         // values may not be accurate
 
-        uint256 uintItemsCount = 23;
+        uint256 uintItemsCount = 25;
         uint256 dynamicItemIndex = uintItemsCount - 1;
         if (fees.referral.totalRebateFactor > 0) {
             uintItemsCount += 6;
         }
         if (fees.liquidation.liquidationFeeAmount > 0) {
-            uintItemsCount += 3;
+            uintItemsCount += 5;
         }
         if (fees.pro.traderDiscountFactor > 0) {
             uintItemsCount += 2;
@@ -293,18 +293,20 @@ library PositionEventUtils {
         eventData.uintItems.setItem(8, "latestShortTokenClaimableFundingAmountPerSize", fees.funding.latestShortTokenClaimableFundingAmountPerSize);
         eventData.uintItems.setItem(9, "borrowingFeeUsd", fees.borrowing.borrowingFeeUsd);
         eventData.uintItems.setItem(10, "borrowingFeeAmount", fees.borrowing.borrowingFeeAmount);
-        eventData.uintItems.setItem(11, "borrowingFeeReceiverFactor", fees.borrowing.borrowingFeeReceiverFactor);
-        eventData.uintItems.setItem(12, "borrowingFeeAmountForFeeReceiver", fees.borrowing.borrowingFeeAmountForFeeReceiver);
-        eventData.uintItems.setItem(13, "positionFeeFactor", fees.positionFeeFactor);
-        eventData.uintItems.setItem(14, "protocolFeeAmount", fees.protocolFeeAmount);
-        eventData.uintItems.setItem(15, "positionFeeReceiverFactor", fees.positionFeeReceiverFactor);
-        eventData.uintItems.setItem(16, "feeReceiverAmount", fees.feeReceiverAmount);
-        eventData.uintItems.setItem(17, "feeAmountForPool", fees.feeAmountForPool);
-        eventData.uintItems.setItem(18, "positionFeeAmountForPool", fees.positionFeeAmountForPool);
-        eventData.uintItems.setItem(19, "positionFeeAmount", fees.positionFeeAmount);
-        eventData.uintItems.setItem(20, "totalCostAmount", fees.totalCostAmount);
-        eventData.uintItems.setItem(21, "uiFeeReceiverFactor", fees.ui.uiFeeReceiverFactor);
-        eventData.uintItems.setItem(22, "uiFeeAmount", fees.ui.uiFeeAmount);
+        eventData.uintItems.setItem(11, "positionFeeFactor", fees.positionFeeFactor);
+        eventData.uintItems.setItem(12, "protocolFeeAmount", fees.protocolFeeAmount);
+        eventData.uintItems.setItem(13, "positionFeeVeAlphaFactor", fees.positionFeeVeAlphaFactor);
+        eventData.uintItems.setItem(14, "veAlphaFeeAmount", fees.veAlphaFeeAmount);
+        eventData.uintItems.setItem(15, "positionFeeTreasuryFactor", fees.positionFeeTreasuryFactor);
+        eventData.uintItems.setItem(16, "treasuryFeeAmount", fees.treasuryFeeAmount);
+        eventData.uintItems.setItem(17, "positionFeeBuybackFactor", fees.positionFeeBuybackFactor);
+        eventData.uintItems.setItem(18, "buybackFeeAmount", fees.buybackFeeAmount);
+        eventData.uintItems.setItem(19, "feeAmountForPool", fees.feeAmountForPool);
+        eventData.uintItems.setItem(20, "positionFeeAmountForPool", fees.positionFeeAmountForPool);
+        eventData.uintItems.setItem(21, "positionFeeAmount", fees.positionFeeAmount);
+        eventData.uintItems.setItem(22, "totalCostAmount", fees.totalCostAmount);
+        eventData.uintItems.setItem(23, "uiFeeReceiverFactor", fees.ui.uiFeeReceiverFactor);
+        eventData.uintItems.setItem(24, "uiFeeAmount", fees.ui.uiFeeAmount);
 
         // ++dynamicItemIndex is pre-increment, first the value is incremented, then updated value is returned
         // i.e. if dynamicItemIndex is 22, then ++dynamicItemIndex returns 23
@@ -322,8 +324,10 @@ library PositionEventUtils {
         }
         if (fees.liquidation.liquidationFeeAmount > 0) {
             eventData.uintItems.setItem(++dynamicItemIndex, "liquidationFeeAmount", fees.liquidation.liquidationFeeAmount);
-            eventData.uintItems.setItem(++dynamicItemIndex, "liquidationFeeReceiverFactor", fees.liquidation.liquidationFeeReceiverFactor);
-            eventData.uintItems.setItem(++dynamicItemIndex, "liquidationFeeAmountForFeeReceiver", fees.liquidation.liquidationFeeAmountForFeeReceiver);
+            eventData.uintItems.setItem(++dynamicItemIndex, "liquidationFeeValidatorFactor", fees.liquidation.liquidationFeeValidatorFactor);
+            eventData.uintItems.setItem(++dynamicItemIndex, "liquidationFeeAmountForValidator", fees.liquidation.liquidationFeeAmountForValidator);
+            eventData.uintItems.setItem(++dynamicItemIndex, "liquidationFeeInsuranceFactor", fees.liquidation.liquidationFeeInsuranceFactor);
+            eventData.uintItems.setItem(++dynamicItemIndex, "liquidationFeeAmountForInsurance", fees.liquidation.liquidationFeeAmountForInsurance);
         }
 
         eventData.boolItems.initItems(1);
