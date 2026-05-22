@@ -481,6 +481,28 @@ describe("Config", () => {
     ).to.be.revertedWithCustomError(errorsContract, "ConfigValueExceedsAllowedRange");
   });
 
+  it("validates POSITION_FEE_VEALPHA + TREASURY + BUYBACK sum ≤ 100%", async () => {
+    // The three position-fee receiver factors share the same underflow risk
+    // as the liquidation pair: positionFeeAmountForPool = protocolFee - vealpha
+    // - treasury - buyback (uint256). If the sum exceeds 100% the subtraction
+    // underflows. Verify the validator rejects sums above 100% and accepts
+    // exactly 100%.
+    await config.connect(user0).setUint(keys.POSITION_FEE_VEALPHA_FACTOR, "0x", percentageToFloat("40%"));
+    await config.connect(user0).setUint(keys.POSITION_FEE_TREASURY_FACTOR, "0x", percentageToFloat("30%"));
+    await config.connect(user0).setUint(keys.POSITION_FEE_BUYBACK_FACTOR, "0x", percentageToFloat("30%"));
+
+    // Boundary 40+30+30 = 100% accepted; +1 wei on any leg reverts.
+    await expect(
+      config.connect(user0).setUint(keys.POSITION_FEE_VEALPHA_FACTOR, "0x", percentageToFloat("40%").add(1))
+    ).to.be.revertedWithCustomError(errorsContract, "ConfigValueExceedsAllowedRange");
+    await expect(
+      config.connect(user0).setUint(keys.POSITION_FEE_TREASURY_FACTOR, "0x", percentageToFloat("30%").add(1))
+    ).to.be.revertedWithCustomError(errorsContract, "ConfigValueExceedsAllowedRange");
+    await expect(
+      config.connect(user0).setUint(keys.POSITION_FEE_BUYBACK_FACTOR, "0x", percentageToFloat("30%").add(1))
+    ).to.be.revertedWithCustomError(errorsContract, "ConfigValueExceedsAllowedRange");
+  });
+
   it("setDataStream", async () => {
     const p100 = percentageToFloat("100%");
     const feedId = hashString("WNT");

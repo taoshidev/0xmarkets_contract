@@ -315,13 +315,19 @@ library DecreasePositionCollateralUtils {
             // this imbalance
             // the swap impact pool should be built up so that it can be used to pay for positive price impact
             // for re-balancing to help handle this case
-            MarketUtils.applyDeltaToPoolAmount(
-                params.contracts.dataStore,
-                params.contracts.eventEmitter,
-                params.market,
-                params.position.collateralToken(),
-                fees.feeAmountForPool.toInt256()
-            );
+            //
+            // Skip the pool delta when feeAmountForPool is zero — avoids an empty
+            // PoolAmountUpdated event and matches the guard in
+            // _distributeInsolventShares. (Cannot be negative; type is uint256.)
+            if (fees.feeAmountForPool > 0) {
+                MarketUtils.applyDeltaToPoolAmount(
+                    params.contracts.dataStore,
+                    params.contracts.eventEmitter,
+                    params.market,
+                    params.position.collateralToken(),
+                    fees.feeAmountForPool.toInt256()
+                );
+            }
 
             address collateralToken = params.position.collateralToken();
 
