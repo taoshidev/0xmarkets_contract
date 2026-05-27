@@ -315,6 +315,26 @@ const processGeneralConfig = async ({ generalConfig, oracleConfig, handleConfig 
     generalConfig.maxExecutionFeeMultiplierFactor,
     `maxExecutionFeeMultiplierFactor`
   );
+
+  if (generalConfig.insuranceFundEpochLength !== undefined) {
+    await handleConfig(
+      "uint",
+      keys.INSURANCE_FUND_EPOCH_LENGTH,
+      "0x",
+      generalConfig.insuranceFundEpochLength,
+      `insuranceFundEpochLength`
+    );
+  }
+
+  if (generalConfig.insuranceFundMaxEpochAge !== undefined) {
+    await handleConfig(
+      "uint",
+      keys.INSURANCE_FUND_MAX_EPOCH_AGE,
+      "0x",
+      generalConfig.insuranceFundMaxEpochAge,
+      `insuranceFundMaxEpochAge`
+    );
+  }
 };
 
 export async function updateGeneralConfig({ write }) {

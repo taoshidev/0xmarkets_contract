@@ -585,6 +585,21 @@ const processMarkets = async ({
       );
     }
 
+    // Per-market insurance fund drawdown trigger. When realized drawdown
+    // (current pool USD vs. last epoch snapshot, both excluding unrealized PnL)
+    // exceeds this factor, attemptInjectPool tops the pool back up.
+    // type(uint256).max is the off-sentinel — set explicitly via Config if a
+    // market should opt out of the fund.
+    if (marketConfig.insuranceFundDrawdownTriggerFactor !== undefined) {
+      await handleConfig(
+        "uint",
+        keys.INSURANCE_FUND_DRAWDOWN_TRIGGER_FACTOR,
+        encodeData(["address"], [marketToken]),
+        marketConfig.insuranceFundDrawdownTriggerFactor,
+        `insuranceFundDrawdownTriggerFactor ${marketLabel} (${marketToken})`
+      );
+    }
+
     if (marketConfig.positionFeeFactorForPositiveImpact !== undefined) {
       await handleConfig(
         "uint",

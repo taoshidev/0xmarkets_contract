@@ -102,6 +102,14 @@ export type BaseMarketConfig = {
   positionFeeFactorForNegativeImpact: BigNumberish;
   liquidationFeeFactor: BigNumberish;
 
+  // Per-market insurance fund drawdown trigger. Realized drawdown above this
+  // factor (vs. last epoch snapshot, both excluding unrealized PnL) triggers
+  // attemptInjectPool at end of processCollateral. Optional — if undefined
+  // the deploy script doesn't write the key and the fund stays inactive
+  // (default DataStore value is 0; library short-circuits unless explicitly
+  // set, since type(uint256).max is the off-sentinel).
+  insuranceFundDrawdownTriggerFactor?: BigNumberish;
+
   negativePositionImpactFactor: BigNumberish;
   positivePositionImpactFactor: BigNumberish;
   positionImpactExponentFactor: BigNumberish;
@@ -293,16 +301,17 @@ const borrowingRateConfig_HighMax_WithHigherBase: BorrowingRateConfig = {
 };
 
 const baseMarketConfig: Partial<BaseMarketConfig> = {
-  // Dynamic MMR defaults. Sized so that at currLeverage == maxLeverage,
-  // the trader can absorb ~50% of collateral loss before liquidation:
-  //   mmr_tuning = 0.5 / maxLeverage
-  // At low leverage, min_mmr floors the required buffer.
+  // Dynamic MMR — universal target per Tony's spec:
+  //   minMmr = 1%, maxMmr = 20%, mmrTuning = 20%
+  //   formula: mmr = clamp((sizeInUsd/collateralUsd)/maxLeverage * mmrTuning, minMmr, maxMmr)
+  //   at currLeverage == maxLeverage → mmr = 20%
+  //   at low leverage → floored at 1%
   // min_leverage is opt-in (0 = no lower bound). Set it per-market to enforce.
   maxLeverage: decimalToFloat(50), // conservative default for markets without an asset-class override
   minLeverage: 0,
-  minMmr: percentageToFloat("0.3%"),
-  maxMmr: percentageToFloat("10%"),
-  mmrTuning: percentageToFloat("1%"), // 0.5 / 50x
+  minMmr: percentageToFloat("1%"),
+  maxMmr: percentageToFloat("20%"),
+  mmrTuning: percentageToFloat("20%"),
 
   minCollateralFactorForOpenInterestMultiplier: 0,
 
@@ -360,7 +369,16 @@ const baseMarketConfig: Partial<BaseMarketConfig> = {
   positionImpactPoolDistributionRate: bigNumberify(0),
   minPositionImpactPoolAmount: 0,
 
-  liquidationFeeFactor: percentageToFloat("0.50%"),
+  // Liquidation fee = 100% of remaining MMR at max leverage (matches maxMmr = 20%).
+  // Static factor × sizeInUsd. For sub-max-leverage positions the fee exceeds
+  // available collateral at liquidation — covered by the proportional-receiver
+  // scaling in DecreasePositionCollateralUtils (PR #38).
+  liquidationFeeFactor: percentageToFloat("20%"),
+
+  // Insurance fund drawdown trigger: 2% of last epoch snapshot. When realized
+  // drawdown (excluding unrealized PnL) exceeds this, attemptInjectPool tops
+  // the pool back up at the end of every close.
+  insuranceFundDrawdownTriggerFactor: percentageToFloat("2%"),
 };
 
 const singleTokenMarketConfig: Partial<BaseMarketConfig> = {
@@ -382,7 +400,8 @@ const singleTokenMarketConfig: Partial<BaseMarketConfig> = {
   positiveSwapImpactFactor: bigNumberify(0),
   swapImpactExponentFactor: decimalToFloat(1),
 
-  liquidationFeeFactor: percentageToFloat("0.30%"),
+  // Same universal liq fee target as baseMarketConfig.
+  liquidationFeeFactor: percentageToFloat("20%"),
 };
 
 const syntheticMarketConfig: Partial<BaseMarketConfig> = {
@@ -413,15 +432,19 @@ const synthethicMarketConfig_IncreasedCapacity: Partial<BaseMarketConfig> = {
   maxPnlFactorForWithdrawals: percentageToFloat("55%"),
 };
 
+// MMR values are universal per Tony's spec — same minMmr / maxMmr / mmrTuning
+// across FX / commodity / crypto. Per-class overrides retain class-specific
+// maxLeverage and position-fee factors but inherit MMR from baseMarketConfig.
+
 const fxMarketOverrides: Partial<BaseMarketConfig> = {
   positionFeeFactorForPositiveImpact: percentageToFloat("0.01%"),
   positionFeeFactorForNegativeImpact: percentageToFloat("0.015%"),
 
   maxLeverage: decimalToFloat(500),
   minLeverage: 0,
-  minMmr: percentageToFloat("0.1%"),
-  maxMmr: percentageToFloat("10%"),
-  mmrTuning: percentageToFloat("0.1%"), // 0.5 / 500x
+  minMmr: percentageToFloat("1%"),
+  maxMmr: percentageToFloat("20%"),
+  mmrTuning: percentageToFloat("20%"),
 
   leverageLadder: fxLeverageLadder,
 };
@@ -432,9 +455,9 @@ const commodityMarketOverrides: Partial<BaseMarketConfig> = {
 
   maxLeverage: decimalToFloat(200),
   minLeverage: 0,
-  minMmr: percentageToFloat("0.2%"),
-  maxMmr: percentageToFloat("10%"),
-  mmrTuning: percentageToFloat("0.25%"), // 0.5 / 200x
+  minMmr: percentageToFloat("1%"),
+  maxMmr: percentageToFloat("20%"),
+  mmrTuning: percentageToFloat("20%"),
 
   leverageLadder: goldLeverageLadder,
 };
@@ -445,9 +468,9 @@ const cryptoMarketOverrides: Partial<BaseMarketConfig> = {
 
   maxLeverage: decimalToFloat(100),
   minLeverage: 0,
-  minMmr: percentageToFloat("0.3%"),
-  maxMmr: percentageToFloat("10%"),
-  mmrTuning: percentageToFloat("0.5%"), // 0.5 / 100x
+  minMmr: percentageToFloat("1%"),
+  maxMmr: percentageToFloat("20%"),
+  mmrTuning: percentageToFloat("20%"),
 
   leverageLadder: cryptoLeverageLadder,
 };

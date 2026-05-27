@@ -50,6 +50,26 @@ const func = async ({ gmx }: HardhatRuntimeEnvironment) => {
     "max execution fee multiplier factor"
   );
 
+  // Insurance fund epoch globals. EPOCH_LENGTH gates SettlementHandler's
+  // idempotency guard (re-snapshot is rejected before block.timestamp >=
+  // lastEpochStart + epochLength). MAX_EPOCH_AGE disables drawdown injection
+  // when the snapshot is older than that — guards against a missed keeper run
+  // poisoning a stale baseline. Both are seconds.
+  if (generalConfig.insuranceFundEpochLength !== undefined) {
+    await setUintIfDifferent(
+      keys.INSURANCE_FUND_EPOCH_LENGTH,
+      generalConfig.insuranceFundEpochLength,
+      "insurance fund epoch length"
+    );
+  }
+  if (generalConfig.insuranceFundMaxEpochAge !== undefined) {
+    await setUintIfDifferent(
+      keys.INSURANCE_FUND_MAX_EPOCH_AGE,
+      generalConfig.insuranceFundMaxEpochAge,
+      "insurance fund max epoch age"
+    );
+  }
+
   const write = process.env.FOR_EXISTING_MAINNET_DEPLOYMENT ? false : true;
   if (write) {
     await updateGeneralConfig({ write: true });

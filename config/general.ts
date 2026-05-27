@@ -63,6 +63,13 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
       liquidationFeeValidatorFactor: 0,
       liquidationFeeInsuranceFactor: 0,
 
+      // Insurance fund epoch lifecycle. SettlementHandler enforces
+      // `block.timestamp >= lastEpochStart + epochLength` before re-snapshot;
+      // drawdown injection is disabled if `block.timestamp - lastEpochStart >
+      // maxEpochAge` to guard against stale snapshots from missed keeper runs.
+      insuranceFundEpochLength: 7 * 24 * 60 * 60, // 7 days
+      insuranceFundMaxEpochAge: 8 * 24 * 60 * 60, // 8 days
+
       skipBorrowingFeeForSmallerSide: false,
 
       ignoreOpenInterestForUsageFactor: false,
@@ -121,6 +128,10 @@ export default async function ({ network }: HardhatRuntimeEnvironment) {
     positionFeeBuybackFactor: 0,
     liquidationFeeValidatorFactor: 0,
     liquidationFeeInsuranceFactor: 0,
+
+    // Insurance fund epoch lifecycle (seconds). See deploy/configureGeneralSettings.ts.
+    insuranceFundEpochLength: 7 * 24 * 60 * 60, // 7 days
+    insuranceFundMaxEpochAge: 8 * 24 * 60 * 60, // 8 days
 
     skipBorrowingFeeForSmallerSide: true,
 
